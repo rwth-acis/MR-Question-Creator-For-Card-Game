@@ -2,10 +2,12 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEditor;
 using System;
 using System.IO;
 using TMPro;
 using UnityEngine.EventSystems;
+using UnityEngine.SceneManagement;
 
 static class Globals
 {
@@ -18,7 +20,7 @@ static class Globals
     public static int depth;
     public static bool flagVariable = true;
     public static bool reset = false;
-    public static stack<string> parentDirectory = new Stack<string>();
+    public static Stack<string> parentDirectory = new Stack<string>();
 }
 
 public class BrowsDirectories : MonoBehaviour
@@ -41,6 +43,9 @@ public class BrowsDirectories : MonoBehaviour
 
         // Then I rename / delete the name of the predefined buttons and disable those that have no name
         RenameButtons(Globals.currentPath);
+
+        // Add a listener to the input field
+        mainInputField.onEndEdit.AddListener(delegate{AddDirectory(mainInputField);});
     }
 
     // Helper method to get the path to this script file
@@ -90,6 +95,11 @@ public class BrowsDirectories : MonoBehaviour
        return number;
     }
 
+    [SerializeField]
+    private Sprite[] switchSprites;
+
+    private Image switchImage;
+
     // Disabling or enabling of the buttons
     public void DisableOrEnableButtons()
     {
@@ -110,27 +120,39 @@ public class BrowsDirectories : MonoBehaviour
         // Enable / Disable previous button and change color
         Button previous = GameObject.Find("Previous").GetComponent<Button>();
         TMP_Text textPrevious = previous.GetComponentInChildren<TMP_Text>();
-        if(Globals.currentPage == 1) {
+        if(Globals.currentPage == 1)
+        {
             previous.interactable = false;
             textPrevious.GetComponent<TMP_Text>().colorGradient = disabledTextGradient;
-            Debug.Log("disabled previous");
         } else {
             previous.interactable = true;
             textPrevious.GetComponent<TMP_Text>().colorGradient = enabledTextGradient;
-            Debug.Log("enabled previous");
         }
 
         // Enable / Disable next button and change color
         Button next = GameObject.Find("Next").GetComponent<Button>();
         TMP_Text textNext = next.GetComponentInChildren<TMP_Text>();
-        if(Globals.currentPage != Globals.numberOfPages){
+        if(Globals.currentPage != Globals.numberOfPages)
+        {
             next.interactable = true;
             textNext.GetComponent<TMP_Text>().colorGradient = enabledTextGradient;
-            Debug.Log("enabled next");
         } else {
             next.interactable = false;
             textNext.GetComponent<TMP_Text>().colorGradient = disabledTextGradient;
-            Debug.Log("disabled next");
+        }
+
+        // Enable / disable the return button
+        Button returnButton = GameObject.Find("Return").GetComponent<Button>();
+        switchImage = returnButton.image;
+        if(Globals.currentPath != Globals.rootDirectoryPath)
+        {
+            //returnButtonOn.interactable = true;
+            returnButton.interactable = true;
+            switchImage.sprite = switchSprites[1];
+        } else {
+            //returnButtonOff.interactable = false;
+            returnButton.interactable = false;
+            switchImage.sprite = switchSprites[0];
         }
     }
 
@@ -140,7 +162,8 @@ public class BrowsDirectories : MonoBehaviour
         // TODO
 
         // Case there are no directories to be displayed
-        if(Globals.numberOfDirectories == 0){
+        if(Globals.numberOfDirectories == 0)
+        {
             // For now make all disappear and disable the buttons
             Button directory1 = GameObject.Find("Directory1").GetComponent<Button>();
             directory1.GetComponentInChildren<TMP_Text>().text = "";
@@ -251,6 +274,7 @@ public class BrowsDirectories : MonoBehaviour
         Globals.currentPage = Globals.currentPage + 1;
         DisableOrEnableButtons();
         RenameButtons(Globals.currentPath);
+        GameObject.Find("HeadingText").GetComponent<TMP_Text>().text = "Page " + Globals.currentPage + "/" + Globals.numberOfPages;
     }
 
     // Method that is activated when pressing previous (change the other directories)
@@ -258,24 +282,17 @@ public class BrowsDirectories : MonoBehaviour
         Globals.currentPage = Globals.currentPage - 1;
         DisableOrEnableButtons();
         RenameButtons(Globals.currentPath);
+        GameObject.Find("HeadingText").GetComponent<TMP_Text>().text = "Page " + Globals.currentPage + "/" + Globals.numberOfPages;
     }
 
     // Method that is activated when pressing the return arrow (get to the parent directory)
-    public void ReturnOneUp(){
-        // First we need the name of the current directory
-        directoryName = Globals.parentDirectory.Pop();
-
-        // Trim the path from the directory name#
-        String whatToTrim = directoryName + @"\";
-        Globals.currentPath = Globals.currentPath.TrimEnd(whatToTrim);
-        Debug.Log(Globals.currentPath);
-        // Here TODO
-
-        // Actualize the path
-        Globals.currentPath = Globals.currentPath + directoryName + @"\";
-
-        Globals.currentPage = 1;
-        String directoryName = directory.TrimStart(' ');
+    public void ReturnOneUp()
+    {
+        // First we need to actualize the current path
+        Globals.currentPath = Path.GetFullPath(Path.Combine(Globals.currentPath, @"..\"));
+        
+        // Then we can actualize everything
+        ActualizeGlobals();
         DisableOrEnableButtons();
         RenameButtons(Globals.currentPath);
     }
@@ -317,24 +334,6 @@ public class BrowsDirectories : MonoBehaviour
             RenameButtons(Globals.currentPath);
             StartCoroutine(FreezeCoroutine());
         }
-        // // Increase the browsing depth
-        // Globals.depth = Globals.depth + 1;
-        // // Get the name of the directory selected
-        // string name = EventSystem.current.currentSelectedGameObject.name;
-        // Button button = GameObject.Find(name).GetComponent<Button>();
-        // String directory = GameObject.Find(name).GetComponent<Button>().GetComponentInChildren<TMP_Text>().text;
-        // // Trim the first character away
-        // String directoryName = directory.TrimStart(' ');
-        // // Actualize the path
-        // Globals.currentPath = Globals.currentPath + directoryName + @"\";
-        // // Actualize the other globals (directories array, number, page number, etc)
-        // ActualizeGlobals();
-        // DisableOrEnableButtons();
-        // RenameButtons(Globals.currentPath);
-        // Debug.Log(Globals.currentPath);
-        // DisableGUI(1);
-        // //YourButton_Click(button, null);
-        // //System.thread.sleep(500);
     }
 
     // Method that actualizes the global variables (when going deeper or shallower in directory structures)
@@ -351,9 +350,9 @@ public class BrowsDirectories : MonoBehaviour
         if(Globals.numberOfPages > 0){
             GameObject.Find("HeadingText").GetComponent<TMP_Text>().text = "Page " + Globals.currentPage + "/" + Globals.numberOfPages;
         } else {
+            // Case there are no directories, but a page still needs to be displayed
             GameObject.Find("HeadingText").GetComponent<TMP_Text>().text = "Page " + Globals.currentPage + "/" + 1;
         }
-        
     }
 
     // Method for the back button 
@@ -361,7 +360,8 @@ public class BrowsDirectories : MonoBehaviour
     {
         Globals.reset = true;
     }
-
+    
+    // Method that resets the progression when going back to the main menu and back in the brows directories menu
     public void GoingBackIn()
     {
         if(Globals.reset == true){
@@ -382,32 +382,45 @@ public class BrowsDirectories : MonoBehaviour
         }
     }
 
-    // Test method that renames a button
-    // public void RenameOne(){
-    //     foreach (string dir in Globals.directoriesArray)
-    //     {
-    //         Debug.Log(dir);
-    //     }
-    //     foreach (string dir in Globals.directoriesArray) {
-    //         Button directory1 = GameObject.Find("Directory2").GetComponent<Button>();
-    //         directory1.interactable = true;
-    //         TMP_Text buttonText = directory1.GetComponentInChildren<TMP_Text>();
-    //         string nameOfButton = buttonText.text;
-    //         Debug.Log(nameOfButton);
-    //         buttonText.text = "test";
-    //         // GameObject.Find("Directory1Text").SetComponent<Text>().text = "test";
-            
-            
-    //         // string lastFolderName = Path.GetFileName(dir);
-    //         // Button directory1 = GameObject.Find("Directory1").GetComponent<Button>();
-    //         // Text ButtonText = directory1.GetComponentInChildren(typeof(Text)) as Text;
-    //         // ButtonText.text = "Test5";
-    //         // // directory1.interactable = false;
-    //         // // GameObject.Find("Directory1").GetComponentInChildren<Text>().text = "i did it?";
-    //         // Debug.Log(lastFolderName);
-    //         // // Button directory1 = GameObject.Find("Directory2").GetComponent<Button>();
-    //         // // directory1.interactable = true;
-    //     }
-    //     Debug.Log(Globals.numberOfDirectories);
-    // }
+    // Define the input field, the error text and window so that they can get disabled / enabled when needed
+    public TMP_InputField mainInputField;
+    public TextMeshProUGUI errorText;
+    public GameObject window;
+
+    public void AddDirectory(TMP_InputField input)
+    {
+        if (input.text.Length > 0) 
+		{
+            // Access to the text that was entered
+            string directoryName = mainInputField.text;
+
+            // Create new path that will exist after the directory has been created
+            string newPath = Globals.currentPath + directoryName + @"\";
+
+            // Create the new directory if it does not already exist
+            if (!Directory.Exists(newPath))
+            {
+                // Create directory
+                Directory.CreateDirectory(newPath);
+
+                // Disable the window and enable the menu
+                window.SetActive(false);
+
+                // Save the page you were on
+                int oldPageNumber = Globals.currentPage;
+
+                // Since a new directory was created, it is needed to actualize it
+                ActualizeGlobals();
+                Globals.currentPage = oldPageNumber;
+                DisableOrEnableButtons();
+                RenameButtons(Globals.currentPath);
+            } else {
+                // Display error
+                errorText.gameObject.SetActive(true);
+
+            }
+            // Reset the text after you used it
+            mainInputField.text = "";
+		}
+    }
 }
