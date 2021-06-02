@@ -20,7 +20,7 @@ static class Globals
     public static int depth;
     public static bool flagVariable = true;
     public static bool reset = false;
-    public static Stack<string> parentDirectory = new Stack<string>();
+    //public static Stack<string> parentDirectory = new Stack<string>();
 }
 
 public class BrowsDirectories : MonoBehaviour
@@ -323,7 +323,7 @@ public class BrowsDirectories : MonoBehaviour
 
             // Trim the first character away
             String directoryName = directory.TrimStart(' ');
-            Globals.parentDirectory.Push(directoryName);
+            //Globals.parentDirectory.Push(directoryName);
 
             // Actualize the path
             Globals.currentPath = Globals.currentPath + directoryName + @"\";
