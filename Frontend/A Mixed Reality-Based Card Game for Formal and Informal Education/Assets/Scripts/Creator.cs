@@ -10,6 +10,11 @@ static class Menus
 {
     public static GameObject lastMenu;
     public static GameObject currentMenu;
+    public static int currentInputQuestionIndex; // Used to access the right position in the array of the input questions
+    public static int currentMultipleChoiceQuestionIndex; // Used to access the right position in the array of the input questions
+    public static int currentModelCollectionIndex; // Used to access the right position in the array of the 3D model collection
+    public static int currentExerciseIndex; // Used to generate correct exercise names
+    public static string currentExerciseName;
 }
 
 public class Creator : MonoBehaviour
@@ -19,7 +24,6 @@ public class Creator : MonoBehaviour
     public GameObject mainCreator;
     public GameObject multipleChoiceCreator;
     public GameObject inputModeCreator;
-    public GameObject enterAnswerWindow;
     public GameObject enterNameWindow;
     public GameObject exitWithoutSavingWindow;
 
@@ -28,15 +32,85 @@ public class Creator : MonoBehaviour
     public GameObject veilSmallWindow;
 
     // Defining the input fields
+    // Input mode fields
     public TMP_InputField enterQuestionInput;
     public TMP_InputField enterAnswerInput;
+    // Multiple Choice mode fields
     public TMP_InputField enterQuestionMultiple;
-    public TMP_InputField enterAnswerMultiple;
+    public TMP_InputField enterFirstAnswer;
+    public TMP_InputField enterSecondAnswer;
+    public TMP_InputField enterThirdAnswer;
+    public TMP_InputField enterFourthAnswer;
+    public TMP_InputField enterFifthAnswer;
+    // The name input field, used for all question modes
     public TMP_InputField enterName;
+
+    // Define the toggles used in the multiple choice mode
+    public Toggle firstAnswerCorrect;
+    public Toggle secondAnswerCorrect;
+    public Toggle thirdAnswerCorrect;
+    public Toggle fourthAnswerCorrect;
+    public Toggle fifthAnswerCorrect;
 
     // Define the error texts that need to be displayed if an input field is empty
     public TextMeshProUGUI errorNoQuestionInput;
     public TextMeshProUGUI errorNoAnswerInput;
+
+    // The JSON Serialization for the input questions
+    [Serializable]
+    public class InputQuestion
+    {
+        public string exerciseName;
+        public string type = "inputQuestion";
+        public string name;
+        public string question;
+        public string answer;
+    }
+
+    // The JSON Serialization for the multiple choice questions
+    [Serializable]
+    public class MultipleChoiceQuestion
+    {
+        public string exerciseName;
+        public string type = "multipleChoiceQuestion";
+        public string name;
+        public string question;
+        public int numberOfAnswers;
+        public string answer1;
+        public string answer2;
+        public string answer3;
+        public string answer4;
+        public string answer5;
+        public bool answer1Correct;
+        public bool answer2Correct;
+        public bool answer3Correct;
+        public bool answer4Correct;
+        public bool answer5Correct;
+    }
+
+    // Still need to save the 3D models somehow
+    // The exercise name is used to link the questions to the 3D models
+    // The names are the names of the files that are uploaded by the user
+    [Serializable]
+    public class ModelsCollection
+    {
+        public string exerciseName;
+        public int numberOfModels;
+        public string nameFirstModel;
+        public string nameSecondModel;
+        public string nameThirdModel;
+        public string nameFourthModel;
+        public string nameFifthModel;
+    }
+
+    // This is the class that groups everything
+    public class ExerciseCollection
+    {
+        public List<InputQuestion> inputQuestions;
+        public List<MultipleChoiceQuestion> multipleChoiceQuestions;
+        public List<ModelsCollection> modelCollection;
+
+    }
 
 
     // Start is called before the first frame update
@@ -56,7 +130,94 @@ public class Creator : MonoBehaviour
         // Set last and current menu
         Menus.lastMenu = mainMenu;
         Menus.currentMenu = mainCreator;
-        
+
+        // Set the current question index
+        Menus.currentInputQuestionIndex = 0;
+        Menus.currentMultipleChoiceQuestionIndex = 0;
+
+        // Set the current exercise index
+        Menus.currentExerciseIndex = 0;
+
+        // Initialize the collection
+        ExerciseCollection collection = new ExerciseCollection();
+    }
+
+    // Method used to enter the creator
+    public void EnterCreator() 
+    {
+        // Set the right exercise name
+        Menus.currentExerciseName = "exerciseName" + Menus.currentExerciseIndex;
+    }
+
+    // Method that activates everything for the creator menu
+    public void ActivateCreatorMenu()
+    {
+        mainCreator.SetActive(true);
+        mainMenu.SetActive(false);
+        Menus.currentMenu = mainCreator;
+        Menus.lastMenu = mainMenu;
+        Debug.Log(Menus.currentMenu);
+    }
+
+    // Method that deactivates everything for the creator menu
+    public void DeactivateCreatorMenu()
+    {
+        mainCreator.SetActive(false);
+        mainMenu.SetActive(true);
+        Menus.currentMenu = mainCreator;
+        Menus.lastMenu = mainMenu;
+        Debug.Log(Menus.currentMenu);
+    }
+
+    // Method that activates everything for the multiple choice mode
+    public void ActivateMultipleChoiceMode()
+    {
+        veilLargeWindow.SetActive(true);
+        multipleChoiceCreator.SetActive(true);
+        Menus.currentMenu = multipleChoiceCreator;
+        Menus.lastMenu = mainCreator;
+        Debug.Log(Menus.currentMenu);
+    }
+
+    // Method that deactivates everything for the multiple choice mode
+    public void DeactivateMultipleChoiceMode()
+    {
+        veilLargeWindow.SetActive(false);
+        multipleChoiceCreator.SetActive(false);
+        Menus.currentMenu = mainCreator;
+        Menus.lastMenu = mainMenu;
+    }
+
+    // Method that activates everything for the input mode
+    public void ActivateInputMode()
+    {
+        veilLargeWindow.SetActive(true);
+        inputModeCreator.SetActive(true);
+        Menus.currentMenu = inputModeCreator;
+        Menus.lastMenu = mainCreator;
+    }
+
+    // Method that deactivates everything for the input mode
+    public void DeactivateInputMode()
+    {
+        veilLargeWindow.SetActive(false);
+        inputModeCreator.SetActive(false);
+        Menus.currentMenu = mainCreator;
+        Menus.lastMenu = mainMenu;
+    }
+
+    // Method that activates everything for the exit without saving window
+    public void ActivateExitWithoutSaveWindow()
+    {
+        exitWithoutSavingWindow.SetActive(true);
+        veilSmallWindow.SetActive(true);
+    }
+
+    // Method that deactivates everything for the exit without saving window
+    public void DeactivateExitWithoutSaveWindow()
+    {
+        exitWithoutSavingWindow.SetActive(false);
+        veilSmallWindow.SetActive(false);
     }
 
     // Method activated when clicking on the "Add" button in the creator screen, opens the right exercise creator window
@@ -66,68 +227,67 @@ public class Creator : MonoBehaviour
         if(GameObject.Find("MultipleChoice").GetComponent<Toggle>().isOn == true)
         {
             Debug.Log("Multiple choice is on!");
-            veilLargeWindow.SetActive(true);
-            multipleChoiceCreator.SetActive(true);
-            Menus.currentMenu = multipleChoiceCreator;
+            ActivateMultipleChoiceMode();
         } else {
             Debug.Log("Input mode is on!");
-            veilLargeWindow.SetActive(true);
-            inputModeCreator.SetActive(true);
-            Menus.currentMenu = inputModeCreator;
+            ActivateInputMode();
         }
-        Menus.lastMenu = mainCreator;
     }
 
     // Method that summons the "are you sure you do not want to save" window if something was already done
-    public void ExitWithoutSaving(string nameA, string nameB, string textA, string textB)
+    public void ExitWithoutSaving(bool isEmpty)
     {
         // First check if something was added
-        if(GameObject.Find(nameA).GetComponent<Button>().GetComponentInChildren<TMP_Text>().text != textA || GameObject.Find(nameB).GetComponent<Button>().GetComponentInChildren<TMP_Text>().text != textB)
+        if(isEmpty == true)
         {
+            // Activate the exit without save window
             Debug.Log("Not empty!");
-            exitWithoutSavingWindow.SetActive(true);
-            veilSmallWindow.SetActive(true);
+            ActivateExitWithoutSaveWindow();
         } else {
+            // Everything is empty, so reset the menus
             Debug.Log("Nothing to save!");
             Menus.lastMenu.SetActive(true);
             Menus.currentMenu.SetActive(false);
             veilLargeWindow.SetActive(false);
+
+            // Since this is only used to exit specialized exercises creator, the last menu is always the main creator
+            // The currentMenu does not go to the mainMenu, so that it does not need to be set when returning in the creator menu
+            Menus.currentMenu = mainCreator;
+            Menus.lastMenu = mainMenu;
         }
     }
 
     public void ExitCreator()
     {
-        // First check if something was added
-        ExitWithoutSaving("Add3DModel1", "PreviewQuestion1", "+","");
-        Menus.lastMenu = mainMenu;
-        Menus.currentMenu = mainMenu;
+        // First check if something was added and save this information in a boolean variable
+        bool isEmpty = (GameObject.Find("Add3DModel1").GetComponent<Button>().GetComponentInChildren<TMP_Text>().text != "+" || GameObject.Find("PreviewQuestion1").GetComponent<Button>().GetComponentInChildren<TMP_Text>().text != "");
+        Debug.Log(isEmpty);
+
+        // Call the exit without saving function
+        ExitWithoutSaving(isEmpty);
     }
 
     // Method to navigate from the multiple choice mode back to the main creator
     // For now it only checks if the answers are not filled, ignores the question, can be improved TODO
     public void GetBackFromMultipleChoice()
     {
-        ExitWithoutSaving("AddAnswer1", "AddAnswer2","enter first answer", "enter second answer");
-        Menus.lastMenu = mainMenu;
-        Menus.currentMenu = mainCreator;
+        // First check if something was added and save this information in a boolean variable
+        bool isEmpty = (enterFirstAnswer.text != "" || enterSecondAnswer.text != "" || enterQuestionMultiple.text != "");
+        Debug.Log(isEmpty);
+
+        // Call the exit without saving function
+        ExitWithoutSaving(isEmpty);
     }
 
     // Method to navigate from the input mode back to the main creator
     public void GetBackFromInputMode()
     {
-        if(enterQuestionInput.text == "" && enterAnswerInput.text == "")
-        {
-            // Case nothing typed in
-            mainCreator.SetActive(true);
-            inputModeCreator.SetActive(false);
-            veilLargeWindow.SetActive(false);
-            Debug.Log(enterQuestionInput.text);
-        } else {
-            // Case there is something typed in
-            // Summon the "exit without saving" window
-            exitWithoutSavingWindow.SetActive(true);
-            veilSmallWindow.SetActive(true);
-        }
+        // First check if something was added and save this information in a boolean variable
+        bool isEmpty = (enterQuestionInput.text != "" || enterAnswerInput.text != "");
+        Debug.Log(isEmpty);
+
+        // Call the exit without saving function
+        ExitWithoutSaving(isEmpty);
     }
 
     // Method that saves the question and answer of an input question, for now only creates a debug log
@@ -138,6 +298,7 @@ public class Creator : MonoBehaviour
         if(enterQuestionInput.text != "" && enterAnswerInput.text != "")
         {
             // Case both fields contain characters, disable the error messages
+            // The saving needs to be done here TODO
             Debug.Log(enterQuestionInput.text);
             Debug.Log(enterAnswerInput.text);
             errorNoQuestionInput.gameObject.SetActive(false);
@@ -161,71 +322,18 @@ public class Creator : MonoBehaviour
         }
     }
 
-    // mainCreator;
-    // multipleChoiceCreator;
-    // inputModeCreator;
-
     // Method to exit a exercise creation without saving
     // It is needed to get access to the current menu / window, and delete everything that was entered
     public void ExitWithoutSavingYes()
     {
-        // Case input mode creator
-        if(Menus.currentMenu == inputModeCreator) 
-        {
-            // First delete everything that was entered
-            enterQuestionInput.text = "";
-            enterAnswerInput.text = "";
-
-            // Then it is needed to set the right windows as current menu
-            exitWithoutSavingWindow.SetActive(false);
-            inputModeCreator.SetActive(false);
-            mainCreator.SetActive(true);
-            Menus.lastMenu = mainMenu;
-            Menus.currentMenu = mainCreator;
-
-            // Disable the veil
-            veilLargeWindow.SetActive(false);
-            veilSmallWindow.SetActive(false);
-
-        // Case multiple choice mode creator
-        } else if(Menus.currentMenu == multipleChoiceCreator) {
-
-            // First delete everything that was entered
-            enterQuestionMultiple.text = "";
-
-            // Reset the buttons that preview the answers
-            GameObject.Find("AddAnswer1").GetComponent<Button>().GetComponentInChildren<TMP_Text>().text = "enter first answer";
-            GameObject.Find("AddAnswer2").GetComponent<Button>().GetComponentInChildren<TMP_Text>().text = "enter second answer";
-            GameObject.Find("AddAnswer3").GetComponent<Button>().GetComponentInChildren<TMP_Text>().text = "+";
-            GameObject.Find("AddAnswer4").GetComponent<Button>().GetComponentInChildren<TMP_Text>().text = "";
-            GameObject.Find("AddAnswer5").GetComponent<Button>().GetComponentInChildren<TMP_Text>().text = "";
-
-            // Reset the toggles
-            GameObject.Find("Answer1Correct").GetComponent<Toggle>().isOn = false;
-            GameObject.Find("Answer2Correct").GetComponent<Toggle>().isOn = false;
-            GameObject.Find("Answer3Correct").GetComponent<Toggle>().isOn = false;
-            GameObject.Find("Answer4Correct").GetComponent<Toggle>().isOn = false;
-            GameObject.Find("Answer5Correct").GetComponent<Toggle>().isOn = false;
-
-            // Reset the interactability of buttons
-            GameObject.Find("AddAnswer4").GetComponent<Button>().interactable = false;
-            GameObject.Find("AddAnswer5").GetComponent<Button>().interactable = false;
-
-            // Then it is needed to set the right windows as current menu
-            exitWithoutSavingWindow.SetActive(false);
-            multipleChoiceCreator.SetActive(false);
-            mainCreator.SetActive(true);
-            Debug.Log(Menus.lastMenu + " was the last menu");
-            Debug.Log(Menus.currentMenu + " was the current menu");
-            Menus.lastMenu = mainMenu;
-            Menus.currentMenu = mainCreator;
-
-            // Disable the veil
-            veilLargeWindow.SetActive(false);
-            veilSmallWindow.SetActive(false);
+        Debug.Log("Entered ExitWithoutSavingYes method");
 
         // Case main creator menu is the current menu
-        } else if(Menus.currentMenu == mainCreator) {
+        if(Menus.currentMenu == mainCreator) {
+
+            Debug.Log("the current menu is the main creator");
+            Debug.Log(Menus.currentMenu);
+            Debug.Log(Menus.lastMenu);
 
             // Reset the buttons that preview names of 3D models and currently created questions
             GameObject.Find("Add3DModel1").GetComponent<Button>().GetComponentInChildren<TMP_Text>().text = "+";
@@ -253,15 +361,142 @@ public class Creator : MonoBehaviour
             GameObject.Find("PreviewQuestion4").GetComponent<Button>().interactable = false;
             GameObject.Find("PreviewQuestion5").GetComponent<Button>().interactable = false;
 
-            // Then it is needed to set the right windows as current menu
-            mainCreator.SetActive(false);
-            multipleChoiceCreator.SetActive(false);
-            mainMenu.SetActive(true);
-            Menus.lastMenu = mainMenu;
-            Menus.currentMenu = mainCreator;
+            // Then it is needed to set the right windows as current menu and deactivate / activate the right menus
+            DeactivateCreatorMenu();
+            DeactivateExitWithoutSaveWindow();
 
-            // Disable the veil
-            veilSmallWindow.SetActive(false);
+        // Case input mode creator
+        } else if(Menus.currentMenu == inputModeCreator) {
+
+            Debug.Log("Current Menu is input mode");
+            // First delete everything that was entered
+            enterQuestionInput.text = "";
+            enterAnswerInput.text = "";
+
+            // Then it is needed to set the right windows as current menu and deactivate / activate the right menus
+            DeactivateInputMode();
+            DeactivateExitWithoutSaveWindow();
+
+        // Case multiple choice mode creator
+        } else if(Menus.currentMenu == multipleChoiceCreator) {
+
+            Debug.Log("Current menu is multiple choice");
+
+            // First delete everything that was entered
+            enterQuestionMultiple.text = "";
+
+            // Reset the text that was typed in
+            enterFirstAnswer.text = "";
+            enterSecondAnswer.text = "";
+            enterThirdAnswer.text = "";
+            enterFourthAnswer.text = "";
+            enterFifthAnswer.text = "";
+
+            // Reset the toggles
+            GameObject.Find("Answer1Correct").GetComponent<Toggle>().isOn = false;
+            GameObject.Find("Answer2Correct").GetComponent<Toggle>().isOn = false;
+            GameObject.Find("Answer3Correct").GetComponent<Toggle>().isOn = false;
+            GameObject.Find("Answer4Correct").GetComponent<Toggle>().isOn = false;
+            GameObject.Find("Answer5Correct").GetComponent<Toggle>().isOn = false;
+
+            // Reset the interactability of buttons
+            GameObject.Find("AddAnswer4").GetComponent<Button>().interactable = false;
+            GameObject.Find("AddAnswer5").GetComponent<Button>().interactable = false;
+
+            // Then it is needed to set the right windows as current menu and deactivate / activate the right menus
+            DeactivateMultipleChoiceMode();
+            DeactivateExitWithoutSaveWindow();
         }
     }
+
+    // Method that is executed when a user clicks on the "OK" button that names an exercise. The window is used for all question types, so an if(currentMenu?) is needed.
+    // public void CreateQuestion() 
+    // {
+
+    //     if(Menus.currentMenu == inputModeCreator) 
+    //     {
+    //         CreateInputQuestion();
+    //     }
+    // }
+
+    // // Method that creates an input question
+    // public void CreateInputQuestion()
+    // {
+    //     // Save everything in an empty spot of the array in the exercise collection
+    //     //InputQuestion questionName = new InputQuestion();
+    //     collection.inputQuestions[Menus.currentInputQuestionIndex].exerciseName = Menus.currentExerciseName;
+    //     collection.inputQuestions[Menus.currentInputQuestionIndex].question = enterQuestionInput.text;
+    //     collection.inputQuestions[Menus.currentInputQuestionIndex].answer = enterAnswerInput.text;
+    //     collection.inputQuestions[Menus.currentInputQuestionIndex].name = enterName.text;
+
+    //     // Increment the index so that no two objects have the same name
+    //     Menus.currentInputQuestionIndex = Menus.currentInputQuestionIndex + 1;
+    // }
+
+    // public void CreateMultipleChoiceQuestion() 
+    // {
+    //     // First generate a unique question object name
+    //     //string name = "question" + Menus.currentMultipleChoiceQuestionIndex;
+
+    //     // Create the question object and set its values
+    //     //MultipleChoiceQuestion questionName = new MultipleChoiceQuestion();
+
+    //     // Set the name and the question
+    //     collection.multipleChoiceQuestions[Menus.currentMultipleChoiceQuestionIndex].name = enterName.text;
+    //     collection.multipleChoiceQuestions[Menus.currentMultipleChoiceQuestionIndex].question = enterQuestionMultiple.text;
+
+    //     // Set the number of answers integer, will be helpfull when displaying the question later
+    //     if(GameObject.Find("AddAnswer3").GetComponent<Button>().GetComponentInChildren<TMP_Text>().text == "+") {
+    //         collection.multipleChoiceQuestions[Menus.currentMultipleChoiceQuestionIndex].numberOfAnswers = 2;
+    //     } else if(GameObject.Find("AddAnswer4").GetComponent<Button>().GetComponentInChildren<TMP_Text>().text == "") {
+    //         collection.multipleChoiceQuestions[Menus.currentMultipleChoiceQuestionIndex].numberOfAnswers = 3;
+    //     } else if(GameObject.Find("AddAnswer5").GetComponent<Button>().GetComponentInChildren<TMP_Text>().text == "") {
+    //         collection.multipleChoiceQuestions[Menus.currentMultipleChoiceQuestionIndex].numberOfAnswers = 4;
+    //     } else {
+    //         collection.multipleChoiceQuestions[Menus.currentMultipleChoiceQuestionIndex].numberOfAnswers = 5;
+    //     }
+    //     collection.multipleChoiceQuestions[Menus.currentMultipleChoiceQuestionIndex].answer1 = enterFirstAnswer.text;
+    //     collection.multipleChoiceQuestions[Menus.currentMultipleChoiceQuestionIndex].answer2 = enterSecondAnswer.text;
+    //     collection.multipleChoiceQuestions[Menus.currentMultipleChoiceQuestionIndex].answer3 = enterThirdAnswer.text;
+    //     collection.multipleChoiceQuestions[Menus.currentMultipleChoiceQuestionIndex].answer4 = enterFourthAnswer.text;
+    //     collection.multipleChoiceQuestions[Menus.currentMultipleChoiceQuestionIndex].answer5 = enterFifthAnswer.text;
+    //     collection.multipleChoiceQuestions[Menus.currentMultipleChoiceQuestionIndex].answer1Correct = firstAnswerCorrect.isOn;
+    //     collection.multipleChoiceQuestions[Menus.currentMultipleChoiceQuestionIndex].answer2Correct = secondAnswerCorrect.isOn;
+    //     collection.multipleChoiceQuestions[Menus.currentMultipleChoiceQuestionIndex].answer3Correct = thirdAnswerCorrect.isOn;
+    //     collection.multipleChoiceQuestions[Menus.currentMultipleChoiceQuestionIndex].answer4Correct = fourthAnswerCorrect.isOn;
+    //     collection.multipleChoiceQuestions[Menus.currentMultipleChoiceQuestionIndex].answer5Correct = fifthAnswerCorrect.isOn;
+    // }
+
+    // public void CreateQuestionCollection()
+    // {
+    //     // First create the models collection
+
+    //     // First assign the name that will be the link between the questions and the 3D models
+
+    //     // Add all exercises to the collection
+    //     for(int counter = 0; counter < Menus.currentQuestionIndex - 1; counter = counter + 1)
+    //     {
+    //         // Get the name of the object
+    //         //string questionName = "question" + counter;
+
+    //         // Discover if the current question is an input or a multiple choice question
+    //         if(collection.multipleChoiceQuestions[counter].type == "inputQuestion")
+    //         {
+    //             // Save it in the input question list of the collection
+    //             collection.inputQuestions.append(collection.multipleChoiceQuestions[counter]);
+    //         } else {
+    //             // Save it in the multiple choice question list
+    //             collection.multipleChoiceQuestions.append(collection.multipleChoiceQuestions[counter]);
+    //         }
+    //     }
+
+    //     // Convert the everything to a JSON file
+    //     string json = JsonUtility.ToJson(collection);
+    // }
+
+    // // Create the model collection
+    // public void ModelCollection()
+    // {
+    //     //
+    // }
 }
