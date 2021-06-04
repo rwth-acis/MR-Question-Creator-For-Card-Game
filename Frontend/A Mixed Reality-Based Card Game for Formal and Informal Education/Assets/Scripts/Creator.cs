@@ -11,17 +11,28 @@ static class Menus
     // Save current and last menu for return function
     public static GameObject lastMenu;
     public static GameObject currentMenu;
-    // Save the current index for all question or moddel collection 
+
+    // Save the current index for all question or moddel collection, this is for the end array
+    public static int inputQuestionIndex; // Used to access the right position in the array of the input questions
+    public static int multipleChoiceQuestionIndex; // Used to access the right position in the array of the input questions
+
+    // Save the current index for all question or moddel collection, this is for the arrays before the creation of the end array
     public static int currentInputQuestionIndex; // Used to access the right position in the array of the input questions
     public static int currentMultipleChoiceQuestionIndex; // Used to access the right position in the array of the input questions
-    public static int currentModelCollectionIndex; // Used to access the right position in the array of the 3D model collection
+
     // Save an index and exercise name to be able to link different questions and models together
     public static int currentExerciseIndex; // Used to generate correct exercise names
     public static string currentExerciseName;
-    // public static ExerciseCollection collection;
+
     // Path to the save directory in the back end
     public static string savePath; // Path to the save directory in the back end
     public static string saveIndex;
+
+    // Number used to create new names for files
+    public static int questionNumber;
+    
+    // Set the maximum of questions of each type, and model sets
+    public static int maxNumber = 100;
 }
 
 public class Creator : MonoBehaviour
@@ -72,7 +83,6 @@ public class Creator : MonoBehaviour
     public class InputQuestion
     {
         public string exerciseName;
-        public string type = "InputQuestion";
         public string name;
         public string question;
         public string answer;
@@ -83,7 +93,6 @@ public class Creator : MonoBehaviour
     public class MultipleChoiceQuestion
     {
         public string exerciseName;
-        public string type = "MultipleChoiceQuestion";
         public string name;
         public string question;
         public int numberOfAnswers;
@@ -103,7 +112,7 @@ public class Creator : MonoBehaviour
     // The exercise name is used to link the questions to the 3D models
     // The names are the names of the files that are uploaded by the user
     [Serializable]
-    public class ModelsCollection
+    public class Models
     {
         public string exerciseName;
         public int numberOfModels;
@@ -114,14 +123,39 @@ public class Creator : MonoBehaviour
         public string nameFifthModel;
     }
 
-    // This is the class that groups everything
-    // public class ExerciseCollection
-    // {
-    //     public List<InputQuestion> inputQuestions;
-    //     public List<MultipleChoiceQuestion> multipleChoiceQuestions;
-    //     public List<ModelsCollection> modelCollection;
+    // This is the class that groups everything that is later saved in the json file
+    // There will be a maximum of 100 different models sets, multiple choice questions and input questions
+    public class ExerciseCollection
+    {
+        public int indexInputQuestion = 0;
+        public int indexMultipleChoiceQuestion = 0;
+        public int indexModelQuestion = 0;
+        public InputQuestion[] inputQuestions = new InputQuestion[Menus.maxNumber];
+        public MultipleChoiceQuestion[] multipleChoiceQuestions = new MultipleChoiceQuestion[Menus.maxNumber];
+        public Models[] models = new Models[Menus.maxNumber];
 
-    // }
+    }
+
+    // Array that stores the input questions until they are all created and the user creates the end exercise
+    public class InputQuestionCollection
+    {
+        public InputQuestion[] inputQuestionCollection = new InputQuestion[50];
+
+    }
+
+    // Array that stores the multiple choice questions until they are all created and the user creates the end exercise
+    public class MultipleChoiceCollection
+    {
+        public MultipleChoiceQuestion[] multipleChoiceQuestionCollection = new MultipleChoiceQuestion[50];
+
+    }
+
+    // Array that stores the models until they are all created and the user creates the end exercise
+    public class ModelsCollection
+    {
+        public Models[] modelsCollections = new Models[1];
+
+    }
 
 
     // Start is called before the first frame update
@@ -142,9 +176,9 @@ public class Creator : MonoBehaviour
         Menus.lastMenu = mainMenu;
         Menus.currentMenu = mainCreator;
 
-        // Set the current question index
-        Menus.currentInputQuestionIndex = 0;
-        Menus.currentMultipleChoiceQuestionIndex = 0;
+        // Set the current question and model index
+        Menus.inputQuestionIndex = 0;
+        Menus.multipleChoiceQuestionIndex = 0;
 
         // Set the current exercise index
         Menus.currentExerciseIndex = 0;
@@ -155,6 +189,8 @@ public class Creator : MonoBehaviour
 
         // Initialize the collection
         // Menus.collection = new ExerciseCollection();
+
+        Menus.questionNumber = 0;
     }
 
     // Helper method to get the path to this script file
@@ -184,6 +220,8 @@ public class Creator : MonoBehaviour
     {
         // Set the right exercise name
         Menus.currentExerciseName = "exerciseName" + Menus.currentExerciseIndex;
+        Menus.currentInputQuestionIndex = 0;
+        Menus.currentMultipleChoiceQuestionIndex = 0;
     }
 
     // Method that activates everything for the creator menu
@@ -257,6 +295,20 @@ public class Creator : MonoBehaviour
         veilSmallWindow.SetActive(false);
     }
 
+    // Method that activates everything for the naming window
+    public void ActivateNamingWindow()
+    {
+        enterNameWindow.SetActive(true);
+        veilSmallWindow.SetActive(true);
+    }
+
+    // Method that deactivates everything for the exit without saving window
+    public void DeactivateNamingWindow()
+    {
+        enterNameWindow.SetActive(false);
+        veilSmallWindow.SetActive(false);
+    }
+
     // Method activated when clicking on the "Add" button in the creator screen, opens the right exercise creator window
     public void AddExercise()
     {
@@ -327,37 +379,131 @@ public class Creator : MonoBehaviour
         ExitWithoutSaving(isEmpty);
     }
 
-    // Method that saves the question and answer of an input question, for now only creates a debug log
-    // Is triggered when the user clicks on the "create" button
-    public void SaveInputQuestion()
+    // Method that is activated when a user clicks on the "create" button for the input question
+    public void ProceedToSaveInput()
     {
-        // First check if every information was typed in
+        // Disable both error texts
+        errorNoQuestionInput.gameObject.SetActive(true);
+        errorNoAnswerInput.gameObject.SetActive(true);
+
+        // Case both fields contain characters, disable the error messages
         if(enterQuestionInput.text != "" && enterAnswerInput.text != "")
         {
-            // Case both fields contain characters, disable the error messages
-            // The saving needs to be done here TODO
-            Debug.Log(enterQuestionInput.text);
-            Debug.Log(enterAnswerInput.text);
-            errorNoQuestionInput.gameObject.SetActive(false);
-            errorNoAnswerInput.gameObject.SetActive(false);
+            ActivateNamingWindow();
         } else {
-            // Case question and answer were not typed in, display error messages
-            if(enterQuestionInput.text == "" && enterAnswerInput.text == "") {
+            // If the question is not typed in, display the error messages for the question
+            if(enterQuestionInput.text == "") {
                 errorNoQuestionInput.gameObject.SetActive(true);
-                errorNoAnswerInput.gameObject.SetActive(true);
 
-            // Case question is not typed in, display error message
-            } else if(enterAnswerInput.text == "" && enterQuestionInput.text != "") {
+            // If the answer is not typed in, display the error messages for the answer
+            }
+            if(enterAnswerInput.text == "") {
                 errorNoAnswerInput.gameObject.SetActive(true);
-                errorNoQuestionInput.gameObject.SetActive(false);
-
-            // Case answer is not typed in, display error message
-            } else {
-                errorNoAnswerInput.gameObject.SetActive(false);
-                errorNoQuestionInput.gameObject.SetActive(true);
             }
         }
     }
+
+    // Method that saves the question, answer  and name of an input question when the naming window is displayed and user clicks on the create button
+    public void SaveInputQuestion()
+    {
+        // First enter the information that is already known
+        InputQuestion inputQuestion = new InputQuestion();
+        inputQuestion.question = enterQuestionInput.text;
+        inputQuestion.answer = enterAnswerInput.text;
+
+        // Then check if the name is empty or not
+        if(enterName.text != "")
+        {
+            // Case custom name was entered
+            inputQuestion.name = enterName.text;
+        } else {
+            // Case custom name was not entered, create the new name
+            inputQuestion.name = "Question" + Menus.questionNumber;
+        }
+
+        // Save it in the file
+        // SaveInputQuestionInSaveFile(inputQuestion);
+    }
+
+    // Method that creates the save file
+    // public void CreateSaveFile()
+    // {
+    //     // First create the save file
+    // }
+
+    // Method that extracts all entries out of the json file, then adds the new entry and saves the file again
+    // public void SaveInputQuestionInSaveFile(InputQuestion question)
+    // {
+    //     // First, check if the save file exist or not. If it does not exist, create a file with the initial array size
+    //     if(!File.Exists(Menus.savePath))
+    //     {
+    //     ExerciseCollection oldCollection = new ExerciseCollection();
+    //     oldCollection.indexInputQuestion = 0;
+    //     oldCollection.indexMultipleChoiceQuestion = 0;
+    //     oldCollection.indexModelQuestion = 0;
+    //     oldCollection.inputQuestions[] = new InputQuestion[collection.indexInputQuestion];
+    //     oldCollection.multipleChoiceQuestions[] = new MultipleChoiceQuestion[collection.indexMultipleChoiceQuestion];
+    //     oldCollection.models[] = new Models[collection.indexModelQuestion];
+    //     } else {
+    //         // Extract the written text of the save file
+    //         string oldSave = File.ReadAllText(Menus.savePath); // need to add an encoding
+
+    //         // Convert it to an exercise collection
+    //         ExerciseCollection oldCollection = JsonUtility.FromJson(oldSave);
+        
+    //     }
+
+    //     // Then create the new collection
+    //     ExerciseCollection newCollection = new ExerciseCollection();
+    //     collection.indexInputQuestion = oldCollection.indexInputQuestion + 1;
+    //     collection.indexMultipleChoiceQuestion = oldCollection.indexMultipleChoiceQuestion;
+    //     collection.indexModelQuestion = oldCollection.indexModelQuestion;
+    //     collection.inputQuestions[] = new InputQuestion[collection.indexInputQuestion];
+    //     collection.multipleChoiceQuestions[] = oldCollection.multipleChoiceQuestions[];
+    //     collection.models[] = oldCollection.modelsCollection[];
+
+    //     // Copy the whole array that existed in the input question collection of the old collection
+
+    //     // Copy the new question at the right place in the array
+    //     collection.InputQuestions[collection.indexInputQuestion] = question;
+
+    //     // Convert it to json again
+    //     string newSave = JsonUtility.ToJson(collection);
+
+    //     // Save it in the File again
+    //     File.WriteAllText(Menus.savePath, newSave); 
+
+    //     // Increase the index of the input questions
+    //     collection.indexInputQuestion = collection.indexInputQuestion + 1;
+    // }
+
+    // public void SaveInputQuestionInSaveFile(InputQuestion question)
+    // {
+    //     if(!File.Exists(Menus.savePath + "save5"))
+    //     {
+    //         // Case there is no file, so no data to extract, so create a new exercise collection
+    //         ExerciseCollection oldCollection = new ExerciseCollection();
+    //     } else {
+    //         // Extract the written text of the save file
+    //         string oldSave = File.ReadAllText(Menus.savePath + "save5"); // need to add an encoding
+
+    //         // Convert it to an exercise collection
+    //         ExerciseCollection oldCollection = new ExerciseCollection();
+    //         oldCollection = JsonUtility.FromJson(oldSave);
+    //     }
+
+    //     // Copy the new question at the right place in the array
+    //     oldCollection.InputQuestions[collection.indexInputQuestion] = question;
+
+    //     // Increase the index of the input questions
+    //     oldCollection.indexInputQuestion = collection.indexInputQuestion + 1;
+
+    //     // Convert it to json
+    //     string newSave = JsonUtility.ToJson(oldCollection);
+
+    //     // Save it in the File
+    //     File.WriteAllText(Menus.savePath + "save5", newSave); 
+    // }
 
     // Method to exit a exercise creation without saving
     // It is needed to get access to the current menu / window, and delete everything that was entered
