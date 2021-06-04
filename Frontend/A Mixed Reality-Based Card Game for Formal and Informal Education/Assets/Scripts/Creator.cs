@@ -8,13 +8,20 @@ using TMPro;
 
 static class Menus
 {
+    // Save current and last menu for return function
     public static GameObject lastMenu;
     public static GameObject currentMenu;
+    // Save the current index for all question or moddel collection 
     public static int currentInputQuestionIndex; // Used to access the right position in the array of the input questions
     public static int currentMultipleChoiceQuestionIndex; // Used to access the right position in the array of the input questions
     public static int currentModelCollectionIndex; // Used to access the right position in the array of the 3D model collection
+    // Save an index and exercise name to be able to link different questions and models together
     public static int currentExerciseIndex; // Used to generate correct exercise names
     public static string currentExerciseName;
+    // public static ExerciseCollection collection;
+    // Path to the save directory in the back end
+    public static string savePath; // Path to the save directory in the back end
+    public static string saveIndex;
 }
 
 public class Creator : MonoBehaviour
@@ -56,12 +63,16 @@ public class Creator : MonoBehaviour
     public TextMeshProUGUI errorNoQuestionInput;
     public TextMeshProUGUI errorNoAnswerInput;
 
+    // Define the lists that will contain all exercises
+    public List<InputQuestion> listOfInputExercises;
+    public List<MultipleChoiceQuestion> listOfMultipleChoiceExercises;
+
     // The JSON Serialization for the input questions
     [Serializable]
     public class InputQuestion
     {
         public string exerciseName;
-        public string type = "inputQuestion";
+        public string type = "InputQuestion";
         public string name;
         public string question;
         public string answer;
@@ -72,7 +83,7 @@ public class Creator : MonoBehaviour
     public class MultipleChoiceQuestion
     {
         public string exerciseName;
-        public string type = "multipleChoiceQuestion";
+        public string type = "MultipleChoiceQuestion";
         public string name;
         public string question;
         public int numberOfAnswers;
@@ -104,13 +115,13 @@ public class Creator : MonoBehaviour
     }
 
     // This is the class that groups everything
-    public class ExerciseCollection
-    {
-        public List<InputQuestion> inputQuestions;
-        public List<MultipleChoiceQuestion> multipleChoiceQuestions;
-        public List<ModelsCollection> modelCollection;
+    // public class ExerciseCollection
+    // {
+    //     public List<InputQuestion> inputQuestions;
+    //     public List<MultipleChoiceQuestion> multipleChoiceQuestions;
+    //     public List<ModelsCollection> modelCollection;
 
-    }
+    // }
 
 
     // Start is called before the first frame update
@@ -138,8 +149,34 @@ public class Creator : MonoBehaviour
         // Set the current exercise index
         Menus.currentExerciseIndex = 0;
 
+        // Initialize the save path. This will have to be saved later on
+        string scriptPath = GetCurrentFilePath();
+        Menus.savePath = GetPathToRootDirectory(scriptPath);
+
         // Initialize the collection
-        ExerciseCollection collection = new ExerciseCollection();
+        // Menus.collection = new ExerciseCollection();
+    }
+
+    // Helper method to get the path to this script file
+    string GetCurrentFileName([System.Runtime.CompilerServices.CallerFilePath] string fileName = null)
+    {
+        return fileName;
+    }
+
+    // Method that returns you the path to this script
+    private string GetCurrentFilePath()
+    {
+        string scriptPath = GetCurrentFileName();
+        return scriptPath;
+        
+    }
+
+    // Method that returns you the path to the save directory in the back end
+    private string GetPathToRootDirectory(string scriptPath)
+    {
+        string rootPath = Path.GetFullPath(Path.Combine(scriptPath, @"..\..\..\..\..\"));
+        string rootDirectoryPath = Path.GetFullPath(Path.Combine(rootPath, @"Backend\Save\"));
+        return rootDirectoryPath;
     }
 
     // Method used to enter the creator
@@ -498,5 +535,41 @@ public class Creator : MonoBehaviour
     // public void ModelCollection()
     // {
     //     //
+    // }
+
+    // Method that saves a question
+    // public void SaveAsJson(InputQuestion obj)
+    // {
+    //     // Convert to json
+    //     string json = JsonUtility.ToJson(obj);
+
+    //     //write string to file
+    //     System.IO.File.WriteAllText(Menus.savePath+"SaveQuestion"+Menus.saveIndex, json);
+
+    // }
+
+    // // Method that loads the question and transform it from a json string to a object of the right type
+    // public T LoadObject<T>(string path)
+    // {
+    //     string json =  File.ReadAllText(path);
+    //     string myObject = JsonUtility.FromJson<T>(json);
+    //     return JsonUtility.FromJson<T>(myObject);
+    // }
+
+    // // Test method
+    // public void TestSavingAndLoading()
+    // {
+    //     InputQuestion questionName = new InputQuestion();
+    //     questionName.exerciseName = Menus.currentExerciseName;
+    //     questionName.name = "The first question";
+    //     questionName.question = "What is the first question?";
+    //     questionName.answer = "This one!";
+    //     SaveAsJson(questionName);
+    //     InputQuestion inputquestion = LoadObject<InputQuestion>(Menus.savePath+SaveQuestion+Menus.saveIndex);
+    //     Debug.Log(inputquestion.exerciseName);
+    //     Debug.Log(inputquestion.type);
+    //     Debug.Log(inputquestion.name);
+    //     Debug.Log(inputquestion.question);
+    //     Debug.Log(inputquestion.answer);
     // }
 }
