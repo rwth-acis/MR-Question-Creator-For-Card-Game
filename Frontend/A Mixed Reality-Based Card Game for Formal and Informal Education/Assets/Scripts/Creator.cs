@@ -5,6 +5,7 @@ using UnityEngine.UI;
 using System;
 using System.IO;
 using TMPro;
+using UnityEngine.EventSystems;
 
 // TODO: create a way for users to re-access questions they created through the preview
 // TODO: create the save multiple question method
@@ -33,6 +34,7 @@ static class Menus
 
     // Save an index for the current displayed page of the displayed questions
     public static int currentPage;
+    public static int numberOfPages;
 
     // Path to the save directory in the back end
     public static string savePath; // Path to the save directory in the back end
@@ -40,6 +42,7 @@ static class Menus
 
     // Number used to create new names for files
     public static int questionNumber;
+    public static bool editModeOn;
 
     // The temporary save path
     public static string tempSavePath;
@@ -86,6 +89,14 @@ public class Creator : MonoBehaviour
     public Button previewQuestion3;
     public Button previewQuestion4;
     public Button previewQuestion5;
+    public Button nextEnabled;
+    public Button nextDisabled;
+    public Button previousEnabled;
+    public Button previousDisabled;
+    public Button changeInput;
+    public Button createInput;
+    public Button changeMultipleChoice;
+    public Button createMultipleChoice;
 
     // Define the toggles used in the multiple choice mode
     public Toggle firstAnswerCorrect;
@@ -97,6 +108,7 @@ public class Creator : MonoBehaviour
     // Define the error texts that need to be displayed if an input field is empty
     public TextMeshProUGUI errorNoQuestionInput;
     public TextMeshProUGUI errorNoAnswerInput;
+    public TextMeshProUGUI headingPageNumber;
 
     // Define the lists that will contain all exercises
     public List<InputQuestion> listOfInputExercises;
@@ -106,6 +118,7 @@ public class Creator : MonoBehaviour
     [Serializable]
     public class InputQuestion
     {
+        public string exerciseType = "input question";
         public string exerciseName;
         public string name;
         public string question;
@@ -116,6 +129,7 @@ public class Creator : MonoBehaviour
     [Serializable]
     public class MultipleChoiceQuestion
     {
+        public string exerciseType = "multiple choice question";
         public string exerciseName;
         public string name;
         public string question;
@@ -216,6 +230,8 @@ public class Creator : MonoBehaviour
 
         Menus.questionNumber = 0;
         Menus.currentPage = 1;
+        Menus.numberOfPages = 1;
+        Menus.editModeOn = false;
     }
 
     // Helper method to get the path to this script file
@@ -432,19 +448,72 @@ public class Creator : MonoBehaviour
         }
     }
 
+    // Method that displays the name of the question in the creator menu
+    public void DisplayName(string name)
+    {
+        // Get the name that needs to be displayed in the question preview
+        string displayedName;
+        if(name == "")
+        {
+            displayedName = "empty name";
+        } else {
+            displayedName = name;
+        }
+
+        // Display the name of the question in the creator menu
+        // If it should be displayed on the current page, then display it
+        if((Menus.currentPage - 1) * 5 <= Menus.currentQuestionIndex && Menus.currentQuestionIndex < Menus.currentPage * 5)
+        {
+            // Get the concerned button
+            Button rightButton = GetRightButton(Menus.currentQuestionIndex);
+
+            // Change the name and enable it
+            rightButton.GetComponentInChildren<TMP_Text>().text = displayedName;
+            rightButton.interactable = true;
+        }
+    }
+
+    // Method that returns you the right button given the index
+    public Button GetRightButton(int questionIndex)
+    {
+        int index = questionIndex - (Menus.currentPage - 1) * 5;
+        // Display it at the right place
+        switch(index)
+        {
+            case 0:
+                return previewQuestion1;
+            break;
+            case 1:
+                return previewQuestion2;
+            break;
+            case 2:
+                return previewQuestion3;
+            break;
+            case 3:
+                return previewQuestion4;
+            break;
+            case 4:
+                return previewQuestion5;
+            break;
+            default:
+                return previewQuestion1;
+            break;
+        }
+    }
+
     // Method that returns the right number of the question (used to name the .json files)
-    public string ReturnQuestionIndex()
+    public string ReturnQuestionIndex(int index)
     {
         string number;
-        if(Menus.currentQuestionIndex < 10){
+        if(index < 10){
             // case two zero then the number to have 00X
-            number = "00" + Convert.ToString(Menus.currentQuestionIndex);
-        } else if(Menus.currentQuestionIndex < 100){
+            number = "00" + Convert.ToString(index);
+        } else if(index < 100){
             // Case one zero then the number to have 0XY
-            number = "0" + Convert.ToString(Menus.currentQuestionIndex);
+            number = "0" + Convert.ToString(index);
         } else {
             // Case no zero, only the number to have XYZ
-            number =  Convert.ToString(Menus.currentQuestionIndex);
+            number =  Convert.ToString(index);
         }
         return number;
     }
@@ -473,7 +542,7 @@ public class Creator : MonoBehaviour
 
         // Save it in the temp file (since the path can be changed anytime, we don't want to copy it everytime)
         string json = JsonUtility.ToJson(inputQuestion);
-        string index = ReturnQuestionIndex();
+        string index = ReturnQuestionIndex(Menus.currentQuestionIndex);
         Debug.Log(json);
         Debug.Log(index);
         Debug.Log(Menus.tempSavePath + "Question" + index + ".json");
@@ -481,47 +550,6 @@ public class Creator : MonoBehaviour
 
         // Display the question name in the question preview on the creator menu
         DisplayName(inputQuestion.name);
-        
-        // Increase the current question index by one
-        Menus.currentQuestionIndex = Menus.currentQuestionIndex + 1;
-    }
-
-    // Method that displays the name of the question in the creator menu
-    public void DisplayName(string name)
-    {
-        // Get the name that needs to be displayed in the question preview
-        string displayedName;
-        if(name == "")
-        {
-            displayedName = "empty name";
-        } else {
-            displayedName = name;
-        }
-
-        // Display the name of the question in the creator menu
-        // If it should be displayed on the current page, then display it
-        if((Menus.currentPage - 1) * 5 <= Menus.currentQuestionIndex && Menus.currentQuestionIndex < Menus.currentPage * 5)
-        {
-            // Display it at the right place
-            switch(Menus.currentQuestionIndex)
-            {
-                case 0:
-                    previewQuestion1.GetComponentInChildren<TMP_Text>().text = displayedName;
-                break;
-                case 1:
-                    previewQuestion2.GetComponentInChildren<TMP_Text>().text = displayedName;
-                break;
-                case 2:
-                    previewQuestion3.GetComponentInChildren<TMP_Text>().text = displayedName;
-                break;
-                case 3:
-                    previewQuestion4.GetComponentInChildren<TMP_Text>().text = displayedName;
-                break;
-                case 4:
-                    previewQuestion5.GetComponentInChildren<TMP_Text>().text = displayedName;
-                break;
-            }
-        }
     }
 
     // Method that saves the question, answer and name of an input question when the naming window is displayed and user clicks on the create button
@@ -576,7 +604,7 @@ public class Creator : MonoBehaviour
 
         // Save it in the temp file (since the path can be changed anytime, we don't want to copy it everytime)
         string json = JsonUtility.ToJson(multipleChoiceQuestion);
-        string index = ReturnQuestionIndex();
+        string index = ReturnQuestionIndex(Menus.currentQuestionIndex);
         Debug.Log(json);
         Debug.Log(index);
         Debug.Log(Menus.tempSavePath + "Question" + index + ".json");
@@ -584,9 +612,6 @@ public class Creator : MonoBehaviour
 
         // Display the question name in the question preview on the creator menu
         DisplayName(multipleChoiceQuestion.name);
-        
-        // Increase the current question index by one
-        Menus.currentQuestionIndex = Menus.currentQuestionIndex + 1;
     }
 
     // Method that is activated when a user names a question. Since the window is unique and is used for all questions, the right save method has to be started
@@ -608,7 +633,248 @@ public class Creator : MonoBehaviour
 
         // Deactivate the naming window
         DeactivateNamingWindow();
+
+        // Actualize the number of pages
+        ActualizePageNumber();
+
+        // Enable the right buttons
+        ActualizeButtons();
+
+        // Increase the current question index by one
+        Menus.currentQuestionIndex = Menus.currentQuestionIndex + 1;
     }
+
+    // Method that enable or disable the next and previous buttons of the preview created questions section
+    public void ActualizeButtons()
+    {
+        // Display the right next button
+        if(Menus.currentPage < Menus.numberOfPages)
+        {
+            nextEnabled.gameObject.SetActive(true);
+            nextDisabled.gameObject.SetActive(false);
+        } else {
+            nextEnabled.gameObject.SetActive(false);
+            nextDisabled.gameObject.SetActive(true);
+        }
+
+        // Display the right previous button
+        if(Menus.currentPage > 1){
+            previousEnabled.gameObject.SetActive(true);
+            previousDisabled.gameObject.SetActive(false);
+        } else {
+            previousEnabled.gameObject.SetActive(false);
+            previousDisabled.gameObject.SetActive(true);
+        }
+    }
+
+    // Method that is used to actualize the page number
+    public void ActualizePageNumber()
+    {
+        double value = (double) (Menus.currentQuestionIndex + 1) / (double) 5;
+        Debug.Log(Menus.currentQuestionIndex);
+        Debug.Log(value);
+        Menus.numberOfPages = System.Convert.ToInt32(System.Math.Ceiling(value));
+        Debug.Log(Menus.numberOfPages);
+        if(Menus.numberOfPages > 1){
+            // Case there is more than one page
+            headingPageNumber.text = "Page " + Menus.currentPage + "/" + Menus.numberOfPages;
+        } else {
+            // Case there are no directories, but a page still needs to be displayed
+            headingPageNumber.text = "Page " + Menus.currentPage + "/" + 1;
+        }
+    }
+
+    // Method to get to the next page of previews of questions that were created
+    public void NavigateNext()
+    {
+        // Increase the index of the current page
+        Menus.currentPage = Menus.currentPage + 1;
+
+        // Actualize the heading
+        headingPageNumber.text = "Page " + Menus.currentPage + "/" + Menus.numberOfPages;
+
+        // Enable / Disable the right buttons
+        ActualizeButtons();
+
+        // Actualize the names displayed on the preview buttons
+        PreviewCreatedQuestions();
+    }
+
+    // Method to get to the previous page of previews of questions that were created
+    public void NavigatePrevious()
+    {
+        // Increase the index of the current page
+        Menus.currentPage = Menus.currentPage - 1;
+
+        // Actualize the heading
+        headingPageNumber.text = "Page " + Menus.currentPage + "/" + Menus.numberOfPages;
+
+        // Enable / Disable the right buttons
+        ActualizeButtons();
+
+        // Actualize the names displayed on the preview buttons
+        PreviewCreatedQuestions();
+
+    }
+
+    // Method that displays the right names on the preview buttons
+    public void PreviewCreatedQuestions()
+    {
+        // Get the number of questions that need to be displayed in the preview
+        int numberToDisplay = 0;
+        if(Menus.currentPage != Menus.numberOfPages)
+        {
+            numberToDisplay = 5;
+        } else {
+            numberToDisplay = (Menus.currentQuestionIndex) - (Menus.numberOfPages - 1) * 5;
+        }
+        
+        // Get the first index
+        int firstIndex = (Menus.currentPage - 1) * 5;
+
+        // Display the right exercise names for all exercises that were created and that should be displayed on this page
+        for(int questionNumber = 0; questionNumber < numberToDisplay; questionNumber = questionNumber + 1)
+        {
+            // Get the right name of file
+            string index = ReturnQuestionIndex(firstIndex + questionNumber);
+
+            // Get the right button
+            Button rightButton = GetRightButton(firstIndex + questionNumber);
+
+            string path = Menus.tempSavePath + "Question" + index + ".json";
+
+            // Get the right file, if it was created write "deleted" and disable the button. If it was not created, disable the button and write nothing
+            // Case the file exist, then get its name, and display it
+            if (File.Exists(path))
+            {
+                // Extract the string
+                string json = File.ReadAllText(path);
+
+                // Check what type it is, if input question or multiple choice
+                if(json.Contains("input question") == true)
+                {
+                    // Case input question
+                    InputQuestion question = JsonUtility.FromJson<InputQuestion>(json);
+
+                    // Rename the button
+                    rightButton.GetComponentInChildren<TMP_Text>().text = question.name;
+                    rightButton.interactable = true;
+
+                } else {
+                    // Case multiple choice question
+                    MultipleChoiceQuestion question = JsonUtility.FromJson<MultipleChoiceQuestion>(json);
+
+                    // Rename the button
+                    rightButton.GetComponentInChildren<TMP_Text>().text = question.name;
+                    rightButton.interactable = true;
+                }
+            } else {
+
+                // Rename the button in "deleted"
+                rightButton.GetComponentInChildren<TMP_Text>().text = "deleted";
+                rightButton.interactable = false;
+            }
+        }
+
+        // For the other buttons that should be on this page, disable the buttons
+        for(int buttonNumber = numberToDisplay; buttonNumber < 5; buttonNumber = buttonNumber + 1)
+        {
+            // First get the right button
+            Button rightButton = GetRightButton(firstIndex + buttonNumber);
+
+            // Delete the name of the button and disable it
+            rightButton.GetComponentInChildren<TMP_Text>().text = "";
+            rightButton.interactable = false;
+        }
+    }
+
+    // Method that permitts to enter edit mode again on a certain question that is selected
+    public void EnterEditMode()
+    {
+        // Get the button name
+        string buttonName = EventSystem.current.currentSelectedGameObject.name;
+        Button currentButton = GameObject.Find(buttonName).GetComponent<Button>();
+        Debug.Log(buttonName);
+
+        // Get the name of the file
+        string fileName = GetFileNameFromButtonName(buttonName);
+
+        // Extract the string
+        string json = File.ReadAllText(Menus.tempSavePath + fileName + @"\");
+        //string json = File.ReadAllText(Menus.tempSavePath + fileName);
+
+        // get the Button
+
+        // Check what type it is, if input question or multiple choice
+        if(json.Contains("input question") == true)
+        {
+            // Case input question
+            InputQuestion question = JsonUtility.FromJson<InputQuestion>(json);
+
+            // Open the input mode window, copy the content back in
+            EnableEditModeInput(question);
+
+        } else {
+
+            // Case multiple choice question
+            MultipleChoiceQuestion question = JsonUtility.FromJson<MultipleChoiceQuestion>(json);
+        }
+
+    }
+
+    // Method that enables the edit mode for input
+    public void EnableEditModeInput(InputQuestion question)
+    {
+        // Activate input mode
+        ActivateInputMode();
+
+        // Activate the "change" instead of "create" button
+        changeInput.gameObject.SetActive(true);
+        createInput.gameObject.SetActive(false);
+
+        // Copy the answers that were already set back in
+        enterQuestionInput.text = question.question;
+        enterAnswerInput.text = question.answer;
+        enterName.text = question.name;
+
+    }
+
+    // Method that returns you the name of the save file when giving the button name in
+    public string GetFileNameFromButtonName(string buttonName)
+    {
+        // First get the index inside the page
+        int indexOnPage = 0;
+
+        switch(buttonName)
+        {
+            case "PreviewQuestion1":
+                indexOnPage = 0;
+            break;
+            case "PreviewQuestion2":
+                indexOnPage = 1;
+            break;
+            case "PreviewQuestion3":
+                indexOnPage = 2;
+            break;
+            case "PreviewQuestion4":
+                indexOnPage = 3;
+            break;
+            case "PreviewQuestion5":
+                indexOnPage = 4;
+            break;
+        }
+
+        // Then get the overall Index
+        int index = (Menus.currentPage - 1) * 5 + indexOnPage;
+
+        // Get the question index string that is the ending of the save file
+        string ending = ReturnQuestionIndex(index);
+
+        // Transform that in the file name and return it
+        string name = "Question" + ending + ".json";
+        return name;
+    }
+
 
     // Method that creates the save file
     // public void CreateSaveFile()
