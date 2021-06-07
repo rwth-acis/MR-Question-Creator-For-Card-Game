@@ -11,15 +11,24 @@ using UnityEngine.SceneManagement;
 
 static class Globals
 {
+    // The path of the directory that is currently shown
     public static string currentPath;
+    // The path of the directory that is the root of the directory structure
     public static string rootDirectoryPath;
+    // Current page and number of pages
     public static int currentPage;
     public static int numberOfPages;
+    // Number of directories in the current directory
     public static int numberOfDirectories;
+    // Array of all directories
     public static string[] directoriesArray;
+    // Current depth
     public static int depth;
+    // Flags used for reset or freezing of the menu (to not go two directories deep in one click)
     public static bool flagVariable = true;
     public static bool reset = false;
+    // Path of the selected directory. Used for the creator menu to set the path where to save the questions and 3D models
+    public static string selectedPath;
     //public static Stack<string> parentDirectory = new Stack<string>();
 }
 
@@ -159,7 +168,6 @@ public class BrowsDirectories : MonoBehaviour
     // Method that creates the buttons depending of the directory we are currently in
     public void RenameButtons(string path)
     {
-        // TODO
 
         // Case there are no directories to be displayed
         if(Globals.numberOfDirectories == 0)
@@ -355,10 +363,30 @@ public class BrowsDirectories : MonoBehaviour
         }
     }
 
+    // Here menus and buttons are defined
+    public GameObject mainMenu;
+    public GameObject creatorMenu;
+    public GameObject browsDirectoriesMenu;
+    public GameObject selectButton;
+
     // Method for the back button 
+    // It should change the menu to the previous menu (main menu or creator)
+    // The distinction is done with the fact that the "select" button is enabled or not
     public void Back()
     {
+        // First reset the globals so that everything is reset the next time the user enters the menu
         Globals.reset = true;
+
+        // Then display the right menu
+        if(selectButton.activeSelf == true){
+            creatorMenu.SetActive(true);
+        } else {
+            mainMenu.SetActive(true);
+        }
+        browsDirectoriesMenu.SetActive(false);
+
+        // Disable the select button after exiting
+        selectButton.gameObject.SetActive(false);
     }
     
     // Method that resets the progression when going back to the main menu and back in the brows directories menu
@@ -422,5 +450,36 @@ public class BrowsDirectories : MonoBehaviour
             // Reset the text after you used it
             mainInputField.text = "";
 		}
+    }
+
+    // Define the windows
+    public GameObject proceedSelectionWindow;
+    public GameObject veilSmallWindow;
+
+    // Method that enables the proceed selection window
+    public void EnableProceedSelectionWindow()
+    {
+        proceedSelectionWindow.SetActive(true);
+        veilSmallWindow.SetActive(true);
+    }
+
+    // Method that disable the proceed selection window
+    public void DisableProceedSelectionWindow()
+    {
+        proceedSelectionWindow.SetActive(false);
+        veilSmallWindow.SetActive(false);
+    }
+
+    // Method that enables the "are you sure you want to select that directory?" menu
+    public void SelectDirectory()
+    {
+        // Set the selected path as currentPath
+        Globals.selectedPath = Globals.currentPath;
+
+        // Disable the window
+        DisableProceedSelectionWindow();
+
+        // Get back to the old menu (always creator)
+        Back();
     }
 }

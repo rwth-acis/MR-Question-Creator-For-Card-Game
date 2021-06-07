@@ -148,30 +148,30 @@ public class Json : MonoBehaviour
         //File.WriteAllText(Variables.path, json);
     }
 
-    public void TestReading()
-    {
-        string json = File.ReadAllText(@"C:\Users\Anna\Desktop\RWTH Aachen\8. Semester\Bachelorarbeit\Card Game\MR-Card-Game\Backend\Save\save3.json");
-        InputQuestions questionArray = JsonUtility.FromJson<InputQuestions>(json);
-        bool notEmpty = true;
-        int index = 0;
-        for(int i = 0; i < 10; i = i + 1){
-            InputQuestion question = questionArray[i];
-            Debug.Log("Question name: " + question.name + ", question: " + question.question + ", answer: " + question.answer);
-        }
-        // while(notEmpty == true)
-        // {
-        //     if(questionArray[index] != null)
-        //     {
-        //         InputQuestion question = questionArray[index];
-        //         Debug.Log("Question name: " + question.name + ", question: " + question.question + ", answer: " + question.answer);
-        //         index = index + 1;
-        //     } else {
-        //         notEmpty = false;
-        //     }
-        // }
-        // foreach(InputQuestion question in questionArray)
-        // {
-        //     Debug.Log("Question name: " + question.name + ", question: " + question.question + ", answer: " + question.answer);
-        // }
-    }
+    // public void TestReading()
+    // {
+    //     string json = File.ReadAllText(@"C:\Users\Anna\Desktop\RWTH Aachen\8. Semester\Bachelorarbeit\Card Game\MR-Card-Game\Backend\Save\save3.json");
+    //     InputQuestions questionArray = JsonUtility.FromJson<InputQuestions>(json);
+    //     bool notEmpty = true;
+    //     int index = 0;
+    //     for(int i = 0; i < 10; i = i + 1){
+    //         // InputQuestion question = questionArray[i];
+    //         // Debug.Log("Question name: " + question.name + ", question: " + question.question + ", answer: " + question.answer);
+    //     }
+    //     // while(notEmpty == true)
+    //     // {
+    //     //     if(questionArray[index] != null)
+    //     //     {
+    //     //         InputQuestion question = questionArray[index];
+    //     //         Debug.Log("Question name: " + question.name + ", question: " + question.question + ", answer: " + question.answer);
+    //     //         index = index + 1;
+    //     //     } else {
+    //     //         notEmpty = false;
+    //     //     }
+    //     // }
+    //     // foreach(InputQuestion question in questionArray)
+    //     // {
+    //     //     Debug.Log("Question name: " + question.name + ", question: " + question.question + ", answer: " + question.answer);
+    //     // }
+    // }
 }

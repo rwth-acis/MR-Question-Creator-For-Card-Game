@@ -40,6 +40,7 @@ public class Creator : MonoBehaviour
     // Defining the necessary menus and windows
     public GameObject mainMenu;
     public GameObject mainCreator;
+    public GameObject browsDirectoriesMenu;
     public GameObject multipleChoiceCreator;
     public GameObject inputModeCreator;
     public GameObject enterNameWindow;
@@ -62,6 +63,9 @@ public class Creator : MonoBehaviour
     public TMP_InputField enterFifthAnswer;
     // The name input field, used for all question modes
     public TMP_InputField enterName;
+
+    // Defining the button
+    public Button selectButton;
 
     // Define the toggles used in the multiple choice mode
     public Toggle firstAnswerCorrect;
@@ -590,6 +594,17 @@ public class Creator : MonoBehaviour
             DeactivateMultipleChoiceMode();
             DeactivateExitWithoutSaveWindow();
         }
+    }
+
+    // Method that gives access to the brows directories menu
+    public void SetDirectory()
+    {
+        // First set the selection button of the brows directories menu active
+        selectButton.gameObject.SetActive(true);
+
+        // Then enable / disable the menus
+        mainCreator.SetActive(false);
+        browsDirectoriesMenu.SetActive(true);
     }
 
     // Method that is executed when a user clicks on the "OK" button that names an exercise. The window is used for all question types, so an if(currentMenu?) is needed.
