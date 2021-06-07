@@ -13,6 +13,7 @@ static class Globals
 {
     // The path of the directory that is currently shown
     public static string currentPath;
+    public static string currentPathShorten;
     // The path of the directory that is the root of the directory structure
     public static string rootDirectoryPath;
     // Current page and number of pages
@@ -29,7 +30,7 @@ static class Globals
     public static bool reset = false;
     // Path of the selected directory. Used for the creator menu to set the path where to save the questions and 3D models
     public static string selectedPath;
-    //public static Stack<string> parentDirectory = new Stack<string>();
+    public static string selectedPathShorten;
 }
 
 public class BrowsDirectories : MonoBehaviour
@@ -42,6 +43,7 @@ public class BrowsDirectories : MonoBehaviour
         string rootPath = GetPathToRootDirectory(scriptPath);
         Globals.rootDirectoryPath = rootPath;
         Globals.currentPath = Globals.rootDirectoryPath;
+        Globals.currentPathShorten = "";
         Globals.depth = 1;
 
         // Then I actualize in a function the directories, page numbers, heading
@@ -298,6 +300,7 @@ public class BrowsDirectories : MonoBehaviour
     {
         // First we need to actualize the current path
         Globals.currentPath = Path.GetFullPath(Path.Combine(Globals.currentPath, @"..\"));
+        Globals.currentPathShorten = Path.GetFullPath(Path.Combine(Globals.currentPathShorten, @"..\"));
         
         // Then we can actualize everything
         ActualizeGlobals();
@@ -335,6 +338,7 @@ public class BrowsDirectories : MonoBehaviour
 
             // Actualize the path
             Globals.currentPath = Globals.currentPath + directoryName + @"\";
+            Globals.currentPathShorten = Globals.currentPathShorten + directoryName + @"\";
 
             // Actualize the other globals (directories array, number, page number, etc)
             ActualizeGlobals();
@@ -394,6 +398,7 @@ public class BrowsDirectories : MonoBehaviour
     {
         if(Globals.reset == true){
             Globals.currentPath = Globals.rootDirectoryPath;
+            Globals.currentPathShorten = "";
             Globals.depth = 1;
 
             // Then I actualize in a function the directories, page numbers, heading
@@ -474,6 +479,7 @@ public class BrowsDirectories : MonoBehaviour
     public void SelectDirectory()
     {
         // Set the selected path as currentPath
+        Globals.selectedPathShorten = Globals.currentPathShorten;
         Globals.selectedPath = Globals.currentPath;
 
         // Disable the window

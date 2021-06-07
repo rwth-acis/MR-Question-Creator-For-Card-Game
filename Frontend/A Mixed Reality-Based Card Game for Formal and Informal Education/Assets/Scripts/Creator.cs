@@ -6,6 +6,10 @@ using System;
 using System.IO;
 using TMPro;
 
+// TODO: create a way for users to re-access questions they created through the preview
+// TODO: create the save multiple question method
+// TODO: create the next and previous page methods in the creator menu for the display of exercises
+
 static class Menus
 {
     // Save current and last menu for return function
@@ -16,13 +20,19 @@ static class Menus
     public static int inputQuestionIndex; // Used to access the right position in the array of the input questions
     public static int multipleChoiceQuestionIndex; // Used to access the right position in the array of the input questions
 
-    // Save the current index for all question or moddel collection, this is for the arrays before the creation of the end array
-    public static int currentInputQuestionIndex; // Used to access the right position in the array of the input questions
-    public static int currentMultipleChoiceQuestionIndex; // Used to access the right position in the array of the input questions
+    // // Save the current index for all question or moddel collection, this is for the arrays before the creation of the end array
+    // public static int currentInputQuestionIndex; // Used to access the right position in the array of the input questions
+    // public static int currentMultipleChoiceQuestionIndex; // Used to access the right position in the array of the input questions
 
     // Save an index and exercise name to be able to link different questions and models together
     public static int currentExerciseIndex; // Used to generate correct exercise names
     public static string currentExerciseName;
+
+    // Save an index for the current question
+    public static int currentQuestionIndex;
+
+    // Save an index for the current displayed page of the displayed questions
+    public static int currentPage;
 
     // Path to the save directory in the back end
     public static string savePath; // Path to the save directory in the back end
@@ -30,6 +40,9 @@ static class Menus
 
     // Number used to create new names for files
     public static int questionNumber;
+
+    // The temporary save path
+    public static string tempSavePath;
     
     // Set the maximum of questions of each type, and model sets
     public static int maxNumber = 100;
@@ -63,9 +76,16 @@ public class Creator : MonoBehaviour
     public TMP_InputField enterFifthAnswer;
     // The name input field, used for all question modes
     public TMP_InputField enterName;
+    // The read only input field that displays the current save path
+    public TMP_InputField savePathText;
 
     // Defining the button
     public Button selectButton;
+    public Button previewQuestion1;
+    public Button previewQuestion2;
+    public Button previewQuestion3;
+    public Button previewQuestion4;
+    public Button previewQuestion5;
 
     // Define the toggles used in the multiple choice mode
     public Toggle firstAnswerCorrect;
@@ -189,12 +209,13 @@ public class Creator : MonoBehaviour
 
         // Initialize the save path. This will have to be saved later on
         string scriptPath = GetCurrentFilePath();
-        Menus.savePath = GetPathToRootDirectory(scriptPath);
+        Menus.tempSavePath = GetPathToRootDirectory(scriptPath);
 
         // Initialize the collection
         // Menus.collection = new ExerciseCollection();
 
         Menus.questionNumber = 0;
+        Menus.currentPage = 1;
     }
 
     // Helper method to get the path to this script file
@@ -215,7 +236,7 @@ public class Creator : MonoBehaviour
     private string GetPathToRootDirectory(string scriptPath)
     {
         string rootPath = Path.GetFullPath(Path.Combine(scriptPath, @"..\..\..\..\..\"));
-        string rootDirectoryPath = Path.GetFullPath(Path.Combine(rootPath, @"Backend\Save\"));
+        string rootDirectoryPath = Path.GetFullPath(Path.Combine(rootPath, @"Backend\TempSave\"));
         return rootDirectoryPath;
     }
 
@@ -224,8 +245,11 @@ public class Creator : MonoBehaviour
     {
         // Set the right exercise name
         Menus.currentExerciseName = "exerciseName" + Menus.currentExerciseIndex;
-        Menus.currentInputQuestionIndex = 0;
-        Menus.currentMultipleChoiceQuestionIndex = 0;
+        Menus.currentExerciseIndex = Menus.currentExerciseIndex + 1;
+        // Set the right page as current
+        Menus.currentPage = 1;
+        // Menus.currentInputQuestionIndex = 0;
+        // Menus.currentMultipleChoiceQuestionIndex = 0;
     }
 
     // Method that activates everything for the creator menu
@@ -306,11 +330,12 @@ public class Creator : MonoBehaviour
         veilSmallWindow.SetActive(true);
     }
 
-    // Method that deactivates everything for the exit without saving window
+    // Method that deactivates everything for the exit without saving window and resets the name that was typed in
     public void DeactivateNamingWindow()
     {
         enterNameWindow.SetActive(false);
         veilSmallWindow.SetActive(false);
+        enterName.text = "";
     }
 
     // Method activated when clicking on the "Add" button in the creator screen, opens the right exercise creator window
@@ -407,11 +432,29 @@ public class Creator : MonoBehaviour
         }
     }
 
-    // Method that saves the question, answer  and name of an input question when the naming window is displayed and user clicks on the create button
+    // Method that returns the right number of the question (used to name the .json files)
+    public string ReturnQuestionIndex()
+    {
+        string number;
+        if(Menus.currentQuestionIndex < 10){
+            // case two zero then the number to have 00X
+            number = "00" + Convert.ToString(Menus.currentQuestionIndex);
+        } else if(Menus.currentQuestionIndex < 100){
+            // Case one zero then the number to have 0XY
+            number = "0" + Convert.ToString(Menus.currentQuestionIndex);
+        } else {
+            // Case no zero, only the number to have XYZ
+            number =  Convert.ToString(Menus.currentQuestionIndex);
+        }
+        return number;
+    }
+
+    // Method that saves the question, answer and name of an input question when the naming window is displayed and user clicks on the create button
     public void SaveInputQuestion()
     {
         // First enter the information that is already known
         InputQuestion inputQuestion = new InputQuestion();
+        inputQuestion.exerciseName = Menus.currentExerciseName;
         inputQuestion.question = enterQuestionInput.text;
         inputQuestion.answer = enterAnswerInput.text;
 
@@ -421,12 +464,150 @@ public class Creator : MonoBehaviour
             // Case custom name was entered
             inputQuestion.name = enterName.text;
         } else {
-            // Case custom name was not entered, create the new name
-            inputQuestion.name = "Question" + Menus.questionNumber;
+            // Case custom name was not entered, create an empty name (will not be displayed in the game)
+            inputQuestion.name = "";
+        }
+        Debug.Log(inputQuestion.name);
+        Debug.Log(inputQuestion.question);
+        Debug.Log(inputQuestion.answer);
+
+        // Save it in the temp file (since the path can be changed anytime, we don't want to copy it everytime)
+        string json = JsonUtility.ToJson(inputQuestion);
+        string index = ReturnQuestionIndex();
+        Debug.Log(json);
+        Debug.Log(index);
+        Debug.Log(Menus.tempSavePath + "Question" + index + ".json");
+        File.WriteAllText(Menus.tempSavePath + "Question" + index + ".json", json);
+
+        // Display the question name in the question preview on the creator menu
+        DisplayName(inputQuestion.name);
+        
+        // Increase the current question index by one
+        Menus.currentQuestionIndex = Menus.currentQuestionIndex + 1;
+    }
+
+    // Method that displays the name of the question in the creator menu
+    public void DisplayName(string name)
+    {
+        // Get the name that needs to be displayed in the question preview
+        string displayedName;
+        if(name == "")
+        {
+            displayedName = "empty name";
+        } else {
+            displayedName = name;
         }
 
-        // Save it in the file
-        // SaveInputQuestionInSaveFile(inputQuestion);
+        // Display the name of the question in the creator menu
+        // If it should be displayed on the current page, then display it
+        if((Menus.currentPage - 1) * 5 <= Menus.currentQuestionIndex && Menus.currentQuestionIndex < Menus.currentPage * 5)
+        {
+            // Display it at the right place
+            switch(Menus.currentQuestionIndex)
+            {
+                case 0:
+                    previewQuestion1.GetComponentInChildren<TMP_Text>().text = displayedName;
+                break;
+                case 1:
+                    previewQuestion2.GetComponentInChildren<TMP_Text>().text = displayedName;
+                break;
+                case 2:
+                    previewQuestion3.GetComponentInChildren<TMP_Text>().text = displayedName;
+                break;
+                case 3:
+                    previewQuestion4.GetComponentInChildren<TMP_Text>().text = displayedName;
+                break;
+                case 4:
+                    previewQuestion5.GetComponentInChildren<TMP_Text>().text = displayedName;
+                break;
+            }
+        }
+    }
+
+    // Method that saves the question, answer and name of an input question when the naming window is displayed and user clicks on the create button
+    public void SaveMultipleChoiceQuestion()
+    {
+        // First enter the information that is already known
+        MultipleChoiceQuestion multipleChoiceQuestion = new MultipleChoiceQuestion();
+        multipleChoiceQuestion.exerciseName = Menus.currentExerciseName;
+        multipleChoiceQuestion.question = enterQuestionMultiple.text;
+        multipleChoiceQuestion.answer1 = enterFirstAnswer.text;
+        multipleChoiceQuestion.answer2 = enterSecondAnswer.text;
+
+        // Initialize the number of answers
+        int answerCounter = 2;
+
+        // Set the other answers if they exist. Find the number of existing answers
+        if(multipleChoiceQuestion.answer3 != null)
+        {
+            multipleChoiceQuestion.answer3 = enterThirdAnswer.text;
+            answerCounter = answerCounter + 1;
+        }
+        if(multipleChoiceQuestion.answer4 != null)
+        {
+            multipleChoiceQuestion.answer4 = enterFourthAnswer.text;
+            answerCounter = answerCounter + 1;
+        }
+        if(multipleChoiceQuestion.answer5 != null)
+        {
+            multipleChoiceQuestion.answer5 = enterFifthAnswer.text;
+            answerCounter = answerCounter + 1;
+        }
+        
+        // Set the final number of answers
+        multipleChoiceQuestion.numberOfAnswers = answerCounter;
+
+        // Then check if the name is empty or not
+        if(enterName.text != "")
+        {
+            // Case custom name was entered
+            multipleChoiceQuestion.name = enterName.text;
+        } else {
+            // Case custom name was not entered, create an empty name (will not be displayed in the game)
+            multipleChoiceQuestion.name = "";
+        }
+
+        // Set the toggles on the right values
+        multipleChoiceQuestion.answer1Correct = firstAnswerCorrect.isOn;
+        multipleChoiceQuestion.answer2Correct = secondAnswerCorrect.isOn;
+        multipleChoiceQuestion.answer3Correct = thirdAnswerCorrect.isOn;
+        multipleChoiceQuestion.answer4Correct = fourthAnswerCorrect.isOn;
+        multipleChoiceQuestion.answer5Correct = fifthAnswerCorrect.isOn;
+
+        // Save it in the temp file (since the path can be changed anytime, we don't want to copy it everytime)
+        string json = JsonUtility.ToJson(multipleChoiceQuestion);
+        string index = ReturnQuestionIndex();
+        Debug.Log(json);
+        Debug.Log(index);
+        Debug.Log(Menus.tempSavePath + "Question" + index + ".json");
+        File.WriteAllText(Menus.tempSavePath + "Question" + index + ".json", json);
+
+        // Display the question name in the question preview on the creator menu
+        DisplayName(multipleChoiceQuestion.name);
+        
+        // Increase the current question index by one
+        Menus.currentQuestionIndex = Menus.currentQuestionIndex + 1;
+    }
+
+    // Method that is activated when a user names a question. Since the window is unique and is used for all questions, the right save method has to be started
+    public void SaveQuestion()
+    {
+        // Case it was the input mode creator that was active in the background
+        if(Menus.currentMenu == inputModeCreator){
+            Debug.Log("Input creator was in the background!");
+            SaveInputQuestion();
+            Debug.Log("Save input question was successfully completed!");
+
+        // Case it was the multiple choice creator that was active in the background
+        } else if(Menus.currentMenu == multipleChoiceCreator){
+            SaveMultipleChoiceQuestion();
+        }
+
+        // Then desactivate the current mode and delete everything that was written. For this the method exit without saving YES can be reused.
+        ExitWithoutSavingYes();
+
+        // Deactivate the naming window
+        DeactivateNamingWindow();
     }
 
     // Method that creates the save file
@@ -509,6 +690,13 @@ public class Creator : MonoBehaviour
     //     File.WriteAllText(Menus.savePath + "save5", newSave); 
     // }
 
+    // Method that returns the array of files in a directory
+    static string[] GetFilesArray(string path) 
+    {
+        string[] files = Directory.GetFiles(path, "*", SearchOption.TopDirectoryOnly);
+        return files;
+    }
+
     // Method to exit a exercise creation without saving
     // It is needed to get access to the current menu / window, and delete everything that was entered
     public void ExitWithoutSavingYes()
@@ -551,6 +739,20 @@ public class Creator : MonoBehaviour
             // Then it is needed to set the right windows as current menu and deactivate / activate the right menus
             DeactivateCreatorMenu();
             DeactivateExitWithoutSaveWindow();
+
+            // Reset the selected paths for the saving
+            Globals.selectedPath = "";
+            Globals.selectedPathShorten = "";
+
+            // Reset the input field that displayed the path
+            savePathText.text = "";
+
+            // Delete everything that was in the temporary save file
+            string[] files = GetFilesArray(Menus.tempSavePath);
+            foreach(string file in files)
+            {
+                File.Delete(file);
+            }
 
         // Case input mode creator
         } else if(Menus.currentMenu == inputModeCreator) {
@@ -605,6 +807,13 @@ public class Creator : MonoBehaviour
         // Then enable / disable the menus
         mainCreator.SetActive(false);
         browsDirectoriesMenu.SetActive(true);
+    }
+
+    // Method that gets the selected path (where to save the exercises) from the brows directory script  and actualizes the text that should display it
+    public void ActualizeSavePath()
+    {
+        // Change the text
+        savePathText.text = @"...\" + Globals.selectedPathShorten;
     }
 
     // Method that is executed when a user clicks on the "OK" button that names an exercise. The window is used for all question types, so an if(currentMenu?) is needed.
