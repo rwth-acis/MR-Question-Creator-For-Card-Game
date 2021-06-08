@@ -31,10 +31,68 @@ static class Globals
     // Path of the selected directory. Used for the creator menu to set the path where to save the questions and 3D models
     public static string selectedPath;
     public static string selectedPathShorten;
+
+    // Flag that tells if you are currently in a directory with directories or files. Clicking on a directory should make you go on directory deeper, while clicking on
+    // a question should open the edit mode
+    public static bool theseAreFiles;
 }
 
 public class BrowsDirectories : MonoBehaviour
 {
+    // Here menus and buttons are defined
+    public GameObject mainMenu;
+    public GameObject creatorMenu;
+    public GameObject browsDirectoriesMenu;
+    public GameObject selectButton;
+
+    // Define the input field, the error text and window so that they can get disabled / enabled when needed
+    public TMP_InputField mainInputField; // The input field to create directories
+    public TextMeshProUGUI errorText;
+    public GameObject window;
+    
+    // Define the windows
+    public GameObject proceedSelectionWindow;
+    public GameObject veilSmallWindow;
+
+    // Define an error message that needs to be disabled in the creator menu when a path was selected
+    public TextMeshProUGUI noPathSelected;
+
+    // Define the input field of the creator menu, so that the current path can be loaded in it when editing an existing question
+    public TMP_InputField savePathField;
+    public Button previewQuestion1;
+
+    // The JSON Serialization for the input questions
+    [Serializable]
+    public class InputQuestion
+    {
+        public string exerciseType = "input question";
+        public string exerciseName;
+        public string name;
+        public string question;
+        public string answer;
+    }
+
+    // The JSON Serialization for the multiple choice questions
+    [Serializable]
+    public class MultipleChoiceQuestion
+    {
+        public string exerciseType = "multiple choice question";
+        public string exerciseName;
+        public string name;
+        public string question;
+        public int numberOfAnswers;
+        public string answer1;
+        public string answer2;
+        public string answer3;
+        public string answer4;
+        public string answer5;
+        public bool answer1Correct;
+        public bool answer2Correct;
+        public bool answer3Correct;
+        public bool answer4Correct;
+        public bool answer5Correct;
+    }
+
     // Start is called before the first frame update
     void Start()
     {
@@ -45,6 +103,7 @@ public class BrowsDirectories : MonoBehaviour
         Globals.currentPath = Globals.rootDirectoryPath;
         Globals.currentPathShorten = "";
         Globals.depth = 1;
+        Globals.theseAreFiles = false;
 
         // Then I actualize in a function the directories, page numbers, heading
         ActualizeGlobals();
@@ -117,7 +176,6 @@ public class BrowsDirectories : MonoBehaviour
 
     [SerializeField]
     private Sprite[] switchSprites;
-
     private Image switchImage;
 
     // Disabling or enabling of the buttons
@@ -176,6 +234,31 @@ public class BrowsDirectories : MonoBehaviour
         }
     }
 
+    // Method that extracts the name of the question from the file
+    public string ExtractQuestionName(string path)
+    {
+        // Initialize the question name
+        string questionName = "";
+
+        // Get the string form the file
+        string json = File.ReadAllText(path);
+
+        // Check what type of question it is
+        if(json.Contains("input question") == true)
+        {
+            // Case input question
+            InputQuestion question = JsonUtility.FromJson<InputQuestion>(json);
+            questionName = question.name;
+        } else{
+            // Case multiple choice question
+            MultipleChoiceQuestion question = JsonUtility.FromJson<MultipleChoiceQuestion>(json);
+            questionName = question.name;
+        }
+
+        // Return the question name
+        return questionName;
+    }
+
     // Method that creates the buttons depending of the directory we are currently in
     public void RenameButtons(string path)
     {
@@ -190,6 +273,7 @@ public class BrowsDirectories : MonoBehaviour
             // Case there are files in the folder
             if(numberOfFiles != 0)
             {
+                Globals.theseAreFiles = true;
                 // First rename the buttons that should have button names, check that they are enabled
                 // for that initialize the range of the for loop
 
@@ -211,34 +295,37 @@ public class BrowsDirectories : MonoBehaviour
 
                 for(int currentIndex = initialIndex; currentIndex <= lastIndex; currentIndex = currentIndex + 1)
                 {
-                //each (string dir in Globals.directoriesArray) {
                     string file = filesArray[currentIndex];
                     string lastFileName = Path.GetFileName(file);
+
+                    // Get the question name form the file
+                    string questionName = ExtractQuestionName(file);
+
                     switch (currentFileNumber)
                     {
                         case 1:
                             Button directory1 = GameObject.Find("Directory1").GetComponent<Button>();
-                            directory1.GetComponentInChildren<TMP_Text>().text = lastFileName;
+                            directory1.GetComponentInChildren<TMP_Text>().text = questionName;
                             directory1.interactable = true;
                         break;
                         case 2:
                             Button directory2 = GameObject.Find("Directory2").GetComponent<Button>();
-                            directory2.GetComponentInChildren<TMP_Text>().text = lastFileName;
+                            directory2.GetComponentInChildren<TMP_Text>().text = questionName;
                             directory2.interactable = true;
                         break;
                         case 3:
                             Button directory3 = GameObject.Find("Directory3").GetComponent<Button>();
-                            directory3.GetComponentInChildren<TMP_Text>().text = lastFileName;
+                            directory3.GetComponentInChildren<TMP_Text>().text = questionName;
                             directory3.interactable = true;
                         break;
                         case 4:
                             Button directory4 = GameObject.Find("Directory4").GetComponent<Button>();
-                            directory4.GetComponentInChildren<TMP_Text>().text = lastFileName;
+                            directory4.GetComponentInChildren<TMP_Text>().text = questionName;
                             directory4.interactable = true;
                         break;
                         case 5:
                             Button directory5 = GameObject.Find("Directory5").GetComponent<Button>();
-                            directory5.GetComponentInChildren<TMP_Text>().text = lastFileName;
+                            directory5.GetComponentInChildren<TMP_Text>().text = questionName;
                             directory5.interactable = true;
                         break;
                     }
@@ -297,6 +384,9 @@ public class BrowsDirectories : MonoBehaviour
 
         // Case there is at least one directory, then display the numbers 5*x + 1 to 5*x + 5 (x is number of the page)
         } else {
+            // Directories in here
+            Globals.theseAreFiles = false;
+
             // First rename the buttons that should have button names, check that they are enabled
             // for that initialize the range of the for loop
 
@@ -427,14 +517,16 @@ public class BrowsDirectories : MonoBehaviour
     // Method used to navigate in directories, when clicking on one visible directory
     public void NavigateDirectories()
     {
-        if(Globals.flagVariable == true){
+        // get the name of the button that was pressed and the button
+        string name = EventSystem.current.currentSelectedGameObject.name;
+        Button button = GameObject.Find(name).GetComponent<Button>();
+
+        if(Globals.flagVariable == true && Globals.theseAreFiles == false){
             // Increase the browsing depth
             Globals.depth = Globals.depth + 1;
 
             // Get the name of the directory selected
-            string name = EventSystem.current.currentSelectedGameObject.name;
-            Button button = GameObject.Find(name).GetComponent<Button>();
-            String directory = GameObject.Find(name).GetComponent<Button>().GetComponentInChildren<TMP_Text>().text;
+            string directory = button.GetComponentInChildren<TMP_Text>().text;
 
             // Actualize the path
             Globals.currentPath = Globals.currentPath + directory + @"\";
@@ -446,6 +538,70 @@ public class BrowsDirectories : MonoBehaviour
             RenameButtons(Globals.currentPath);
             StartCoroutine(FreezeCoroutine());
         }
+        if(Globals.flagVariable == true && Globals.theseAreFiles == true)
+        {
+            // Activate the creator menu, deactivate the brows directories menu
+            creatorMenu.SetActive(true);
+            browsDirectoriesMenu.SetActive(false);
+
+            // Set the path to save to that directory
+            savePathField.text = Globals.currentPath;
+            Globals.selectedPath = Globals.currentPath;
+
+            // Get the button and the index
+            string questionName = button.GetComponentInChildren<TMP_Text>().text;
+            int buttonIndex = GetIndexFromButtonName(name);
+
+            // Get the number of the index of the file
+            int fileIndex = (Globals.currentPage - 1) * 5 + buttonIndex;
+
+
+            // Get the current file array
+            string[] filesArray = GetFilesArray(Globals.currentPath);
+
+            // Get the right path to the file
+            string filePath = filesArray[fileIndex];
+            Debug.Log("path to file: " + filePath);
+            Debug.Log("name of the file: " + questionName);
+
+            // Load the selected question in the temp save file
+            File.Copy(filePath, Path.Combine(Menus.tempSavePath, Path.GetFileName(filePath)));
+
+            // Add the name of the exercise to the preview and enable it
+            previewQuestion1.GetComponentInChildren<TMP_Text>().text = questionName;
+            previewQuestion1.interactable = true;
+
+            // Here change the button from "save" to "change"
+
+            // Disable the add button so that no additional question can be created
+        }
+    }
+
+    // Get the index that the button gives
+    public int GetIndexFromButtonName(string buttonName)
+    {
+        // First get the index inside the page
+        int indexOnPage = 0;
+
+        switch(buttonName)
+        {
+            case "PreviewQuestion1":
+                indexOnPage = 0;
+            break;
+            case "PreviewQuestion2":
+                indexOnPage = 1;
+            break;
+            case "PreviewQuestion3":
+                indexOnPage = 2;
+            break;
+            case "PreviewQuestion4":
+                indexOnPage = 3;
+            break;
+            case "PreviewQuestion5":
+                indexOnPage = 4;
+            break;
+        }
+        return indexOnPage;
     }
 
     // Method that actualizes the global variables (when going deeper or shallower in directory structures)
@@ -466,12 +622,6 @@ public class BrowsDirectories : MonoBehaviour
             GameObject.Find("HeadingText").GetComponent<TMP_Text>().text = "Page " + Globals.currentPage + "/" + 1;
         }
     }
-
-    // Here menus and buttons are defined
-    public GameObject mainMenu;
-    public GameObject creatorMenu;
-    public GameObject browsDirectoriesMenu;
-    public GameObject selectButton;
 
     // Method for the back button 
     // It should change the menu to the previous menu (main menu or creator)
@@ -515,11 +665,6 @@ public class BrowsDirectories : MonoBehaviour
         }
     }
 
-    // Define the input field, the error text and window so that they can get disabled / enabled when needed
-    public TMP_InputField mainInputField;
-    public TextMeshProUGUI errorText;
-    public GameObject window;
-
     public void AddDirectory(TMP_InputField input)
     {
         if (input.text.Length > 0) 
@@ -557,10 +702,6 @@ public class BrowsDirectories : MonoBehaviour
 		}
     }
 
-    // Define the windows
-    public GameObject proceedSelectionWindow;
-    public GameObject veilSmallWindow;
-
     // Method that enables the proceed selection window
     public void EnableProceedSelectionWindow()
     {
@@ -574,9 +715,6 @@ public class BrowsDirectories : MonoBehaviour
         proceedSelectionWindow.SetActive(false);
         veilSmallWindow.SetActive(false);
     }
-
-    // Define an error message that needs to be disabled in the creator menu when a path was selected
-    public TextMeshProUGUI noPathSelected;
 
     // Method that disable the "are you sure you want to select that directory?" menu
     public void SelectDirectory()

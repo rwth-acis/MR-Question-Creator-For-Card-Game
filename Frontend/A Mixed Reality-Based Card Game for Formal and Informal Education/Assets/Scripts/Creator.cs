@@ -174,41 +174,6 @@ public class Creator : MonoBehaviour
         public string nameFifthModel;
     }
 
-    // This is the class that groups everything that is later saved in the json file
-    // There will be a maximum of 100 different models sets, multiple choice questions and input questions
-    public class ExerciseCollection
-    {
-        public int indexInputQuestion = 0;
-        public int indexMultipleChoiceQuestion = 0;
-        public int indexModelQuestion = 0;
-        public InputQuestion[] inputQuestions = new InputQuestion[Menus.maxNumber];
-        public MultipleChoiceQuestion[] multipleChoiceQuestions = new MultipleChoiceQuestion[Menus.maxNumber];
-        public Models[] models = new Models[Menus.maxNumber];
-
-    }
-
-    // Array that stores the input questions until they are all created and the user creates the end exercise
-    public class InputQuestionCollection
-    {
-        public InputQuestion[] inputQuestionCollection = new InputQuestion[50];
-
-    }
-
-    // Array that stores the multiple choice questions until they are all created and the user creates the end exercise
-    public class MultipleChoiceCollection
-    {
-        public MultipleChoiceQuestion[] multipleChoiceQuestionCollection = new MultipleChoiceQuestion[50];
-
-    }
-
-    // Array that stores the models until they are all created and the user creates the end exercise
-    public class ModelsCollection
-    {
-        public Models[] modelsCollections = new Models[1];
-
-    }
-
-
     // Start is called before the first frame update
     void Start()
     {
@@ -1290,6 +1255,7 @@ public class Creator : MonoBehaviour
 
             // Exit the creator
             ExitCreator();
+            
         } else {
             // If no question was created, display the no question error message
             if(previewQuestion1.GetComponentInChildren<TMP_Text>().text == "")
