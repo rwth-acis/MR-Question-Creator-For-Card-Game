@@ -42,7 +42,11 @@ static class Menus
 
     // Number used to create new names for files
     public static int questionNumber;
+
+    // Flag for edit mode and the old files name, so that the content gets saved back in the same file
     public static bool editModeOn;
+    public static string editedFileName;
+    public static int editedButtonIndex;
 
     // The temporary save path
     public static string tempSavePath;
@@ -98,6 +102,11 @@ public class Creator : MonoBehaviour
     public Button changeMultipleChoice;
     public Button createMultipleChoice;
 
+    // Buttons that stand before the text inputs of the multiple choice answers
+    public Button enableMultipleChoiceAnswer3;
+    public Button enableMultipleChoiceAnswer4;
+    public Button enableMultipleChoiceAnswer5;
+
     // Define the toggles used in the multiple choice mode
     public Toggle firstAnswerCorrect;
     public Toggle secondAnswerCorrect;
@@ -109,6 +118,8 @@ public class Creator : MonoBehaviour
     public TextMeshProUGUI errorNoQuestionInput;
     public TextMeshProUGUI errorNoAnswerInput;
     public TextMeshProUGUI headingPageNumber;
+    public TextMeshProUGUI errorNoQuestionMultipleChoice;
+    public TextMeshProUGUI errorNotEnoughAnswersMultipleChoice;
 
     // Define the lists that will contain all exercises
     public List<InputQuestion> listOfInputExercises;
@@ -268,6 +279,10 @@ public class Creator : MonoBehaviour
         // Menus.currentMultipleChoiceQuestionIndex = 0;
     }
 
+    // -------------------------------------------------------------------------------------------------------------------
+    // Activate or deactivate menus methods
+    // -------------------------------------------------------------------------------------------------------------------
+
     // Method that activates everything for the creator menu
     public void ActivateCreatorMenu()
     {
@@ -354,9 +369,34 @@ public class Creator : MonoBehaviour
         enterName.text = "";
     }
 
+    // -------------------------------------------------------------------------------------------------------------------
+    // Navigation methods
+    // -------------------------------------------------------------------------------------------------------------------
+
+    // Method that deactivates the naming window when clicked on cancel
+    public void CancelEnterName()
+    {
+        if(Menus.editModeOn == false)
+        {
+            // Case no edit mode, the string can be deleted
+            DeactivateNamingWindow();
+        } else {
+            // Case edit mode is on, need to let the name there
+            enterNameWindow.SetActive(false);
+            veilSmallWindow.SetActive(false);
+        }
+    }
+
     // Method activated when clicking on the "Add" button in the creator screen, opens the right exercise creator window
     public void AddExercise()
     {
+        // Disable edit mode
+        Menus.editModeOn = false;
+
+        // Deactivate the "change" and activate the "create" button
+        changeInput.gameObject.SetActive(false);
+        createInput.gameObject.SetActive(true);
+
         // Enabling the right creator window depending on which mode was chosen
         if(GameObject.Find("MultipleChoice").GetComponent<Toggle>().isOn == true)
         {
@@ -424,266 +464,6 @@ public class Creator : MonoBehaviour
         ExitWithoutSaving(isEmpty);
     }
 
-    // Method that is activated when a user clicks on the "create" button for the input question
-    public void ProceedToSaveInput()
-    {
-        // Disable both error texts
-        errorNoQuestionInput.gameObject.SetActive(true);
-        errorNoAnswerInput.gameObject.SetActive(true);
-
-        // Case both fields contain characters, disable the error messages
-        if(enterQuestionInput.text != "" && enterAnswerInput.text != "")
-        {
-            ActivateNamingWindow();
-        } else {
-            // If the question is not typed in, display the error messages for the question
-            if(enterQuestionInput.text == "") {
-                errorNoQuestionInput.gameObject.SetActive(true);
-
-            // If the answer is not typed in, display the error messages for the answer
-            }
-            if(enterAnswerInput.text == "") {
-                errorNoAnswerInput.gameObject.SetActive(true);
-            }
-        }
-    }
-
-    // Method that displays the name of the question in the creator menu
-    public void DisplayName(string name)
-    {
-        // Get the name that needs to be displayed in the question preview
-        string displayedName;
-        if(name == "")
-        {
-            displayedName = "empty name";
-        } else {
-            displayedName = name;
-        }
-
-        // Display the name of the question in the creator menu
-        // If it should be displayed on the current page, then display it
-        if((Menus.currentPage - 1) * 5 <= Menus.currentQuestionIndex && Menus.currentQuestionIndex < Menus.currentPage * 5)
-        {
-            // Get the concerned button
-            Button rightButton = GetRightButton(Menus.currentQuestionIndex);
-
-            // Change the name and enable it
-            rightButton.GetComponentInChildren<TMP_Text>().text = displayedName;
-            rightButton.interactable = true;
-        }
-    }
-
-    // Method that returns you the right button given the index
-    public Button GetRightButton(int questionIndex)
-    {
-        int index = questionIndex - (Menus.currentPage - 1) * 5;
-        // Display it at the right place
-        switch(index)
-        {
-            case 0:
-                return previewQuestion1;
-            break;
-            case 1:
-                return previewQuestion2;
-            break;
-            case 2:
-                return previewQuestion3;
-            break;
-            case 3:
-                return previewQuestion4;
-            break;
-            case 4:
-                return previewQuestion5;
-            break;
-            default:
-                return previewQuestion1;
-            break;
-        }
-    }
-
-    // Method that returns the right number of the question (used to name the .json files)
-    public string ReturnQuestionIndex(int index)
-    {
-        string number;
-        if(index < 10){
-            // case two zero then the number to have 00X
-            number = "00" + Convert.ToString(index);
-        } else if(index < 100){
-            // Case one zero then the number to have 0XY
-            number = "0" + Convert.ToString(index);
-        } else {
-            // Case no zero, only the number to have XYZ
-            number =  Convert.ToString(index);
-        }
-        return number;
-    }
-
-    // Method that saves the question, answer and name of an input question when the naming window is displayed and user clicks on the create button
-    public void SaveInputQuestion()
-    {
-        // First enter the information that is already known
-        InputQuestion inputQuestion = new InputQuestion();
-        inputQuestion.exerciseName = Menus.currentExerciseName;
-        inputQuestion.question = enterQuestionInput.text;
-        inputQuestion.answer = enterAnswerInput.text;
-
-        // Then check if the name is empty or not
-        if(enterName.text != "")
-        {
-            // Case custom name was entered
-            inputQuestion.name = enterName.text;
-        } else {
-            // Case custom name was not entered, create an empty name (will not be displayed in the game)
-            inputQuestion.name = "";
-        }
-        Debug.Log(inputQuestion.name);
-        Debug.Log(inputQuestion.question);
-        Debug.Log(inputQuestion.answer);
-
-        // Save it in the temp file (since the path can be changed anytime, we don't want to copy it everytime)
-        string json = JsonUtility.ToJson(inputQuestion);
-        string index = ReturnQuestionIndex(Menus.currentQuestionIndex);
-        Debug.Log(json);
-        Debug.Log(index);
-        Debug.Log(Menus.tempSavePath + "Question" + index + ".json");
-        File.WriteAllText(Menus.tempSavePath + "Question" + index + ".json", json);
-
-        // Display the question name in the question preview on the creator menu
-        DisplayName(inputQuestion.name);
-    }
-
-    // Method that saves the question, answer and name of an input question when the naming window is displayed and user clicks on the create button
-    public void SaveMultipleChoiceQuestion()
-    {
-        // First enter the information that is already known
-        MultipleChoiceQuestion multipleChoiceQuestion = new MultipleChoiceQuestion();
-        multipleChoiceQuestion.exerciseName = Menus.currentExerciseName;
-        multipleChoiceQuestion.question = enterQuestionMultiple.text;
-        multipleChoiceQuestion.answer1 = enterFirstAnswer.text;
-        multipleChoiceQuestion.answer2 = enterSecondAnswer.text;
-
-        // Initialize the number of answers
-        int answerCounter = 2;
-
-        // Set the other answers if they exist. Find the number of existing answers
-        if(multipleChoiceQuestion.answer3 != null)
-        {
-            multipleChoiceQuestion.answer3 = enterThirdAnswer.text;
-            answerCounter = answerCounter + 1;
-        }
-        if(multipleChoiceQuestion.answer4 != null)
-        {
-            multipleChoiceQuestion.answer4 = enterFourthAnswer.text;
-            answerCounter = answerCounter + 1;
-        }
-        if(multipleChoiceQuestion.answer5 != null)
-        {
-            multipleChoiceQuestion.answer5 = enterFifthAnswer.text;
-            answerCounter = answerCounter + 1;
-        }
-        
-        // Set the final number of answers
-        multipleChoiceQuestion.numberOfAnswers = answerCounter;
-
-        // Then check if the name is empty or not
-        if(enterName.text != "")
-        {
-            // Case custom name was entered
-            multipleChoiceQuestion.name = enterName.text;
-        } else {
-            // Case custom name was not entered, create an empty name (will not be displayed in the game)
-            multipleChoiceQuestion.name = "";
-        }
-
-        // Set the toggles on the right values
-        multipleChoiceQuestion.answer1Correct = firstAnswerCorrect.isOn;
-        multipleChoiceQuestion.answer2Correct = secondAnswerCorrect.isOn;
-        multipleChoiceQuestion.answer3Correct = thirdAnswerCorrect.isOn;
-        multipleChoiceQuestion.answer4Correct = fourthAnswerCorrect.isOn;
-        multipleChoiceQuestion.answer5Correct = fifthAnswerCorrect.isOn;
-
-        // Save it in the temp file (since the path can be changed anytime, we don't want to copy it everytime)
-        string json = JsonUtility.ToJson(multipleChoiceQuestion);
-        string index = ReturnQuestionIndex(Menus.currentQuestionIndex);
-        Debug.Log(json);
-        Debug.Log(index);
-        Debug.Log(Menus.tempSavePath + "Question" + index + ".json");
-        File.WriteAllText(Menus.tempSavePath + "Question" + index + ".json", json);
-
-        // Display the question name in the question preview on the creator menu
-        DisplayName(multipleChoiceQuestion.name);
-    }
-
-    // Method that is activated when a user names a question. Since the window is unique and is used for all questions, the right save method has to be started
-    public void SaveQuestion()
-    {
-        // Case it was the input mode creator that was active in the background
-        if(Menus.currentMenu == inputModeCreator){
-            Debug.Log("Input creator was in the background!");
-            SaveInputQuestion();
-            Debug.Log("Save input question was successfully completed!");
-
-        // Case it was the multiple choice creator that was active in the background
-        } else if(Menus.currentMenu == multipleChoiceCreator){
-            SaveMultipleChoiceQuestion();
-        }
-
-        // Then desactivate the current mode and delete everything that was written. For this the method exit without saving YES can be reused.
-        ExitWithoutSavingYes();
-
-        // Deactivate the naming window
-        DeactivateNamingWindow();
-
-        // Actualize the number of pages
-        ActualizePageNumber();
-
-        // Enable the right buttons
-        ActualizeButtons();
-
-        // Increase the current question index by one
-        Menus.currentQuestionIndex = Menus.currentQuestionIndex + 1;
-    }
-
-    // Method that enable or disable the next and previous buttons of the preview created questions section
-    public void ActualizeButtons()
-    {
-        // Display the right next button
-        if(Menus.currentPage < Menus.numberOfPages)
-        {
-            nextEnabled.gameObject.SetActive(true);
-            nextDisabled.gameObject.SetActive(false);
-        } else {
-            nextEnabled.gameObject.SetActive(false);
-            nextDisabled.gameObject.SetActive(true);
-        }
-
-        // Display the right previous button
-        if(Menus.currentPage > 1){
-            previousEnabled.gameObject.SetActive(true);
-            previousDisabled.gameObject.SetActive(false);
-        } else {
-            previousEnabled.gameObject.SetActive(false);
-            previousDisabled.gameObject.SetActive(true);
-        }
-    }
-
-    // Method that is used to actualize the page number
-    public void ActualizePageNumber()
-    {
-        double value = (double) (Menus.currentQuestionIndex + 1) / (double) 5;
-        Debug.Log(Menus.currentQuestionIndex);
-        Debug.Log(value);
-        Menus.numberOfPages = System.Convert.ToInt32(System.Math.Ceiling(value));
-        Debug.Log(Menus.numberOfPages);
-        if(Menus.numberOfPages > 1){
-            // Case there is more than one page
-            headingPageNumber.text = "Page " + Menus.currentPage + "/" + Menus.numberOfPages;
-        } else {
-            // Case there are no directories, but a page still needs to be displayed
-            headingPageNumber.text = "Page " + Menus.currentPage + "/" + 1;
-        }
-    }
-
     // Method to get to the next page of previews of questions that were created
     public void NavigateNext()
     {
@@ -714,7 +494,6 @@ public class Creator : MonoBehaviour
 
         // Actualize the names displayed on the preview buttons
         PreviewCreatedQuestions();
-
     }
 
     // Method that displays the right names on the preview buttons
@@ -788,181 +567,6 @@ public class Creator : MonoBehaviour
         }
     }
 
-    // Method that permitts to enter edit mode again on a certain question that is selected
-    public void EnterEditMode()
-    {
-        // Get the button name
-        string buttonName = EventSystem.current.currentSelectedGameObject.name;
-        Button currentButton = GameObject.Find(buttonName).GetComponent<Button>();
-        Debug.Log(buttonName);
-
-        // Get the name of the file
-        string fileName = GetFileNameFromButtonName(buttonName);
-
-        // Extract the string
-        string json = File.ReadAllText(Menus.tempSavePath + fileName + @"\");
-        //string json = File.ReadAllText(Menus.tempSavePath + fileName);
-
-        // get the Button
-
-        // Check what type it is, if input question or multiple choice
-        if(json.Contains("input question") == true)
-        {
-            // Case input question
-            InputQuestion question = JsonUtility.FromJson<InputQuestion>(json);
-
-            // Open the input mode window, copy the content back in
-            EnableEditModeInput(question);
-
-        } else {
-
-            // Case multiple choice question
-            MultipleChoiceQuestion question = JsonUtility.FromJson<MultipleChoiceQuestion>(json);
-        }
-
-    }
-
-    // Method that enables the edit mode for input
-    public void EnableEditModeInput(InputQuestion question)
-    {
-        // Activate input mode
-        ActivateInputMode();
-
-        // Activate the "change" instead of "create" button
-        changeInput.gameObject.SetActive(true);
-        createInput.gameObject.SetActive(false);
-
-        // Copy the answers that were already set back in
-        enterQuestionInput.text = question.question;
-        enterAnswerInput.text = question.answer;
-        enterName.text = question.name;
-
-    }
-
-    // Method that returns you the name of the save file when giving the button name in
-    public string GetFileNameFromButtonName(string buttonName)
-    {
-        // First get the index inside the page
-        int indexOnPage = 0;
-
-        switch(buttonName)
-        {
-            case "PreviewQuestion1":
-                indexOnPage = 0;
-            break;
-            case "PreviewQuestion2":
-                indexOnPage = 1;
-            break;
-            case "PreviewQuestion3":
-                indexOnPage = 2;
-            break;
-            case "PreviewQuestion4":
-                indexOnPage = 3;
-            break;
-            case "PreviewQuestion5":
-                indexOnPage = 4;
-            break;
-        }
-
-        // Then get the overall Index
-        int index = (Menus.currentPage - 1) * 5 + indexOnPage;
-
-        // Get the question index string that is the ending of the save file
-        string ending = ReturnQuestionIndex(index);
-
-        // Transform that in the file name and return it
-        string name = "Question" + ending + ".json";
-        return name;
-    }
-
-
-    // Method that creates the save file
-    // public void CreateSaveFile()
-    // {
-    //     // First create the save file
-    // }
-
-    // Method that extracts all entries out of the json file, then adds the new entry and saves the file again
-    // public void SaveInputQuestionInSaveFile(InputQuestion question)
-    // {
-    //     // First, check if the save file exist or not. If it does not exist, create a file with the initial array size
-    //     if(!File.Exists(Menus.savePath))
-    //     {
-    //     ExerciseCollection oldCollection = new ExerciseCollection();
-    //     oldCollection.indexInputQuestion = 0;
-    //     oldCollection.indexMultipleChoiceQuestion = 0;
-    //     oldCollection.indexModelQuestion = 0;
-    //     oldCollection.inputQuestions[] = new InputQuestion[collection.indexInputQuestion];
-    //     oldCollection.multipleChoiceQuestions[] = new MultipleChoiceQuestion[collection.indexMultipleChoiceQuestion];
-    //     oldCollection.models[] = new Models[collection.indexModelQuestion];
-    //     } else {
-    //         // Extract the written text of the save file
-    //         string oldSave = File.ReadAllText(Menus.savePath); // need to add an encoding
-
-    //         // Convert it to an exercise collection
-    //         ExerciseCollection oldCollection = JsonUtility.FromJson(oldSave);
-        
-    //     }
-
-    //     // Then create the new collection
-    //     ExerciseCollection newCollection = new ExerciseCollection();
-    //     collection.indexInputQuestion = oldCollection.indexInputQuestion + 1;
-    //     collection.indexMultipleChoiceQuestion = oldCollection.indexMultipleChoiceQuestion;
-    //     collection.indexModelQuestion = oldCollection.indexModelQuestion;
-    //     collection.inputQuestions[] = new InputQuestion[collection.indexInputQuestion];
-    //     collection.multipleChoiceQuestions[] = oldCollection.multipleChoiceQuestions[];
-    //     collection.models[] = oldCollection.modelsCollection[];
-
-    //     // Copy the whole array that existed in the input question collection of the old collection
-
-    //     // Copy the new question at the right place in the array
-    //     collection.InputQuestions[collection.indexInputQuestion] = question;
-
-    //     // Convert it to json again
-    //     string newSave = JsonUtility.ToJson(collection);
-
-    //     // Save it in the File again
-    //     File.WriteAllText(Menus.savePath, newSave); 
-
-    //     // Increase the index of the input questions
-    //     collection.indexInputQuestion = collection.indexInputQuestion + 1;
-    // }
-
-    // public void SaveInputQuestionInSaveFile(InputQuestion question)
-    // {
-    //     if(!File.Exists(Menus.savePath + "save5"))
-    //     {
-    //         // Case there is no file, so no data to extract, so create a new exercise collection
-    //         ExerciseCollection oldCollection = new ExerciseCollection();
-    //     } else {
-    //         // Extract the written text of the save file
-    //         string oldSave = File.ReadAllText(Menus.savePath + "save5"); // need to add an encoding
-
-    //         // Convert it to an exercise collection
-    //         ExerciseCollection oldCollection = new ExerciseCollection();
-    //         oldCollection = JsonUtility.FromJson(oldSave);
-    //     }
-
-    //     // Copy the new question at the right place in the array
-    //     oldCollection.InputQuestions[collection.indexInputQuestion] = question;
-
-    //     // Increase the index of the input questions
-    //     oldCollection.indexInputQuestion = collection.indexInputQuestion + 1;
-
-    //     // Convert it to json
-    //     string newSave = JsonUtility.ToJson(oldCollection);
-
-    //     // Save it in the File
-    //     File.WriteAllText(Menus.savePath + "save5", newSave); 
-    // }
-
-    // Method that returns the array of files in a directory
-    static string[] GetFilesArray(string path) 
-    {
-        string[] files = Directory.GetFiles(path, "*", SearchOption.TopDirectoryOnly);
-        return files;
-    }
-
     // Method to exit a exercise creation without saving
     // It is needed to get access to the current menu / window, and delete everything that was entered
     public void ExitWithoutSavingYes()
@@ -1020,21 +624,27 @@ public class Creator : MonoBehaviour
                 File.Delete(file);
             }
 
-        // Case input mode creator
-        } else if(Menus.currentMenu == inputModeCreator) {
+            // Reset the page count and question index
+            Menus.currentPage = 1;
+            Menus.numberOfPages = 1;
+            Menus.currentQuestionIndex = 0;
 
+        // Case input mode creator
+        } else if(Menus.currentMenu == inputModeCreator)
+        {
             Debug.Log("Current Menu is input mode");
             // First delete everything that was entered
             enterQuestionInput.text = "";
             enterAnswerInput.text = "";
+            enterName.text = "";
 
             // Then it is needed to set the right windows as current menu and deactivate / activate the right menus
             DeactivateInputMode();
             DeactivateExitWithoutSaveWindow();
 
         // Case multiple choice mode creator
-        } else if(Menus.currentMenu == multipleChoiceCreator) {
-
+        } else if(Menus.currentMenu == multipleChoiceCreator)
+        {
             Debug.Log("Current menu is multiple choice");
 
             // First delete everything that was entered
@@ -1046,6 +656,17 @@ public class Creator : MonoBehaviour
             enterThirdAnswer.text = "";
             enterFourthAnswer.text = "";
             enterFifthAnswer.text = "";
+            enterName.text = "";
+
+            // Disable the text fields
+            enterThirdAnswer.gameObject.SetActive(false);
+            enterFourthAnswer.gameObject.SetActive(false);
+            enterFifthAnswer.gameObject.SetActive(false);
+
+            // Enable the button
+            enableMultipleChoiceAnswer3.gameObject.SetActive(true);
+            enableMultipleChoiceAnswer4.gameObject.SetActive(true);
+            enableMultipleChoiceAnswer5.gameObject.SetActive(true);
 
             // Reset the toggles
             GameObject.Find("Answer1Correct").GetComponent<Toggle>().isOn = false;
@@ -1054,14 +675,559 @@ public class Creator : MonoBehaviour
             GameObject.Find("Answer4Correct").GetComponent<Toggle>().isOn = false;
             GameObject.Find("Answer5Correct").GetComponent<Toggle>().isOn = false;
 
-            // Reset the interactability of buttons
-            GameObject.Find("AddAnswer4").GetComponent<Button>().interactable = false;
-            GameObject.Find("AddAnswer5").GetComponent<Button>().interactable = false;
-
             // Then it is needed to set the right windows as current menu and deactivate / activate the right menus
             DeactivateMultipleChoiceMode();
             DeactivateExitWithoutSaveWindow();
         }
+    }
+
+    // Method used to add the third multiple choice fields
+    public void AddAnswerPossibility3()
+    {
+        // First, check if the two previous answers have been typed in
+        if(enterFirstAnswer.text != "" && enterSecondAnswer.text != "")
+        {
+            // Case both fields full
+            // Deactivate the button
+            enableMultipleChoiceAnswer3.gameObject.SetActive(false);
+
+            // Enable the hidden text field
+            enterThirdAnswer.gameObject.SetActive(true);
+        }
+    }
+
+    // Method used to add the fourth multiple choice fields
+    public void AddAnswerPossibility4()
+    {
+        // First, check if the two previous answers have been typed in
+        if(enterFirstAnswer.text != "" && enterSecondAnswer.text != "" && enterThirdAnswer.text != "")
+        {
+            // Case all previous fields full
+            // Deactivate the button
+            enableMultipleChoiceAnswer4.gameObject.SetActive(false);
+
+            // Enable the hidden text field
+            enterFourthAnswer.gameObject.SetActive(true);
+
+            // Set the next button as interactable
+            enableMultipleChoiceAnswer5.interactable = true;
+        }
+    }
+    // Method used to add the fifth multiple choice fields
+    public void AddAnswerPossibility5()
+    {
+        // First, check if the two previous answers have been typed in
+        if(enterFirstAnswer.text != "" && enterSecondAnswer.text != "" && enterThirdAnswer.text != ""&& enterFourthAnswer.text != "")
+        {
+            // Case all previous fields full
+            // Deactivate the button
+            enableMultipleChoiceAnswer5.gameObject.SetActive(false);
+
+            // Enable the hidden text field
+            enterFifthAnswer.gameObject.SetActive(true);
+        }
+    }
+
+    // -------------------------------------------------------------------------------------------------------------------
+    // Save methods
+    // -------------------------------------------------------------------------------------------------------------------
+
+    // Method that is activated when a user clicks on the "create" button for the input question
+    public void ProceedToSaveInput()
+    {
+        // Disable both error texts
+        errorNoQuestionInput.gameObject.SetActive(false);
+        errorNoAnswerInput.gameObject.SetActive(false);
+
+        // Case both fields contain characters, no error message needs to be enabled
+        if(enterQuestionInput.text != "" && enterAnswerInput.text != "")
+        {
+            ActivateNamingWindow();
+        } else {
+            // If the question is not typed in, display the error messages for the question
+            if(enterQuestionInput.text == "")
+            {
+                errorNoQuestionInput.gameObject.SetActive(true);
+            }
+            // If the answer is not typed in, display the error messages for the answer
+            if(enterAnswerInput.text == "")
+            {
+                errorNoAnswerInput.gameObject.SetActive(true);
+            }
+        }
+    }
+
+    // Method that is activated when a user clicks on the "create" button for the multiple choice question
+    public void ProceedToSaveMultipleChoice()
+    {
+        // Disable both error texts
+        errorNoQuestionMultipleChoice.gameObject.SetActive(false);
+        errorNotEnoughAnswersMultipleChoice.gameObject.SetActive(false);
+
+        // First get the number of answers entered
+        int numberOfAnswers = 0;
+        if(enterFirstAnswer.text != "")
+        {
+            numberOfAnswers = numberOfAnswers + 1;
+        }
+        if(enterSecondAnswer.text != "")
+        {
+            numberOfAnswers = numberOfAnswers + 1;
+        }
+        if(enterThirdAnswer.text != "")
+        {
+            numberOfAnswers = numberOfAnswers + 1;
+        }
+        if(enterFourthAnswer.text != "")
+        {
+            numberOfAnswers = numberOfAnswers + 1;
+        }
+        if(enterFifthAnswer.text != "")
+        {
+            numberOfAnswers = numberOfAnswers + 1;
+        }
+
+        Debug.Log("question: " + enterQuestionMultiple.text);
+        Debug.Log("number of answers: " + numberOfAnswers);
+
+
+        // Check if the question was entered, and enough answer fields have been filled
+        if(enterQuestionMultiple.text != "" && numberOfAnswers > 1)
+        {
+            // Case all necessary information have been entered, proceed with naming
+            ActivateNamingWindow();
+        } else {
+            // If the question is not typed in, display the error messages for the question
+            if(enterQuestionMultiple.text == "")
+            {
+                errorNoQuestionMultipleChoice.gameObject.SetActive(true);
+            }
+            // If not enough answers have been typed in, display the error messages for the answers
+            if(numberOfAnswers < 2)
+            {
+                errorNotEnoughAnswersMultipleChoice.gameObject.SetActive(true);
+            }
+        }
+    }
+
+    // Method that displays the name of the question in the created question preview in the creator menu
+    public void DisplayName(string name, int index)
+    {
+        // Get the name that needs to be displayed in the question preview
+        string displayedName;
+        if(name == "")
+        {
+            displayedName = "empty name";
+        } else {
+            displayedName = name;
+        }
+
+        // Display the name of the question in the creator menu
+        // If it should be displayed on the current page, then display it
+        if((Menus.currentPage - 1) * 5 <= index && index < Menus.currentPage * 5)
+        {
+            // Get the concerned button
+            Button rightButton = GetRightButton(index);
+
+            // Change the name and enable it
+            rightButton.GetComponentInChildren<TMP_Text>().text = displayedName;
+            rightButton.interactable = true;
+        }
+    }
+
+    // Method that returns you the right button given the index
+    public Button GetRightButton(int questionIndex)
+    {
+        int index = questionIndex - (Menus.currentPage - 1) * 5;
+        // Display it at the right place
+        switch(index)
+        {
+            case 0:
+                return previewQuestion1;
+            break;
+            case 1:
+                return previewQuestion2;
+            break;
+            case 2:
+                return previewQuestion3;
+            break;
+            case 3:
+                return previewQuestion4;
+            break;
+            case 4:
+                return previewQuestion5;
+            break;
+            default:
+                return previewQuestion1;
+            break;
+        }
+    }
+
+    // Method that returns the right number of the question (used to name the .json files)
+    public string ReturnQuestionIndex(int index)
+    {
+        string number;
+        if(index < 10)
+        {
+            // case two zero then the number to have 00X
+            number = "00" + Convert.ToString(index);
+        } else if(index < 100)
+        {
+            // Case one zero then the number to have 0XY
+            number = "0" + Convert.ToString(index);
+        } else {
+            // Case no zero, only the number to have XYZ
+            number =  Convert.ToString(index);
+        }
+        return number;
+    }
+
+    // Method that saves the question, answer and name of an input question when the naming window is displayed and user clicks on the create button
+    public void SaveInputQuestion()
+    {
+        // First enter the information that is already known
+        InputQuestion inputQuestion = new InputQuestion();
+        inputQuestion.exerciseName = Menus.currentExerciseName;
+        inputQuestion.question = enterQuestionInput.text;
+        inputQuestion.answer = enterAnswerInput.text;
+
+        // Then check if the name is empty or not
+        if(enterName.text != "")
+        {
+            // Case custom name was entered
+            inputQuestion.name = enterName.text;
+        } else {
+            // Case custom name was not entered, create an empty name (will not be displayed in the game)
+            inputQuestion.name = "";
+        }
+        Debug.Log(inputQuestion.name);
+        Debug.Log(inputQuestion.question);
+        Debug.Log(inputQuestion.answer);
+
+        // Save it in the temp file (since the path can be changed anytime, we don't want to copy it everytime)
+        string json = JsonUtility.ToJson(inputQuestion);
+
+        // Check if it is a new question or not, and save it at the appropriate place
+        SaveAtTheRightPlace(json);
+
+        // Display the question name in the question preview on the creator menu
+
+        DisplayNameCorrectly(inputQuestion.name);
+    }
+
+    //
+    public void DisplayNameCorrectly(string name)
+    {
+        if(Menus.editModeOn == false)
+        {
+            // Display the new question name at the next place
+            DisplayName(name, Menus.currentQuestionIndex);
+        } else {
+
+            // Display the already existing question name at the old place
+            DisplayName(name, Menus.editedButtonIndex);
+        }
+    }
+
+    // Method that saves a json string at the right place, depending on if edit mode is on or not
+    public void SaveAtTheRightPlace(string json)
+    {
+        // Check if it is a new question or not, and save it at the appropriate place
+        if(Menus.editModeOn == false)
+        {
+            // Case it is a new question
+            string index = ReturnQuestionIndex(Menus.currentQuestionIndex);
+            Debug.Log(json);
+            Debug.Log(index);
+            Debug.Log(Menus.tempSavePath + "Question" + index + ".json");
+            File.WriteAllText(Menus.tempSavePath + "Question" + index + ".json", json);
+        } else {
+
+            // Case it is an already existing question
+            File.WriteAllText(Menus.tempSavePath + Menus.editedFileName, json);
+        }
+    }
+
+    // Method that saves the question, answer and name of an input question when the naming window is displayed and user clicks on the create button
+    public void SaveMultipleChoiceQuestion()
+    {
+        // First enter the information that is already known
+        MultipleChoiceQuestion multipleChoiceQuestion = new MultipleChoiceQuestion();
+        multipleChoiceQuestion.exerciseName = Menus.currentExerciseName;
+        multipleChoiceQuestion.question = enterQuestionMultiple.text;
+        multipleChoiceQuestion.answer1 = enterFirstAnswer.text;
+        multipleChoiceQuestion.answer2 = enterSecondAnswer.text;
+
+        // Initialize the number of answers
+        int answerCounter = 2;
+
+        // Set the other answers if they exist. Find the number of existing answers
+        if(enterThirdAnswer.text != "")
+        {
+            multipleChoiceQuestion.answer3 = enterThirdAnswer.text;
+            answerCounter = answerCounter + 1;
+        }
+        if(enterFourthAnswer.text != "")
+        {
+            multipleChoiceQuestion.answer4 = enterFourthAnswer.text;
+            answerCounter = answerCounter + 1;
+        }
+        if(enterFifthAnswer.text != "")
+        {
+            multipleChoiceQuestion.answer5 = enterFifthAnswer.text;
+            answerCounter = answerCounter + 1;
+        }
+        
+        // Set the final number of answers
+        multipleChoiceQuestion.numberOfAnswers = answerCounter;
+
+        // Then check if the name is empty or not
+        if(enterName.text != "")
+        {
+            // Case custom name was entered
+            multipleChoiceQuestion.name = enterName.text;
+        } else {
+            // Case custom name was not entered, create an empty name (will not be displayed in the game)
+            multipleChoiceQuestion.name = "";
+        }
+
+        // Set the toggles on the right values
+        multipleChoiceQuestion.answer1Correct = firstAnswerCorrect.isOn;
+        multipleChoiceQuestion.answer2Correct = secondAnswerCorrect.isOn;
+        multipleChoiceQuestion.answer3Correct = thirdAnswerCorrect.isOn;
+        multipleChoiceQuestion.answer4Correct = fourthAnswerCorrect.isOn;
+        multipleChoiceQuestion.answer5Correct = fifthAnswerCorrect.isOn;
+
+        // Save it in the temp file (since the path can be changed anytime, we don't want to copy it everytime)
+        string json = JsonUtility.ToJson(multipleChoiceQuestion);
+
+        // Check if it is a new question or not, and save it at the appropriate place
+        SaveAtTheRightPlace(json);
+
+        // Display the question name in the question preview on the creator menu
+        DisplayNameCorrectly(multipleChoiceQuestion.name);
+    }
+
+    // Method that is activated when a user names a question. Since the window is unique and is used for all questions, the right save method has to be started
+    public void SaveQuestion()
+    {
+        // Check what menu is in the background and save the right type of question
+        if(Menus.currentMenu == inputModeCreator)
+        {
+            // Case it was the input mode creator that was active in the background and no edit mode
+            SaveInputQuestion();
+
+        } else if(Menus.currentMenu == multipleChoiceCreator)
+        {
+            // Case it was the multiple choice creator that was active in the background and no edit mode
+            SaveMultipleChoiceQuestion();
+        }
+
+        // Then desactivate the current mode and delete everything that was written. For this the method exit without saving YES can be reused.
+        ExitWithoutSavingYes();
+
+        // Deactivate the naming window
+        DeactivateNamingWindow();
+
+        if(Menus.editModeOn == false)
+        {
+            // Actualize the number of pages
+            ActualizePageNumber();
+
+            // Enable the right buttons
+            ActualizeButtons();
+
+            // Increase the current question index by one
+            Menus.currentQuestionIndex = Menus.currentQuestionIndex + 1;
+        }
+    }
+
+    // Method that enable or disable the next and previous buttons of the preview created questions section
+    public void ActualizeButtons()
+    {
+        // Display the right next button
+        if(Menus.currentPage < Menus.numberOfPages)
+        {
+            nextEnabled.gameObject.SetActive(true);
+            nextDisabled.gameObject.SetActive(false);
+        } else {
+            nextEnabled.gameObject.SetActive(false);
+            nextDisabled.gameObject.SetActive(true);
+        }
+
+        // Display the right previous button
+        if(Menus.currentPage > 1){
+            previousEnabled.gameObject.SetActive(true);
+            previousDisabled.gameObject.SetActive(false);
+        } else {
+            previousEnabled.gameObject.SetActive(false);
+            previousDisabled.gameObject.SetActive(true);
+        }
+    }
+
+    // Method that is used to actualize the page number
+    public void ActualizePageNumber()
+    {
+        double value = (double) (Menus.currentQuestionIndex + 1) / (double) 5;
+        Debug.Log(Menus.currentQuestionIndex);
+        Debug.Log(value);
+        Menus.numberOfPages = System.Convert.ToInt32(System.Math.Ceiling(value));
+        Debug.Log(Menus.numberOfPages);
+        if(Menus.numberOfPages > 1){
+            // Case there is more than one page
+            headingPageNumber.text = "Page " + Menus.currentPage + "/" + Menus.numberOfPages;
+        } else {
+            // Case there are no directories, but a page still needs to be displayed
+            headingPageNumber.text = "Page " + Menus.currentPage + "/" + 1;
+        }
+    }
+
+    // Method that permitts to enter edit mode again on a certain question that is selected
+    public void EnterEditMode()
+    {
+        // Get the button name
+        string buttonName = EventSystem.current.currentSelectedGameObject.name;
+        Button currentButton = GameObject.Find(buttonName).GetComponent<Button>();
+        Debug.Log(buttonName);
+
+        // Get the name of the file
+        string fileName = GetFileNameFromButtonName(buttonName);
+
+        // Write the file name in Menus variable, so that the content gets saved in the same file
+        Menus.editedFileName = fileName;
+
+        // Extract the string
+        //string json = File.ReadAllText(Menus.tempSavePath + fileName + @"\");
+        string json = File.ReadAllText(Menus.tempSavePath + fileName);
+
+        // Enter edit mode
+        Menus.editModeOn = true;
+
+        // Check what type it is, if input question or multiple choice
+        if(json.Contains("input question") == true)
+        {
+            // Case input question
+            InputQuestion question = JsonUtility.FromJson<InputQuestion>(json);
+
+            // Set the current mode to edit mode (so that the naming window does not create a new file)
+
+            // Open the input mode window, copy the content back in
+            EnableEditModeInput(question);
+
+        } else {
+
+            // Case multiple choice question
+            MultipleChoiceQuestion question = JsonUtility.FromJson<MultipleChoiceQuestion>(json);
+            EnableEditModeMultipleChoice(question);
+        }
+    }
+
+    // Method that enables the edit mode for input
+    public void EnableEditModeInput(InputQuestion question)
+    {
+        // Activate input mode
+        ActivateInputMode();
+
+        // Activate the "change" instead of "create" button
+        changeInput.gameObject.SetActive(true);
+        createInput.gameObject.SetActive(false);
+
+        // Copy the answers that were already set back in
+        enterQuestionInput.text = question.question;
+        enterAnswerInput.text = question.answer;
+        enterName.text = question.name;
+    }
+
+    // Method that enables the edit mode for multiple choice question
+    public void EnableEditModeMultipleChoice(MultipleChoiceQuestion question)
+    {
+        // Activate input mode
+        ActivateMultipleChoiceMode();
+
+        // Activate the "change" instead of "create" button
+        changeMultipleChoice.gameObject.SetActive(true);
+        createMultipleChoice.gameObject.SetActive(false);
+
+        // Copy the answers that were already set back in
+        enterName.text = question.name;
+        enterQuestionMultiple.text = question.question;
+        enterFirstAnswer.text = question.answer1;
+        enterSecondAnswer.text = question.answer2;
+        firstAnswerCorrect.isOn = question.answer1Correct;
+        secondAnswerCorrect.isOn = question.answer2Correct;
+
+        // If more than the two first answer have been entered
+        if(question.answer3 != "")
+        {
+            enterThirdAnswer.text = question.answer3;
+            thirdAnswerCorrect.isOn = question.answer3Correct;
+            // Disable the button that is in overlay
+            enableMultipleChoiceAnswer3.gameObject.SetActive(false);
+            // Enable the hidden text field
+            enterThirdAnswer.gameObject.SetActive(true);
+        }
+        if(question.answer4 != "")
+        {
+            enterFourthAnswer.text = question.answer4;
+            fourthAnswerCorrect.isOn = question.answer4Correct;
+            // Disable the button that is in overlay
+            enableMultipleChoiceAnswer4.gameObject.SetActive(false);
+            // Enable the hidden text field
+            enterFourthAnswer.gameObject.SetActive(true);
+        }
+        if(question.answer5 != "")
+        {
+            enterFifthAnswer.text = question.answer5;
+            fifthAnswerCorrect.isOn = question.answer5Correct;
+            // Disable the button that is in overlay
+            enableMultipleChoiceAnswer5.gameObject.SetActive(false);
+            // Enable the hidden text field
+            enterFifthAnswer.gameObject.SetActive(true);
+        }
+    }
+
+    // Method that returns you the name of the save file when giving the button name in
+    public string GetFileNameFromButtonName(string buttonName)
+    {
+        // First get the index inside the page
+        int indexOnPage = 0;
+
+        switch(buttonName)
+        {
+            case "PreviewQuestion1":
+                indexOnPage = 0;
+            break;
+            case "PreviewQuestion2":
+                indexOnPage = 1;
+            break;
+            case "PreviewQuestion3":
+                indexOnPage = 2;
+            break;
+            case "PreviewQuestion4":
+                indexOnPage = 3;
+            break;
+            case "PreviewQuestion5":
+                indexOnPage = 4;
+            break;
+        }
+
+        // Then get the overall Index
+        int index = (Menus.currentPage - 1) * 5 + indexOnPage;
+        Menus.editedButtonIndex = index;
+
+        // Get the question index string that is the ending of the save file
+        string ending = ReturnQuestionIndex(index);
+
+        // Transform that in the file name and return it
+        string name = "Question" + ending + ".json";
+        return name;
+    }
+
+    // Method that returns the array of files in a directory
+    static string[] GetFilesArray(string path) 
+    {
+        string[] files = Directory.GetFiles(path, "*", SearchOption.TopDirectoryOnly);
+        return files;
     }
 
     // Method that gives access to the brows directories menu
@@ -1081,131 +1247,4 @@ public class Creator : MonoBehaviour
         // Change the text
         savePathText.text = @"...\" + Globals.selectedPathShorten;
     }
-
-    // Method that is executed when a user clicks on the "OK" button that names an exercise. The window is used for all question types, so an if(currentMenu?) is needed.
-    // public void CreateQuestion() 
-    // {
-
-    //     if(Menus.currentMenu == inputModeCreator) 
-    //     {
-    //         CreateInputQuestion();
-    //     }
-    // }
-
-    // // Method that creates an input question
-    // public void CreateInputQuestion()
-    // {
-    //     // Save everything in an empty spot of the array in the exercise collection
-    //     //InputQuestion questionName = new InputQuestion();
-    //     collection.inputQuestions[Menus.currentInputQuestionIndex].exerciseName = Menus.currentExerciseName;
-    //     collection.inputQuestions[Menus.currentInputQuestionIndex].question = enterQuestionInput.text;
-    //     collection.inputQuestions[Menus.currentInputQuestionIndex].answer = enterAnswerInput.text;
-    //     collection.inputQuestions[Menus.currentInputQuestionIndex].name = enterName.text;
-
-    //     // Increment the index so that no two objects have the same name
-    //     Menus.currentInputQuestionIndex = Menus.currentInputQuestionIndex + 1;
-    // }
-
-    // public void CreateMultipleChoiceQuestion() 
-    // {
-    //     // First generate a unique question object name
-    //     //string name = "question" + Menus.currentMultipleChoiceQuestionIndex;
-
-    //     // Create the question object and set its values
-    //     //MultipleChoiceQuestion questionName = new MultipleChoiceQuestion();
-
-    //     // Set the name and the question
-    //     collection.multipleChoiceQuestions[Menus.currentMultipleChoiceQuestionIndex].name = enterName.text;
-    //     collection.multipleChoiceQuestions[Menus.currentMultipleChoiceQuestionIndex].question = enterQuestionMultiple.text;
-
-    //     // Set the number of answers integer, will be helpfull when displaying the question later
-    //     if(GameObject.Find("AddAnswer3").GetComponent<Button>().GetComponentInChildren<TMP_Text>().text == "+") {
-    //         collection.multipleChoiceQuestions[Menus.currentMultipleChoiceQuestionIndex].numberOfAnswers = 2;
-    //     } else if(GameObject.Find("AddAnswer4").GetComponent<Button>().GetComponentInChildren<TMP_Text>().text == "") {
-    //         collection.multipleChoiceQuestions[Menus.currentMultipleChoiceQuestionIndex].numberOfAnswers = 3;
-    //     } else if(GameObject.Find("AddAnswer5").GetComponent<Button>().GetComponentInChildren<TMP_Text>().text == "") {
-    //         collection.multipleChoiceQuestions[Menus.currentMultipleChoiceQuestionIndex].numberOfAnswers = 4;
-    //     } else {
-    //         collection.multipleChoiceQuestions[Menus.currentMultipleChoiceQuestionIndex].numberOfAnswers = 5;
-    //     }
-    //     collection.multipleChoiceQuestions[Menus.currentMultipleChoiceQuestionIndex].answer1 = enterFirstAnswer.text;
-    //     collection.multipleChoiceQuestions[Menus.currentMultipleChoiceQuestionIndex].answer2 = enterSecondAnswer.text;
-    //     collection.multipleChoiceQuestions[Menus.currentMultipleChoiceQuestionIndex].answer3 = enterThirdAnswer.text;
-    //     collection.multipleChoiceQuestions[Menus.currentMultipleChoiceQuestionIndex].answer4 = enterFourthAnswer.text;
-    //     collection.multipleChoiceQuestions[Menus.currentMultipleChoiceQuestionIndex].answer5 = enterFifthAnswer.text;
-    //     collection.multipleChoiceQuestions[Menus.currentMultipleChoiceQuestionIndex].answer1Correct = firstAnswerCorrect.isOn;
-    //     collection.multipleChoiceQuestions[Menus.currentMultipleChoiceQuestionIndex].answer2Correct = secondAnswerCorrect.isOn;
-    //     collection.multipleChoiceQuestions[Menus.currentMultipleChoiceQuestionIndex].answer3Correct = thirdAnswerCorrect.isOn;
-    //     collection.multipleChoiceQuestions[Menus.currentMultipleChoiceQuestionIndex].answer4Correct = fourthAnswerCorrect.isOn;
-    //     collection.multipleChoiceQuestions[Menus.currentMultipleChoiceQuestionIndex].answer5Correct = fifthAnswerCorrect.isOn;
-    // }
-
-    // public void CreateQuestionCollection()
-    // {
-    //     // First create the models collection
-
-    //     // First assign the name that will be the link between the questions and the 3D models
-
-    //     // Add all exercises to the collection
-    //     for(int counter = 0; counter < Menus.currentQuestionIndex - 1; counter = counter + 1)
-    //     {
-    //         // Get the name of the object
-    //         //string questionName = "question" + counter;
-
-    //         // Discover if the current question is an input or a multiple choice question
-    //         if(collection.multipleChoiceQuestions[counter].type == "inputQuestion")
-    //         {
-    //             // Save it in the input question list of the collection
-    //             collection.inputQuestions.append(collection.multipleChoiceQuestions[counter]);
-    //         } else {
-    //             // Save it in the multiple choice question list
-    //             collection.multipleChoiceQuestions.append(collection.multipleChoiceQuestions[counter]);
-    //         }
-    //     }
-
-    //     // Convert the everything to a JSON file
-    //     string json = JsonUtility.ToJson(collection);
-    // }
-
-    // // Create the model collection
-    // public void ModelCollection()
-    // {
-    //     //
-    // }
-
-    // Method that saves a question
-    // public void SaveAsJson(InputQuestion obj)
-    // {
-    //     // Convert to json
-    //     string json = JsonUtility.ToJson(obj);
-
-    //     //write string to file
-    //     System.IO.File.WriteAllText(Menus.savePath+"SaveQuestion"+Menus.saveIndex, json);
-
-    // }
-
-    // // Method that loads the question and transform it from a json string to a object of the right type
-    // public T LoadObject<T>(string path)
-    // {
-    //     string json =  File.ReadAllText(path);
-    //     string myObject = JsonUtility.FromJson<T>(json);
-    //     return JsonUtility.FromJson<T>(myObject);
-    // }
-
-    // // Test method
-    // public void TestSavingAndLoading()
-    // {
-    //     InputQuestion questionName = new InputQuestion();
-    //     questionName.exerciseName = Menus.currentExerciseName;
-    //     questionName.name = "The first question";
-    //     questionName.question = "What is the first question?";
-    //     questionName.answer = "This one!";
-    //     SaveAsJson(questionName);
-    //     InputQuestion inputquestion = LoadObject<InputQuestion>(Menus.savePath+SaveQuestion+Menus.saveIndex);
-    //     Debug.Log(inputquestion.exerciseName);
-    //     Debug.Log(inputquestion.type);
-    //     Debug.Log(inputquestion.name);
-    //     Debug.Log(inputquestion.question);
-    //     Debug.Log(inputquestion.answer);
-    // }
 }
