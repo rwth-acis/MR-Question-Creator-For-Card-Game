@@ -120,6 +120,8 @@ public class Creator : MonoBehaviour
     public TextMeshProUGUI headingPageNumber;
     public TextMeshProUGUI errorNoQuestionMultipleChoice;
     public TextMeshProUGUI errorNotEnoughAnswersMultipleChoice;
+    public TextMeshProUGUI noPathSelected;
+    public TextMeshProUGUI noQuestionCreated;
 
     // Define the lists that will contain all exercises
     public List<InputQuestion> listOfInputExercises;
@@ -629,6 +631,10 @@ public class Creator : MonoBehaviour
             Menus.numberOfPages = 1;
             Menus.currentQuestionIndex = 0;
 
+            // Disable the errors
+            noQuestionCreated.gameObject.SetActive(false);
+            noPathSelected.gameObject.SetActive(false);
+
         // Case input mode creator
         } else if(Menus.currentMenu == inputModeCreator)
         {
@@ -1040,6 +1046,9 @@ public class Creator : MonoBehaviour
             // Increase the current question index by one
             Menus.currentQuestionIndex = Menus.currentQuestionIndex + 1;
         }
+
+        // Deactivate the "no question" error message on the creator menu
+        noQuestionCreated.gameObject.SetActive(false);
     }
 
     // Method that enable or disable the next and previous buttons of the preview created questions section
@@ -1246,5 +1255,52 @@ public class Creator : MonoBehaviour
     {
         // Change the text
         savePathText.text = @"...\" + Globals.selectedPathShorten;
+    }
+
+    // Method that copies all files form one directory to another (used for temp save directory and end save directory)
+    public void CopyFromPath1ToPath2(string path1, string path2)
+    {
+        //
+        Directory.CreateDirectory(path2);
+
+        foreach(var file in Directory.GetFiles(path1))
+        {
+            File.Copy(file, Path.Combine(path2, Path.GetFileName(file)));
+        }
+
+        // foreach(var directory in Directory.GetDirectories(sourceDir))
+        // {
+        //     Copy(directory, Path.Combine(targetDir, Path.GetFileName(directory)));
+        // }
+    }
+
+    // Method that saves all questions that the user created in the right folder and does the setup with the 3D models
+    public void SaveQuestionsInEndDirectory()
+    {
+        // First disable the error messages
+        noPathSelected.gameObject.SetActive(false);
+        noQuestionCreated.gameObject.SetActive(false);
+
+        // Check if a path was selected
+        if(Globals.selectedPath != "" && Globals.selectedPath != null && previewQuestion1.GetComponentInChildren<TMP_Text>().text != "")
+        {
+            // Case at least one question was created, and the path is not null
+            // Copy all files form the temp save directory to the end save directory
+            CopyFromPath1ToPath2(Menus.tempSavePath, Globals.selectedPath);
+
+            // Exit the creator
+            ExitCreator();
+        } else {
+            // If no question was created, display the no question error message
+            if(previewQuestion1.GetComponentInChildren<TMP_Text>().text == "")
+            {
+                noQuestionCreated.gameObject.SetActive(true);
+            }
+            // If no path selected, display the no path error message 
+            if(Globals.selectedPath == "" || Globals.selectedPath == null)
+            {
+                noPathSelected.gameObject.SetActive(true);
+            }
+        }
     }
 }

@@ -475,12 +475,18 @@ public class BrowsDirectories : MonoBehaviour
         veilSmallWindow.SetActive(false);
     }
 
-    // Method that enables the "are you sure you want to select that directory?" menu
+    // Define an error message that needs to be disabled in the creator menu when a path was selected
+    public TextMeshProUGUI noPathSelected;
+
+    // Method that disable the "are you sure you want to select that directory?" menu
     public void SelectDirectory()
     {
         // Set the selected path as currentPath
         Globals.selectedPathShorten = Globals.currentPathShorten;
         Globals.selectedPath = Globals.currentPath;
+
+        // Disable the error message
+        noPathSelected.gameObject.SetActive(false);
 
         // Disable the window
         DisableProceedSelectionWindow();
