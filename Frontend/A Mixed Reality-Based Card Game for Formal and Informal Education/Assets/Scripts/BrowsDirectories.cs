@@ -81,14 +81,6 @@ public class BrowsDirectories : MonoBehaviour
         return rootDirectoryPath;
     }
 
-    // Debug Method that I can link to a button to check if the path to the directory structure is right
-    // public void DebugPath()
-    // {
-    //     string scriptPath = GetCurrentFilePath();
-    //     string rootDirectoryPath = GetPathToRootDirectory(scriptPath);
-    //     Debug.Log(rootDirectoryPath);
-    // }
-
     // Method that returns the array of directories in the current directory
     static string[] GetDirectoriesArray() 
     {
@@ -96,11 +88,28 @@ public class BrowsDirectories : MonoBehaviour
         return dirs;
     }
 
+    // Method that returns the array of files in the given path to a directory
+    static string[] GetFilesArray(string path) 
+    {
+        string[] files = Directory.GetFiles(path, "Question*");
+        return files;
+    }
+
     // Method that returns the number of directories in the current directory
     static int GetNumberOfDirectories(string[] dirs) 
     {
        int number = 0;
        foreach (string dir in dirs) {
+           number = number + 1;
+       }
+       return number;
+    }
+
+    // Method that returns the number of directories in the current directory
+    static int GetNumberOfFiles(string[] files) 
+    {
+       int number = 0;
+       foreach (string file in files) {
            number = number + 1;
        }
        return number;
@@ -174,7 +183,101 @@ public class BrowsDirectories : MonoBehaviour
         // Case there are no directories to be displayed
         if(Globals.numberOfDirectories == 0)
         {
-            // For now make all disappear and disable the buttons
+            // Get the array of all files
+            string[] filesArray = GetFilesArray(path);
+            int numberOfFiles = GetNumberOfFiles(filesArray);
+
+            // Case there are files in the folder
+            if(numberOfFiles != 0)
+            {
+                // First rename the buttons that should have button names, check that they are enabled
+                // for that initialize the range of the for loop
+
+                // Value at the begining of the for loop
+                int initialIndex = (Globals.currentPage - 1) * 5;
+                // counter for the assigning of a button
+                int currentFileNumber = 1;
+                // Value for the end of the for loop (for the renaming loop)
+                int lastIndex = 0;
+
+                if(numberOfFiles <= (Globals.currentPage) * 5)
+                {
+                    lastIndex = numberOfFiles - 1;
+                } else {
+                    lastIndex = Globals.currentPage * 5 - 1;
+                }
+                // Last index that would correspond to the fifth directory if the array was full enough (for the deleting names loop)
+                int lastEmptyIndex = (Globals.currentPage) * 5 - 1;
+
+                for(int currentIndex = initialIndex; currentIndex <= lastIndex; currentIndex = currentIndex + 1)
+                {
+                //each (string dir in Globals.directoriesArray) {
+                    string file = filesArray[currentIndex];
+                    string lastFileName = Path.GetFileName(file);
+                    switch (currentFileNumber)
+                    {
+                        case 1:
+                            Button directory1 = GameObject.Find("Directory1").GetComponent<Button>();
+                            directory1.GetComponentInChildren<TMP_Text>().text = lastFileName;
+                            directory1.interactable = true;
+                        break;
+                        case 2:
+                            Button directory2 = GameObject.Find("Directory2").GetComponent<Button>();
+                            directory2.GetComponentInChildren<TMP_Text>().text = lastFileName;
+                            directory2.interactable = true;
+                        break;
+                        case 3:
+                            Button directory3 = GameObject.Find("Directory3").GetComponent<Button>();
+                            directory3.GetComponentInChildren<TMP_Text>().text = lastFileName;
+                            directory3.interactable = true;
+                        break;
+                        case 4:
+                            Button directory4 = GameObject.Find("Directory4").GetComponent<Button>();
+                            directory4.GetComponentInChildren<TMP_Text>().text = lastFileName;
+                            directory4.interactable = true;
+                        break;
+                        case 5:
+                            Button directory5 = GameObject.Find("Directory5").GetComponent<Button>();
+                            directory5.GetComponentInChildren<TMP_Text>().text = lastFileName;
+                            directory5.interactable = true;
+                        break;
+                    }
+                    currentFileNumber = currentFileNumber + 1;
+                }
+                if(currentFileNumber != 5)
+                {
+                    for(int counter = numberOfFiles; counter <= lastEmptyIndex; counter = counter + 1)
+                    {
+                        switch (currentFileNumber)
+                        {
+                            case 2:
+                                Button directory2 = GameObject.Find("Directory2").GetComponent<Button>();
+                                directory2.GetComponentInChildren<TMP_Text>().text = "";
+                                directory2.interactable = false;
+                            break;
+                            case 3:
+                                Button directory3 = GameObject.Find("Directory3").GetComponent<Button>();
+                                directory3.GetComponentInChildren<TMP_Text>().text = "";
+                                directory3.interactable = false;
+                            break;
+                            case 4:
+                                Button directory4 = GameObject.Find("Directory4").GetComponent<Button>();
+                                directory4.GetComponentInChildren<TMP_Text>().text = "";
+                                directory4.interactable = false;
+                            break;
+                            case 5:
+                                Button directory5 = GameObject.Find("Directory5").GetComponent<Button>();
+                                directory5.GetComponentInChildren<TMP_Text>().text = "";
+                                directory5.interactable = false;
+                            break;
+                        }
+                        currentFileNumber = currentFileNumber + 1;
+                    }
+                }
+
+            // Case there are no files in the folder
+            } else {
+
             Button directory1 = GameObject.Find("Directory1").GetComponent<Button>();
             directory1.GetComponentInChildren<TMP_Text>().text = "";
             directory1.interactable = false;
@@ -190,6 +293,7 @@ public class BrowsDirectories : MonoBehaviour
             Button directory5 = GameObject.Find("Directory5").GetComponent<Button>();
             directory5.GetComponentInChildren<TMP_Text>().text = "";
             directory5.interactable = false;
+            }
 
         // Case there is at least one directory, then display the numbers 5*x + 1 to 5*x + 5 (x is number of the page)
         } else {
@@ -220,27 +324,27 @@ public class BrowsDirectories : MonoBehaviour
                 {
                     case 1:
                         Button directory1 = GameObject.Find("Directory1").GetComponent<Button>();
-                        directory1.GetComponentInChildren<TMP_Text>().text = " " + lastFolderName;
+                        directory1.GetComponentInChildren<TMP_Text>().text = lastFolderName;
                         directory1.interactable = true;
                     break;
                     case 2:
                         Button directory2 = GameObject.Find("Directory2").GetComponent<Button>();
-                        directory2.GetComponentInChildren<TMP_Text>().text = " " + lastFolderName;
+                        directory2.GetComponentInChildren<TMP_Text>().text = lastFolderName;
                         directory2.interactable = true;
                     break;
                     case 3:
                         Button directory3 = GameObject.Find("Directory3").GetComponent<Button>();
-                        directory3.GetComponentInChildren<TMP_Text>().text = " " + lastFolderName;
+                        directory3.GetComponentInChildren<TMP_Text>().text = lastFolderName;
                         directory3.interactable = true;
                     break;
                     case 4:
                         Button directory4 = GameObject.Find("Directory4").GetComponent<Button>();
-                        directory4.GetComponentInChildren<TMP_Text>().text = " " + lastFolderName;
+                        directory4.GetComponentInChildren<TMP_Text>().text = lastFolderName;
                         directory4.interactable = true;
                     break;
                     case 5:
                         Button directory5 = GameObject.Find("Directory5").GetComponent<Button>();
-                        directory5.GetComponentInChildren<TMP_Text>().text = " " + lastFolderName;
+                        directory5.GetComponentInChildren<TMP_Text>().text = lastFolderName;
                         directory5.interactable = true;
                     break;
                 }
@@ -332,13 +436,9 @@ public class BrowsDirectories : MonoBehaviour
             Button button = GameObject.Find(name).GetComponent<Button>();
             String directory = GameObject.Find(name).GetComponent<Button>().GetComponentInChildren<TMP_Text>().text;
 
-            // Trim the first character away
-            String directoryName = directory.TrimStart(' ');
-            //Globals.parentDirectory.Push(directoryName);
-
             // Actualize the path
-            Globals.currentPath = Globals.currentPath + directoryName + @"\";
-            Globals.currentPathShorten = Globals.currentPathShorten + directoryName + @"\";
+            Globals.currentPath = Globals.currentPath + directory + @"\";
+            Globals.currentPathShorten = Globals.currentPathShorten + directory + @"\";
 
             // Actualize the other globals (directories array, number, page number, etc)
             ActualizeGlobals();
