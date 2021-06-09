@@ -74,6 +74,7 @@ public class BrowsDirectories : MonoBehaviour
     public Button browsDirectoriesButton;
     public Button saveButton;
     public Button changeButton;
+    public Button createDirectory;
 
     // The JSON Serialization for the input questions
     [Serializable]
@@ -339,6 +340,12 @@ public class BrowsDirectories : MonoBehaviour
         // Case there are no directories to be displayed
         if(Globals.numberOfDirectories == 0)
         {
+            // If select directory mode is on, then enable the select button
+            if(Menus.directorySelection == true)
+            {
+                selectButton.SetActive(true);
+            }
+
             // Get the array of all files
             Globals.fileArray = GetFilesArray();
             int numberOfFiles = GetNumberOfFiles(Globals.fileArray);
@@ -346,6 +353,10 @@ public class BrowsDirectories : MonoBehaviour
             // Case there are files in the folder
             if(numberOfFiles != 0)
             {
+                // Disable the create directory button
+                createDirectory.interactable = false;
+
+                // Set the flag
                 Globals.theseAreFiles = true;
                 // First rename the buttons that should have button names, check that they are enabled
                 // for that initialize the range of the for loop
@@ -457,6 +468,13 @@ public class BrowsDirectories : MonoBehaviour
 
         // Case there is at least one directory, then display the numbers 5*x + 1 to 5*x + 5 (x is number of the page)
         } else {
+
+            // Disable the select directory button
+            selectButton.SetActive(false);
+
+            // Enable the create directory button
+            createDirectory.interactable = true;
+
             // Directories in here
             Globals.theseAreFiles = false;
 
@@ -595,7 +613,8 @@ public class BrowsDirectories : MonoBehaviour
         Button button = GameObject.Find(name).GetComponent<Button>();
         string fileName = button.GetComponentInChildren<TMP_Text>().text;
 
-        if(Globals.flagVariable == true && Globals.theseAreFiles == false){
+        if(Globals.flagVariable == true && Globals.theseAreFiles == false)
+        {
             // Increase the browsing depth
             Globals.depth = Globals.depth + 1;
 
@@ -616,6 +635,7 @@ public class BrowsDirectories : MonoBehaviour
         // Case theses are files, and it was not the description that was clicked
         if(Globals.flagVariable == true && Globals.theseAreFiles == true && fileName != "Description")
         {
+
             // Activate the creator menu, deactivate the brows directories menu
             creatorMenu.SetActive(true);
             browsDirectoriesMenu.SetActive(false);
@@ -844,4 +864,6 @@ public class BrowsDirectories : MonoBehaviour
         // Get back to the old menu (always creator)
         Back();
     }
+
+    // Method that checks if there was a Description.json file in the selected folder
 }

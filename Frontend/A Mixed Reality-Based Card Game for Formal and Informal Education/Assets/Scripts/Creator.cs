@@ -50,6 +50,7 @@ static class Menus
 
     // The temporary save path
     public static string tempSavePath;
+    public static bool directorySelection;
     
     // Set the maximum of questions of each type, and model sets
     public static int maxNumber = 100;
@@ -216,6 +217,7 @@ public class Creator : MonoBehaviour
         Menus.currentPage = 1;
         Menus.numberOfPages = 1;
         Menus.editModeOn = false;
+        Menus.directorySelection = false;
     }
 
     // Helper method to get the path to this script file
@@ -1234,7 +1236,7 @@ public class Creator : MonoBehaviour
     public void SetDirectory()
     {
         // First set the selection button of the brows directories menu active
-        selectButton.gameObject.SetActive(true);
+        Menus.directorySelection = true;
 
         // Then enable / disable the menus
         mainCreator.SetActive(false);
