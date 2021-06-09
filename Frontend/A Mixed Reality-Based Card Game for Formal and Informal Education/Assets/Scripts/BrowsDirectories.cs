@@ -35,6 +35,11 @@ static class Globals
     // Flag that tells if you are currently in a directory with directories or files. Clicking on a directory should make you go on directory deeper, while clicking on
     // a question should open the edit mode
     public static bool theseAreFiles;
+    public static string filePath;
+    public static string fileName;
+    public static string tempSavePath;
+    public static string[] fileArray;
+    public static bool currentlyChangingFile;
 }
 
 public class BrowsDirectories : MonoBehaviour
@@ -58,8 +63,13 @@ public class BrowsDirectories : MonoBehaviour
     public TextMeshProUGUI noPathSelected;
 
     // Define the input field of the creator menu, so that the current path can be loaded in it when editing an existing question
+    // Define the buttons of the main creator that need to be disabled
     public TMP_InputField savePathField;
     public Button previewQuestion1;
+    public Button addButton;
+    public Button browsDirectoriesButton;
+    public Button saveButton;
+    public Button changeButton;
 
     // The JSON Serialization for the input questions
     [Serializable]
@@ -116,6 +126,12 @@ public class BrowsDirectories : MonoBehaviour
 
         // Add a listener to the input field
         mainInputField.onEndEdit.AddListener(delegate{AddDirectory(mainInputField);});
+
+        // Initialize the temp save path. This will have to be saved later on
+        Globals.tempSavePath = GetPathToTempSave(scriptPath);
+
+        // Initialize the flag of changing file
+        Globals.currentlyChangingFile = false;
     }
 
     // Helper method to get the path to this script file
@@ -137,6 +153,14 @@ public class BrowsDirectories : MonoBehaviour
     {
         string rootPath = Path.GetFullPath(Path.Combine(scriptPath, @"..\..\..\..\..\"));
         string rootDirectoryPath = Path.GetFullPath(Path.Combine(rootPath, @"Backend\Directories\"));
+        return rootDirectoryPath;
+    }
+
+    // Method that returns you the path to the temp save folder in the back end
+    private string GetPathToTempSave(string scriptPath)
+    {
+        string rootPath = Path.GetFullPath(Path.Combine(scriptPath, @"..\..\..\..\..\"));
+        string rootDirectoryPath = Path.GetFullPath(Path.Combine(rootPath, @"Backend\TempSave\"));
         return rootDirectoryPath;
     }
 
@@ -267,8 +291,8 @@ public class BrowsDirectories : MonoBehaviour
         if(Globals.numberOfDirectories == 0)
         {
             // Get the array of all files
-            string[] filesArray = GetFilesArray(path);
-            int numberOfFiles = GetNumberOfFiles(filesArray);
+            Globals.fileArray = GetFilesArray(path);
+            int numberOfFiles = GetNumberOfFiles(Globals.fileArray);
 
             // Case there are files in the folder
             if(numberOfFiles != 0)
@@ -295,7 +319,7 @@ public class BrowsDirectories : MonoBehaviour
 
                 for(int currentIndex = initialIndex; currentIndex <= lastIndex; currentIndex = currentIndex + 1)
                 {
-                    string file = filesArray[currentIndex];
+                    string file = Globals.fileArray[currentIndex];
                     string lastFileName = Path.GetFileName(file);
 
                     // Get the question name form the file
@@ -552,28 +576,37 @@ public class BrowsDirectories : MonoBehaviour
             string questionName = button.GetComponentInChildren<TMP_Text>().text;
             int buttonIndex = GetIndexFromButtonName(name);
 
+            Debug.Log("Current button index : " + buttonIndex);
+
             // Get the number of the index of the file
             int fileIndex = (Globals.currentPage - 1) * 5 + buttonIndex;
 
-
-            // Get the current file array
-            string[] filesArray = GetFilesArray(Globals.currentPath);
-
             // Get the right path to the file
-            string filePath = filesArray[fileIndex];
+            string filePath = Globals.fileArray[fileIndex];
             Debug.Log("path to file: " + filePath);
             Debug.Log("name of the file: " + questionName);
 
+            // Set the file name, so that it can be loaded back with the same name
+            Globals.filePath = filePath;
+            Globals.fileName = Path.GetFileName(filePath);
+
             // Load the selected question in the temp save file
-            File.Copy(filePath, Path.Combine(Menus.tempSavePath, Path.GetFileName(filePath)));
+            File.Copy(filePath, Path.Combine(Globals.tempSavePath, Path.GetFileName(filePath)));
 
             // Add the name of the exercise to the preview and enable it
             previewQuestion1.GetComponentInChildren<TMP_Text>().text = questionName;
             previewQuestion1.interactable = true;
 
             // Here change the button from "save" to "change"
+            saveButton.gameObject.SetActive(false);
+            changeButton.gameObject.SetActive(true);
 
-            // Disable the add button so that no additional question can be created
+            // Disable the add button and brows directories button so that no additional question can be created and the path can't be changed.
+            addButton.interactable = false;
+            browsDirectoriesButton.interactable = false;
+
+            // Set the flag that a file is currently beeing changed (since it changes the index of the file in the buttons of preview in the creator menu)
+            Globals.currentlyChangingFile = true;
         }
     }
 
@@ -585,19 +618,19 @@ public class BrowsDirectories : MonoBehaviour
 
         switch(buttonName)
         {
-            case "PreviewQuestion1":
+            case "Directory1":
                 indexOnPage = 0;
             break;
-            case "PreviewQuestion2":
+            case "Directory2":
                 indexOnPage = 1;
             break;
-            case "PreviewQuestion3":
+            case "Directory3":
                 indexOnPage = 2;
             break;
-            case "PreviewQuestion4":
+            case "Directory4":
                 indexOnPage = 3;
             break;
-            case "PreviewQuestion5":
+            case "Directory5":
                 indexOnPage = 4;
             break;
         }

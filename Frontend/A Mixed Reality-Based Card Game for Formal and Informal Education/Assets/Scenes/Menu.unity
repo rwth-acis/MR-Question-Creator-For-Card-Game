@@ -13840,6 +13840,10 @@ MonoBehaviour:
   noPathSelected: {fileID: 45651714}
   savePathField: {fileID: 899354302}
   previewQuestion1: {fileID: 727477785}
+  addButton: {fileID: 1383027640}
+  browsDirectoriesButton: {fileID: 574234273}
+  saveButton: {fileID: 1815480832}
+  changeButton: {fileID: 1537166117}
   switchSprites:
   - {fileID: 21300000, guid: 11894016c24f80c4b9ca978db02e2f1a, type: 3}
   - {fileID: 21300000, guid: d83e7bb2af4efee45a338390adb928f5, type: 3}
@@ -19791,7 +19795,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1437308049}
         m_TargetAssemblyTypeName: Creator, Assembly-CSharp
-        m_MethodName: SaveQuestionsInEndDirectory
+        m_MethodName: ChangeQuestionInEndDirectory
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

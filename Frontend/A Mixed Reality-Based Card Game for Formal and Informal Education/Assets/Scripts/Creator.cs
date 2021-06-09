@@ -201,7 +201,7 @@ public class Creator : MonoBehaviour
 
         // Initialize the save path. This will have to be saved later on
         string scriptPath = GetCurrentFilePath();
-        Menus.tempSavePath = GetPathToRootDirectory(scriptPath);
+        Menus.tempSavePath = GetPathToTempSave(scriptPath);
 
         // Initialize the collection
         // Menus.collection = new ExerciseCollection();
@@ -227,7 +227,7 @@ public class Creator : MonoBehaviour
     }
 
     // Method that returns you the path to the save directory in the back end
-    private string GetPathToRootDirectory(string scriptPath)
+    private string GetPathToTempSave(string scriptPath)
     {
         string rootPath = Path.GetFullPath(Path.Combine(scriptPath, @"..\..\..\..\..\"));
         string rootDirectoryPath = Path.GetFullPath(Path.Combine(rootPath, @"Backend\TempSave\"));
@@ -590,6 +590,8 @@ public class Creator : MonoBehaviour
             {
                 File.Delete(file);
             }
+
+            Debug.Log("all files have been deleted");
 
             // Reset the page count and question index
             Menus.currentPage = 1;
@@ -1065,7 +1067,13 @@ public class Creator : MonoBehaviour
         Debug.Log(buttonName);
 
         // Get the name of the file
-        string fileName = GetFileNameFromButtonName(buttonName);
+        string fileName = "";
+        if(Globals.currentlyChangingFile == false)
+        {
+            fileName = GetFileNameFromButtonName(buttonName);
+        } else {
+            fileName = Globals.fileName;
+        }
 
         // Write the file name in Menus variable, so that the content gets saved in the same file
         Menus.editedFileName = fileName;
@@ -1254,7 +1262,7 @@ public class Creator : MonoBehaviour
             CopyFromPath1ToPath2(Menus.tempSavePath, Globals.selectedPath);
 
             // Exit the creator
-            ExitCreator();
+            ExitWithoutSavingYes();
             
         } else {
             // If no question was created, display the no question error message
@@ -1267,6 +1275,25 @@ public class Creator : MonoBehaviour
             {
                 noPathSelected.gameObject.SetActive(true);
             }
+        }
+    }
+
+    // Method that saves the question back in the back-end save directory after editing it (when choosing the question in the brows directories menu)
+    public void ChangeQuestionInEndDirectory() 
+    {
+        // Check if the question was changed or deleted
+        if(previewQuestion1.GetComponentInChildren<TMP_Text>().text != "deleted")
+        {
+            Debug.Log("the path to the file is: " + Globals.filePath);
+            // Case it was not deleted, then delete the old file in the back end folder
+            File.Delete(Globals.filePath);
+            Debug.Log("Deleted the file at: " + Globals.filePath);
+
+            // Copy it back in
+            CopyFromPath1ToPath2(Menus.tempSavePath, Globals.selectedPath);
+
+            // Exit the creator
+            ExitWithoutSavingYes();
         }
     }
 }
