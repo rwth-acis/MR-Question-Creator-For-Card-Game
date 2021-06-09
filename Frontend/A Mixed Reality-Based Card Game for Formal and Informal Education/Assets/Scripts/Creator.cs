@@ -7,9 +7,9 @@ using System.IO;
 using TMPro;
 using UnityEngine.EventSystems;
 
-// TODO: create a way for users to re-access questions they created through the preview
-// TODO: create the save multiple question method
-// TODO: create the next and previous page methods in the creator menu for the display of exercises
+// TODO: Create a way of deleting questions (meaning renaming files)
+// TODO: Create a way to add a description to the log file (need new window between selecting empty folder and selecting the path)
+// TODO: 
 
 static class Menus
 {
@@ -101,6 +101,12 @@ public class Creator : MonoBehaviour
     public Button createInput;
     public Button changeMultipleChoice;
     public Button createMultipleChoice;
+
+    // Buttons that gets disabled through editing already existing questions (Brows directories menu)
+    public Button addQuestion;
+    public Button browsDirectoriesButton;
+    public Button saveCreatedQuestions;
+    public Button changeQuestion;
 
     // Buttons that stand before the text inputs of the multiple choice answers
     public Button enableMultipleChoiceAnswer3;
@@ -240,10 +246,18 @@ public class Creator : MonoBehaviour
         // Set the right exercise name
         Menus.currentExerciseName = "exerciseName" + Menus.currentExerciseIndex;
         Menus.currentExerciseIndex = Menus.currentExerciseIndex + 1;
+
         // Set the right page as current
         Menus.currentPage = 1;
-        // Menus.currentInputQuestionIndex = 0;
-        // Menus.currentMultipleChoiceQuestionIndex = 0;
+
+        // Reset the question index, so that the naming begins again at Question000.
+        Menus.currentQuestionIndex = 0;
+        
+        // Enable the buttons that could have been disabled through editing already existing questions.
+        addQuestion.interactable = true;
+        browsDirectoriesButton.interactable = true;
+        saveCreatedQuestions.gameObject.SetActive(true);
+        changeQuestion.gameObject.SetActive(false);
     }
 
     // -------------------------------------------------------------------------------------------------------------------
@@ -360,17 +374,21 @@ public class Creator : MonoBehaviour
         // Disable edit mode
         Menus.editModeOn = false;
 
-        // Deactivate the "change" and activate the "create" button
-        changeInput.gameObject.SetActive(false);
-        createInput.gameObject.SetActive(true);
-
         // Enabling the right creator window depending on which mode was chosen
         if(GameObject.Find("MultipleChoice").GetComponent<Toggle>().isOn == true)
         {
             Debug.Log("Multiple choice is on!");
+
+            // Deactivate the "change" and activate the "create" button
+            changeMultipleChoice.gameObject.SetActive(false);
+            createMultipleChoice.gameObject.SetActive(true);
             ActivateMultipleChoiceMode();
         } else {
             Debug.Log("Input mode is on!");
+
+            // Deactivate the "change" and activate the "create" button
+             changeInput.gameObject.SetActive(false);
+             createInput.gameObject.SetActive(true);
             ActivateInputMode();
         }
     }
@@ -1233,18 +1251,13 @@ public class Creator : MonoBehaviour
     // Method that copies all files form one directory to another (used for temp save directory and end save directory)
     public void CopyFromPath1ToPath2(string path1, string path2)
     {
-        //
-        Directory.CreateDirectory(path2);
+        // Copy all files that are in the path1 to the directory in path 2
+        //Directory.CreateDirectory(path2);
 
         foreach(var file in Directory.GetFiles(path1))
         {
             File.Copy(file, Path.Combine(path2, Path.GetFileName(file)));
         }
-
-        // foreach(var directory in Directory.GetDirectories(sourceDir))
-        // {
-        //     Copy(directory, Path.Combine(targetDir, Path.GetFileName(directory)));
-        // }
     }
 
     // Method that saves all questions that the user created in the right folder and does the setup with the 3D models
@@ -1258,8 +1271,52 @@ public class Creator : MonoBehaviour
         if(Globals.selectedPath != "" && Globals.selectedPath != null && previewQuestion1.GetComponentInChildren<TMP_Text>().text != "")
         {
             // Case at least one question was created, and the path is not null
+
+            // First need to check if there are question in the folder. If there is a log file, then there are some.
+            string pathToLogFile = Globals.selectedPath + "Description.json";
+
+            if (!File.Exists(pathToLogFile))
+            {
+                // Case there is no log file, no questions in the folder
+                // Create a new log file
+                Log logFile = new Log();
+
+                // Set all information that are already known
+                logFile.numberOfQuestions = Menus.currentQuestionIndex;
+
+                // Generate the json string and save it in the temp save directory
+                string json = JsonUtility.ToJson(logFile);
+                File.WriteAllText(Menus.tempSavePath + "Description.json", json);
+
+            } else {
+
+                // Case there is already a log file, and questions
+                // Load the log game object
+                string json = File.ReadAllText(Globals.selectedPath + "Description.json");
+                Log logFile = JsonUtility.FromJson<Log>(json);
+
+                // Get the number of questions
+                int number = logFile.numberOfQuestions;
+
+                // Rename all questionXYZ files in the temp save folder accordingly
+                int newNumber = renameFilesAdding(Menus.tempSavePath, number);
+
+                // Actualize the number of questions
+                logFile.numberOfQuestions = newNumber;
+
+                // Convert it back to json
+                string jsonNew = JsonUtility.ToJson(logFile);
+
+                // Delete the old file
+                File.Delete(Globals.selectedPath + "Description.json");
+
+                // Create the new file
+                File.WriteAllText(Menus.tempSavePath + "Description.json", jsonNew);
+            }
+
             // Copy all files form the temp save directory to the end save directory
             CopyFromPath1ToPath2(Menus.tempSavePath, Globals.selectedPath);
+
 
             // Exit the creator
             ExitWithoutSavingYes();
@@ -1295,5 +1352,45 @@ public class Creator : MonoBehaviour
             // Exit the creator
             ExitWithoutSavingYes();
         }
+    }
+
+    // -------------------------------------------------------------------------------------------------------------------
+    // Creation of the log file in the back end, renaming of files
+    // -------------------------------------------------------------------------------------------------------------------
+
+    // The JSON Serialization for the log file
+    [Serializable]
+    public class Log
+    {
+        public int numberOfQuestions; // The number of already existing questions in the folder so that the new ones can be renamed
+        public int numberOfModels; // The number of already existing model files in the folder so that the new ones can be renamed
+        public string heading; // Heading of the description, name that users can give
+        public string description; // The description text of the content / concepts that are needed for solving the exercises
+    }
+
+    // Method that renames all files in the given path to QuestionX given an index X
+    public int renameFilesAdding(string path, int index)
+    {
+        // First rename the files with names that do not exist
+        int loopIndex = index;
+        foreach(var file in Directory.GetFiles(path))
+        {
+            System.IO.File.Move(file, Menus.tempSavePath + loopIndex.ToString());
+            Debug.Log(Path.GetFileName(file));
+            loopIndex = loopIndex + 1;
+        }
+
+        // Then rename them with names that it should have in the new save folder
+        int newIndex = index;
+        foreach(var file in Directory.GetFiles(path))
+        {
+            // Generate the right index at the end of the name
+            string ending = ReturnQuestionIndex(newIndex);
+            string name = "Question" + ending;
+            System.IO.File.Move(file, Menus.tempSavePath + name + ".json");
+            Debug.Log(Path.GetFileName(file));
+            newIndex = newIndex + 1;
+        }
+        return newIndex;
     }
 }

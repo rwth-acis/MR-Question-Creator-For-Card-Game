@@ -23,6 +23,10 @@ static class Globals
     public static int numberOfDirectories;
     // Array of all directories
     public static string[] directoriesArray;
+    // Number of files in the current directory
+    public static int numberOfFiles;
+    // Array of all files
+    public static string[] filesArray;
     // Current depth
     public static int depth;
     // Flags used for reset or freezing of the menu (to not go two directories deep in one click)
@@ -172,10 +176,47 @@ public class BrowsDirectories : MonoBehaviour
     }
 
     // Method that returns the array of files in the given path to a directory
-    static string[] GetFilesArray(string path) 
+    static string[] GetFilesArray()
     {
-        string[] files = Directory.GetFiles(path, "Question*");
-        return files;
+        string[] files = Directory.GetFiles(Globals.currentPath, "Question*");
+
+        // Check if the description file exists
+        if (File.Exists(Globals.currentPath + "Description.json")) 
+        {
+
+            // Case it exists
+            string[] description = Directory.GetFiles(Globals.currentPath, "Description.json");
+
+            // Get the length of the files array
+            int length = 0;
+            foreach(string file in files)
+            {
+                length = length + 1;
+            }
+            length = length + 1;
+
+            // Create a new array that can contain all files
+            string[] array = new string[length];
+
+            // Copy the description in the first slot
+            array[0] = description[0];
+            int index = 1;
+
+            // Append all elements in the files array to the description array
+            foreach(string file in files)
+            {
+                array[index] = file;
+                index = index + 1;
+            }
+
+            // Return the array that contains the description and the questions
+            return array;
+
+        } else {
+
+            // Case the description file does not exist
+            return files;
+        }
     }
 
     // Method that returns the number of directories in the current directory
@@ -264,19 +305,27 @@ public class BrowsDirectories : MonoBehaviour
         // Initialize the question name
         string questionName = "";
 
-        // Get the string form the file
-        string json = File.ReadAllText(path);
-
-        // Check what type of question it is
-        if(json.Contains("input question") == true)
+        // Check if this is the description file or a question
+        if(Path.GetFileName(path) != "Description.json")
         {
-            // Case input question
-            InputQuestion question = JsonUtility.FromJson<InputQuestion>(json);
-            questionName = question.name;
-        } else{
-            // Case multiple choice question
-            MultipleChoiceQuestion question = JsonUtility.FromJson<MultipleChoiceQuestion>(json);
-            questionName = question.name;
+            // Case this is not the description file but a question file
+            // Get the string form the file
+            string json = File.ReadAllText(path);
+
+            // Check what type of question it is
+            if(json.Contains("input question") == true)
+            {
+                // Case input question
+                InputQuestion question = JsonUtility.FromJson<InputQuestion>(json);
+                questionName = question.name;
+            } else{
+                // Case multiple choice question
+                MultipleChoiceQuestion question = JsonUtility.FromJson<MultipleChoiceQuestion>(json);
+                questionName = question.name;
+            }
+        } else {
+            // Case this is the description file
+            questionName = "Description";
         }
 
         // Return the question name
@@ -291,7 +340,7 @@ public class BrowsDirectories : MonoBehaviour
         if(Globals.numberOfDirectories == 0)
         {
             // Get the array of all files
-            Globals.fileArray = GetFilesArray(path);
+            Globals.fileArray = GetFilesArray();
             int numberOfFiles = GetNumberOfFiles(Globals.fileArray);
 
             // Case there are files in the folder
@@ -544,6 +593,7 @@ public class BrowsDirectories : MonoBehaviour
         // get the name of the button that was pressed and the button
         string name = EventSystem.current.currentSelectedGameObject.name;
         Button button = GameObject.Find(name).GetComponent<Button>();
+        string fileName = button.GetComponentInChildren<TMP_Text>().text;
 
         if(Globals.flagVariable == true && Globals.theseAreFiles == false){
             // Increase the browsing depth
@@ -562,7 +612,9 @@ public class BrowsDirectories : MonoBehaviour
             RenameButtons(Globals.currentPath);
             StartCoroutine(FreezeCoroutine());
         }
-        if(Globals.flagVariable == true && Globals.theseAreFiles == true)
+
+        // Case theses are files, and it was not the description that was clicked
+        if(Globals.flagVariable == true && Globals.theseAreFiles == true && fileName != "Description")
         {
             // Activate the creator menu, deactivate the brows directories menu
             creatorMenu.SetActive(true);
@@ -607,6 +659,15 @@ public class BrowsDirectories : MonoBehaviour
 
             // Set the flag that a file is currently beeing changed (since it changes the index of the file in the buttons of preview in the creator menu)
             Globals.currentlyChangingFile = true;
+
+            // Set the reset flag, so that everything is reset the next time the user accesses this menu
+            Globals.reset = true;
+        }
+
+        // Case theses are files, and it was the description that was clicked
+        if(Globals.flagVariable == true && Globals.theseAreFiles == true && fileName == "Description")
+        {
+            // TODO create a "give description window"
         }
     }
 
@@ -644,15 +705,33 @@ public class BrowsDirectories : MonoBehaviour
         Globals.directoriesArray = GetDirectoriesArray();
         Globals.numberOfDirectories = GetNumberOfDirectories(Globals.directoriesArray);
 
-        // Then I actualize the number of pages and rename the heading accordingly
-        Globals.currentPage = 1;
-        double value = (double)Globals.numberOfDirectories/(double)5;
-        Globals.numberOfPages = System.Convert.ToInt32(System.Math.Ceiling(value));
-        if(Globals.numberOfPages > 0){
-            GameObject.Find("HeadingText").GetComponent<TMP_Text>().text = "Page " + Globals.currentPage + "/" + Globals.numberOfPages;
+        // Case there are no directories
+        if(Globals.numberOfDirectories == 0)
+        {
+            Globals.filesArray = GetFilesArray();
+            Globals.numberOfFiles = GetNumberOfFiles(Globals.filesArray);
+            if(Globals.numberOfFiles != 0)
+            {
+                // Then I actualize the number of pages and rename the heading accordingly
+                Globals.currentPage = 1;
+                double value = (double)Globals.numberOfFiles/(double)5;
+                Globals.numberOfPages = System.Convert.ToInt32(System.Math.Ceiling(value));
+                GameObject.Find("HeadingText").GetComponent<TMP_Text>().text = "Page " + Globals.currentPage + "/" + Globals.numberOfPages;
+
+            } else {
+                // Case neither files not directories
+                Globals.currentPage = 1;
+                Globals.numberOfPages = 1;
+                GameObject.Find("HeadingText").GetComponent<TMP_Text>().text = "Page " + Globals.currentPage + "/" + Globals.numberOfPages;
+            }
+
+        // Case directories
         } else {
-            // Case there are no directories, but a page still needs to be displayed
-            GameObject.Find("HeadingText").GetComponent<TMP_Text>().text = "Page " + Globals.currentPage + "/" + 1;
+            // Actualize the page heading
+            Globals.currentPage = 1;
+            double value = (double)Globals.numberOfDirectories/(double)5;
+            Globals.numberOfPages = System.Convert.ToInt32(System.Math.Ceiling(value));
+            GameObject.Find("HeadingText").GetComponent<TMP_Text>().text = "Page " + Globals.currentPage + "/" + Globals.numberOfPages;
         }
     }
 
