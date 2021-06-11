@@ -1279,6 +1279,7 @@ public class Creator : MonoBehaviour
 
             if (!File.Exists(pathToLogFile))
             {
+                Debug.Log("There was no log file!");
                 // Case there is no log file, no questions in the folder
                 // Create a new log file
                 Log logFile = new Log();
@@ -1292,6 +1293,8 @@ public class Creator : MonoBehaviour
 
             } else {
 
+                Debug.Log("There was a log file!");
+
                 // Case there is already a log file, and questions
                 // Load the log game object
                 string json = File.ReadAllText(Globals.selectedPath + "Description.json");
@@ -1299,9 +1302,12 @@ public class Creator : MonoBehaviour
 
                 // Get the number of questions
                 int number = logFile.numberOfQuestions;
+                Debug.Log("The old number of question was: " + number);
 
                 // Rename all questionXYZ files in the temp save folder accordingly
                 int newNumber = renameFilesAdding(Menus.tempSavePath, number);
+
+                Debug.Log("The new number of question was: " + newNumber);
 
                 // Actualize the number of questions
                 logFile.numberOfQuestions = newNumber;

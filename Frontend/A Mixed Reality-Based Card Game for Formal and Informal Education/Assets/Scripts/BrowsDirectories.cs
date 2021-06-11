@@ -61,7 +61,10 @@ public class BrowsDirectories : MonoBehaviour
     
     // Define the windows
     public GameObject proceedSelectionWindow;
+    public GameObject AskDescriptionWindow;
+    public GameObject EnterDescriptionWindow;
     public GameObject veilSmallWindow;
+    public GameObject veilLargeWindow;
 
     // Define an error message that needs to be disabled in the creator menu when a path was selected
     public TextMeshProUGUI noPathSelected;
@@ -107,6 +110,20 @@ public class BrowsDirectories : MonoBehaviour
         public bool answer4Correct;
         public bool answer5Correct;
     }
+
+    // The log, which will become the Description.json file
+    [Serializable]
+    public class Log
+    {
+        public int numberOfQuestions; // The number of already existing questions in the folder so that the new ones can be renamed
+        public int numberOfModels; // The number of already existing model files in the folder so that the new ones can be renamed
+        public string heading; // Heading of the description, name that users can give
+        public string description; // The description text of the content / concepts that are needed for solving the exercises
+    }
+
+    // Defining the important input fields for the log.
+    public TMP_InputField descriptionHeading;
+    public TMP_InputField descriptionText;
 
     // Start is called before the first frame update
     void Start()
@@ -688,7 +705,40 @@ public class BrowsDirectories : MonoBehaviour
         if(Globals.flagVariable == true && Globals.theseAreFiles == true && fileName == "Description")
         {
             // TODO create a "give description window"
+            ActivateEnterDescriptionWindow();
         }
+    }
+
+    // Method that activates all windows and veils for the ask description window
+    public void ActivateAskDescriptionWindow()
+    {
+        // Enable the window and the veil
+        veilSmallWindow.SetActive(true);
+        AskDescriptionWindow.SetActive(true);
+    }
+
+    // Method that deactivates all windows and veils for the ask description window
+    public void DeactivateAskDescriptionWindow()
+    {
+        // Disable the window and the veil
+        veilSmallWindow.SetActive(false);
+        AskDescriptionWindow.SetActive(false);
+    }
+
+    // Method that activates all windows and veils for the enter description window
+    public void ActivateEnterDescriptionWindow()
+    {
+        // Enable the window and the veil
+        veilLargeWindow.SetActive(true);
+        EnterDescriptionWindow.SetActive(true);
+    }
+
+    // Method that deactivates all windows and veils for the enter description window
+    public void DeactivateEnterDescriptionWindow()
+    {
+        // Disable the window and the veil
+        veilLargeWindow.SetActive(false);
+        EnterDescriptionWindow.SetActive(false);
     }
 
     // Get the index that the button gives
@@ -861,9 +911,41 @@ public class BrowsDirectories : MonoBehaviour
         // Disable the window
         DisableProceedSelectionWindow();
 
-        // Get back to the old menu (always creator)
-        Back();
+        // Open the ask to enter Description window if the Description.json file does not exist in the folder
+        AskToEnterDescription();
     }
 
     // Method that checks if there was a Description.json file in the selected folder
+    public void AskToEnterDescription()
+    {
+        // After  the "are you sure you want to select that directory?" window was disabled, if the folder was empty, ask if the user wants to enter a description
+         if (!File.Exists(Globals.currentPath + "Description.json")) 
+        {
+            // If there wasn't a description file, ask the user to enter one
+            ActivateAskDescriptionWindow();
+        } else {
+
+            // If there was already a description file, return to the old menu (always creator)
+            Back();
+        }
+    }
+
+    // Method that saves the entered description
+    public void SaveDescription()
+    {
+        // Create the log object and save the given information in it
+        Log description = new Log();
+        description.heading = descriptionHeading.text;
+        description.description = descriptionText.text;
+
+        // Save the Description in a Description.json file
+        string json = JsonUtility.ToJson(description);
+        File.WriteAllText(Globals.selectedPath + "Description.json", json);
+
+        // Disable the window
+        DeactivateEnterDescriptionWindow();
+
+        // Get back to the old menu
+        Back();
+    }
 }
