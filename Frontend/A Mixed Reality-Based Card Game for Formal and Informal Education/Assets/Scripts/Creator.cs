@@ -1238,6 +1238,9 @@ public class Creator : MonoBehaviour
         // First set the selection button of the brows directories menu active
         Menus.directorySelection = true;
 
+        // Set the main creator as last menu
+        Menus.lastMenu = mainCreator;
+
         // Then enable / disable the menus
         mainCreator.SetActive(false);
         browsDirectoriesMenu.SetActive(true);

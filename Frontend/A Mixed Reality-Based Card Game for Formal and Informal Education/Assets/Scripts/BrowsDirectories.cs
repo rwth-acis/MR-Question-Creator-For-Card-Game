@@ -31,10 +31,10 @@ static class Globals
     public static int depth;
     // Flags used for reset or freezing of the menu (to not go two directories deep in one click)
     public static bool flagVariable = true;
-    public static bool reset = false;
     // Path of the selected directory. Used for the creator menu to set the path where to save the questions and 3D models
     public static string selectedPath;
     public static string selectedPathShorten;
+    public static string lastMenu;
 
     // Flag that tells if you are currently in a directory with directories or files. Clicking on a directory should make you go on directory deeper, while clicking on
     // a question should open the edit mode
@@ -52,7 +52,10 @@ public class BrowsDirectories : MonoBehaviour
     public GameObject mainMenu;
     public GameObject creatorMenu;
     public GameObject browsDirectoriesMenu;
-    public GameObject selectButton;
+    public Button selectButton;
+
+    // Define the page x / y text of the brows directories menu
+    public TextMeshProUGUI currentPageText;
 
     // Define the input field, the error text and window so that they can get disabled / enabled when needed
     public TMP_InputField mainInputField; // The input field to create directories
@@ -121,9 +124,13 @@ public class BrowsDirectories : MonoBehaviour
         public string description; // The description text of the content / concepts that are needed for solving the exercises
     }
 
-    // Defining the important input fields for the log.
+    // Defining the important input fields for the log, as well as the buttons that need to be activated / deactivated.
     public TMP_InputField descriptionHeading;
     public TMP_InputField descriptionText;
+    public Button changeDescription;
+    public Button okDescription;
+    public Button cancelDescription;
+    public Button backDescription;
 
     // Start is called before the first frame update
     void Start()
@@ -279,7 +286,7 @@ public class BrowsDirectories : MonoBehaviour
         enabledTextGradient.topRight = new Color32 (64, 127, 183, 255);
 
         // Enable / Disable previous button and change color
-        Button previous = GameObject.Find("Previous").GetComponent<Button>();
+        Button previous = GameObject.Find("PreviousBrowsDirectories").GetComponent<Button>();
         TMP_Text textPrevious = previous.GetComponentInChildren<TMP_Text>();
         if(Globals.currentPage == 1)
         {
@@ -360,7 +367,7 @@ public class BrowsDirectories : MonoBehaviour
             // If select directory mode is on, then enable the select button
             if(Menus.directorySelection == true)
             {
-                selectButton.SetActive(true);
+                selectButton.interactable = true;
             }
 
             // Get the array of all files
@@ -487,7 +494,7 @@ public class BrowsDirectories : MonoBehaviour
         } else {
 
             // Disable the select directory button
-            selectButton.SetActive(false);
+            selectButton.interactable = false;
 
             // Enable the create directory button
             createDirectory.interactable = true;
@@ -697,16 +704,58 @@ public class BrowsDirectories : MonoBehaviour
             // Set the flag that a file is currently beeing changed (since it changes the index of the file in the buttons of preview in the creator menu)
             Globals.currentlyChangingFile = true;
 
-            // Set the reset flag, so that everything is reset the next time the user accesses this menu
-            Globals.reset = true;
+            // Reset the menu so that next time the user accesses the selection is back at the root directory
+            resetBrowsDirectories();
         }
 
         // Case theses are files, and it was the description that was clicked
         if(Globals.flagVariable == true && Globals.theseAreFiles == true && fileName == "Description")
         {
-            // TODO create a "give description window"
+            // Activate the window to enter a description
             ActivateEnterDescriptionWindow();
+
+            // Activate the change button and deactivate the ok button
+            changeDescription.gameObject.SetActive(true);
+            okDescription.gameObject.SetActive(false);
+            backDescription.gameObject.SetActive(true);
+            cancelDescription.gameObject.SetActive(false);
+
+            // Load the log file
+            string json = File.ReadAllText(Globals.currentPath + "Description.json");
+            Log descriptionLog = JsonUtility.FromJson<Log>(json);
+
+            // Paste the existing information in the text fields
+            descriptionHeading.text = descriptionLog.heading;
+            descriptionText.text = descriptionLog.description;
         }
+    }
+
+    // Method that saves the changed description back in the old file
+    public void ChangeDescription()
+    {
+        // First access the old description
+        string jsonOld = File.ReadAllText(Globals.currentPath + "Description.json");
+        Log descriptionLog = JsonUtility.FromJson<Log>(jsonOld);
+
+        // Change the description and heading according to the text fields
+        descriptionLog.heading = descriptionHeading.text;
+        descriptionLog.description = descriptionText.text;
+
+        // Convert this to a string
+        string jsonNew = JsonUtility.ToJson(descriptionLog);
+
+        // Delete the old file
+        File.Delete(Globals.currentPath + "Description.json");
+
+        // Create the new file
+        File.WriteAllText(Globals.currentPath + "Description.json", jsonNew);
+
+        // Deactivate the window
+        DeactivateEnterDescriptionWindow();
+
+        // Empty the text fields
+        descriptionHeading.text = "";
+        descriptionText.text = "";
     }
 
     // Method that activates all windows and veils for the ask description window
@@ -739,6 +788,12 @@ public class BrowsDirectories : MonoBehaviour
         // Disable the window and the veil
         veilLargeWindow.SetActive(false);
         EnterDescriptionWindow.SetActive(false);
+
+        // Activate the right buttons
+        changeDescription.gameObject.SetActive(false);
+        okDescription.gameObject.SetActive(true);
+        backDescription.gameObject.SetActive(false);
+        cancelDescription.gameObject.SetActive(true);
     }
 
     // Get the index that the button gives
@@ -801,7 +856,7 @@ public class BrowsDirectories : MonoBehaviour
             Globals.currentPage = 1;
             double value = (double)Globals.numberOfDirectories/(double)5;
             Globals.numberOfPages = System.Convert.ToInt32(System.Math.Ceiling(value));
-            GameObject.Find("HeadingText").GetComponent<TMP_Text>().text = "Page " + Globals.currentPage + "/" + Globals.numberOfPages;
+            currentPageText.text = "Page " + Globals.currentPage + "/" + Globals.numberOfPages;
         }
     }
 
@@ -810,41 +865,37 @@ public class BrowsDirectories : MonoBehaviour
     // The distinction is done with the fact that the "select" button is enabled or not
     public void Back()
     {
-        // First reset the globals so that everything is reset the next time the user enters the menu
-        Globals.reset = true;
-
         // Then display the right menu
-        if(selectButton.activeSelf == true){
+        if(selectButton.gameObject.activeSelf == true){
             creatorMenu.SetActive(true);
         } else {
             mainMenu.SetActive(true);
         }
+
         browsDirectoriesMenu.SetActive(false);
+
+        // First reset the globals so that everything is reset the next time the user enters the menu
+        resetBrowsDirectories();
 
         // Disable the select button after exiting
         selectButton.gameObject.SetActive(false);
     }
-    
-    // Method that resets the progression when going back to the main menu and back in the brows directories menu
-    public void GoingBackIn()
+
+    // Method that resets the brows directories menu
+    public void resetBrowsDirectories()
     {
-        if(Globals.reset == true){
-            Globals.currentPath = Globals.rootDirectoryPath;
-            Globals.currentPathShorten = "";
-            Globals.depth = 1;
+        Globals.currentPath = Globals.rootDirectoryPath;
+        Globals.currentPathShorten = "";
+        Globals.depth = 1;
 
-            // Then I actualize in a function the directories, page numbers, heading
-            ActualizeGlobals();
+        // Then I actualize in a function the directories, page numbers, heading
+        ActualizeGlobals();
 
-            // Then I disable / enable the previous and next button based on the number of pages
-            DisableOrEnableButtons();
+        // Then I disable / enable the previous and next button based on the number of pages
+        DisableOrEnableButtons();
 
-            // Then I rename / delete the name of the predefined buttons and disable those that have no name
-            RenameButtons(Globals.currentPath);
-            
-            // Reset the flag
-            Globals.reset = false;
-        }
+        // Then I rename / delete the name of the predefined buttons and disable those that have no name
+        RenameButtons(Globals.currentPath);
     }
 
     public void AddDirectory(TMP_InputField input)
