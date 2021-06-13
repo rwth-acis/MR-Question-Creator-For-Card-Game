@@ -8,22 +8,12 @@ using TMPro;
 using UnityEngine.EventSystems;
 
 // TODO: Create a way of deleting questions (meaning renaming files)
-// TODO: Create a way to add a description to the log file (need new window between selecting empty folder and selecting the path)
-// TODO: 
 
 static class Menus
 {
     // Save current and last menu for return function
     public static GameObject lastMenu;
     public static GameObject currentMenu;
-
-    // Save the current index for all question or moddel collection, this is for the end array
-    public static int inputQuestionIndex; // Used to access the right position in the array of the input questions
-    public static int multipleChoiceQuestionIndex; // Used to access the right position in the array of the input questions
-
-    // // Save the current index for all question or moddel collection, this is for the arrays before the creation of the end array
-    // public static int currentInputQuestionIndex; // Used to access the right position in the array of the input questions
-    // public static int currentMultipleChoiceQuestionIndex; // Used to access the right position in the array of the input questions
 
     // Save an index and exercise name to be able to link different questions and models together
     public static int currentExerciseIndex; // Used to generate correct exercise names
@@ -36,13 +26,6 @@ static class Menus
     public static int currentPage;
     public static int numberOfPages;
 
-    // Path to the save directory in the back end
-    public static string savePath; // Path to the save directory in the back end
-    public static string saveIndex;
-
-    // Number used to create new names for files
-    public static int questionNumber;
-
     // Flag for edit mode and the old files name, so that the content gets saved back in the same file
     public static bool editModeOn;
     public static string editedFileName;
@@ -51,9 +34,6 @@ static class Menus
     // The temporary save path
     public static string tempSavePath;
     public static bool directorySelection;
-    
-    // Set the maximum of questions of each type, and model sets
-    public static int maxNumber = 100;
 }
 
 public class Creator : MonoBehaviour
@@ -75,6 +55,7 @@ public class Creator : MonoBehaviour
     // Input mode fields
     public TMP_InputField enterQuestionInput;
     public TMP_InputField enterAnswerInput;
+
     // Multiple Choice mode fields
     public TMP_InputField enterQuestionMultiple;
     public TMP_InputField enterFirstAnswer;
@@ -82,28 +63,37 @@ public class Creator : MonoBehaviour
     public TMP_InputField enterThirdAnswer;
     public TMP_InputField enterFourthAnswer;
     public TMP_InputField enterFifthAnswer;
+
     // The name input field, used for all question modes
     public TMP_InputField enterName;
+
     // The read only input field that displays the current save path
     public TMP_InputField savePathText;
 
     // Defining the button
+    // Button to select a directory as end save directory
     public Button selectButton;
+
+    // The five preview question button used to edit created questions
     public Button previewQuestion1;
     public Button previewQuestion2;
     public Button previewQuestion3;
     public Button previewQuestion4;
     public Button previewQuestion5;
+
+    // The four buttons with sprites to navigate back and forth all created questions (e.g from questions 1-5 to questions 6-10)
     public Button nextEnabled;
     public Button nextDisabled;
     public Button previousEnabled;
     public Button previousDisabled;
+
+    // Change and create buttons are place one over the other and have different scripts. Activated / Deactivated in edit already end saved questions or when creating new questions
     public Button changeInput;
     public Button createInput;
     public Button changeMultipleChoice;
     public Button createMultipleChoice;
 
-    // Buttons that gets disabled through editing already existing questions (Brows directories menu)
+    // Buttons that gets disabled / deactivated / activated one editing already end saved questions (Brows directories menu)
     public Button addQuestion;
     public Button browsDirectoriesButton;
     public Button saveCreatedQuestions;
@@ -113,6 +103,10 @@ public class Creator : MonoBehaviour
     public Button enableMultipleChoiceAnswer3;
     public Button enableMultipleChoiceAnswer4;
     public Button enableMultipleChoiceAnswer5;
+
+    // Buttons used to delete questions
+    public Button deleteInputQuestion;
+    public Button deleteMultipleChoiceQuestion;
 
     // Define the toggles used in the multiple choice mode
     public Toggle firstAnswerCorrect;
@@ -124,15 +118,13 @@ public class Creator : MonoBehaviour
     // Define the error texts that need to be displayed if an input field is empty
     public TextMeshProUGUI errorNoQuestionInput;
     public TextMeshProUGUI errorNoAnswerInput;
-    public TextMeshProUGUI headingPageNumber;
     public TextMeshProUGUI errorNoQuestionMultipleChoice;
     public TextMeshProUGUI errorNotEnoughAnswersMultipleChoice;
     public TextMeshProUGUI noPathSelected;
     public TextMeshProUGUI noQuestionCreated;
 
-    // Define the lists that will contain all exercises
-    public List<InputQuestion> listOfInputExercises;
-    public List<MultipleChoiceQuestion> listOfMultipleChoiceExercises;
+    // Define the heading text that gives the current page
+    public TextMeshProUGUI headingPageNumber;
 
     // The JSON Serialization for the input questions
     [Serializable]
@@ -181,6 +173,10 @@ public class Creator : MonoBehaviour
         public string nameFifthModel;
     }
 
+    // -------------------------------------------------------------------------------------------------------------------
+    // Start method, used to initialize all Menus variables and set all buttons on interactable or not
+    // -------------------------------------------------------------------------------------------------------------------
+
     // Start is called before the first frame update
     void Start()
     {
@@ -190,7 +186,7 @@ public class Creator : MonoBehaviour
         GameObject.Find("Add3DModel4").GetComponent<Button>().interactable = false;
         GameObject.Find("Add3DModel5").GetComponent<Button>().interactable = false;
 
-        // Disable the interactability of the preview question one only if the user is not changing a file currently
+        // Disable the delete button and interactability of the preview question one only if the user is not changing a file currently
         if(Globals.currentlyChangingFile != true)
         {
             GameObject.Find("PreviewQuestion1").GetComponent<Button>().interactable = false;
@@ -204,12 +200,9 @@ public class Creator : MonoBehaviour
         Menus.lastMenu = mainMenu;
         Menus.currentMenu = mainCreator;
 
-        // Set the current question and model index
-        Menus.inputQuestionIndex = 0;
-        Menus.multipleChoiceQuestionIndex = 0;
-
         // Set the current exercise index
         Menus.currentExerciseIndex = 0;
+        Menus.currentQuestionIndex = 0;
 
         // Initialize the save path. This will have to be saved later on
         string scriptPath = GetCurrentFilePath();
@@ -218,12 +211,15 @@ public class Creator : MonoBehaviour
         // Initialize the collection
         // Menus.collection = new ExerciseCollection();
 
-        Menus.questionNumber = 0;
         Menus.currentPage = 1;
         Menus.numberOfPages = 1;
         Menus.editModeOn = false;
         Menus.directorySelection = false;
     }
+
+    // -------------------------------------------------------------------------------------------------------------------
+    // Methods to set the paths correctly (to tempSave directory)
+    // -------------------------------------------------------------------------------------------------------------------
 
     // Helper method to get the path to this script file
     string GetCurrentFileName([System.Runtime.CompilerServices.CallerFilePath] string fileName = null)
@@ -247,6 +243,10 @@ public class Creator : MonoBehaviour
         return rootDirectoryPath;
     }
 
+    // -------------------------------------------------------------------------------------------------------------------
+    // Entering / exiting the creator menu
+    // -------------------------------------------------------------------------------------------------------------------
+
     // Method used to enter the creator
     public void EnterCreator() 
     {
@@ -265,6 +265,17 @@ public class Creator : MonoBehaviour
         browsDirectoriesButton.interactable = true;
         saveCreatedQuestions.gameObject.SetActive(true);
         changeQuestion.gameObject.SetActive(false);
+    }
+
+    // Method used to exit the creator
+    public void ExitCreator()
+    {
+        // First check if something was added and save this information in a boolean variable
+        bool isEmpty = (GameObject.Find("Add3DModel1").GetComponent<Button>().GetComponentInChildren<TMP_Text>().text != "+" || GameObject.Find("PreviewQuestion1").GetComponent<Button>().GetComponentInChildren<TMP_Text>().text != "");
+        Debug.Log(isEmpty);
+
+        // Call the exit without saving function
+        ExitWithoutSaving(isEmpty);
     }
 
     // -------------------------------------------------------------------------------------------------------------------
@@ -361,12 +372,6 @@ public class Creator : MonoBehaviour
     // Navigation methods
     // -------------------------------------------------------------------------------------------------------------------
 
-    // Method that makes the preview button 1 interactable
-    public void MakePreviewButton1Interactable()
-    {
-        previewQuestion1.interactable = true;
-    }
-
     // Method that deactivates the naming window when clicked on cancel
     public void CancelEnterName()
     {
@@ -378,31 +383,6 @@ public class Creator : MonoBehaviour
             // Case edit mode is on, need to let the name there
             enterNameWindow.SetActive(false);
             veilSmallWindow.SetActive(false);
-        }
-    }
-
-    // Method activated when clicking on the "Add" button in the creator screen, opens the right exercise creator window
-    public void AddExercise()
-    {
-        // Disable edit mode
-        Menus.editModeOn = false;
-
-        // Enabling the right creator window depending on which mode was chosen
-        if(GameObject.Find("MultipleChoice").GetComponent<Toggle>().isOn == true)
-        {
-            Debug.Log("Multiple choice is on!");
-
-            // Deactivate the "change" and activate the "create" button
-            changeMultipleChoice.gameObject.SetActive(false);
-            createMultipleChoice.gameObject.SetActive(true);
-            ActivateMultipleChoiceMode();
-        } else {
-            Debug.Log("Input mode is on!");
-
-            // Deactivate the "change" and activate the "create" button
-             changeInput.gameObject.SetActive(false);
-             createInput.gameObject.SetActive(true);
-            ActivateInputMode();
         }
     }
 
@@ -429,16 +409,6 @@ public class Creator : MonoBehaviour
         }
     }
 
-    public void ExitCreator()
-    {
-        // First check if something was added and save this information in a boolean variable
-        bool isEmpty = (GameObject.Find("Add3DModel1").GetComponent<Button>().GetComponentInChildren<TMP_Text>().text != "+" || GameObject.Find("PreviewQuestion1").GetComponent<Button>().GetComponentInChildren<TMP_Text>().text != "");
-        Debug.Log(isEmpty);
-
-        // Call the exit without saving function
-        ExitWithoutSaving(isEmpty);
-    }
-
     // Method to navigate from the multiple choice mode back to the main creator
     // For now it only checks if the answers are not filled, ignores the question, can be improved TODO
     public void GetBackFromMultipleChoice()
@@ -461,7 +431,6 @@ public class Creator : MonoBehaviour
         // Call the exit without saving function
         ExitWithoutSaving(isEmpty);
     }
-
     // Method to get to the next page of previews of questions that were created
     public void NavigateNext()
     {
@@ -684,6 +653,41 @@ public class Creator : MonoBehaviour
             DeactivateExitWithoutSaveWindow();
         }
     }
+
+    // -------------------------------------------------------------------------------------------------------------------
+    // Question creation methods
+    // -------------------------------------------------------------------------------------------------------------------
+
+    // Method activated when clicking on the "Add" button in the creator screen, opens the right exercise creator window
+    public void AddExercise()
+    {
+        // Disable edit mode
+        Menus.editModeOn = false;
+
+        // Enabling the right creator window depending on which mode was chosen
+        if(GameObject.Find("MultipleChoice").GetComponent<Toggle>().isOn == true)
+        {
+            Debug.Log("Multiple choice is on!");
+
+            // Deactivate the "change" and activate the "create" button
+            changeMultipleChoice.gameObject.SetActive(false);
+            createMultipleChoice.gameObject.SetActive(true);
+            ActivateMultipleChoiceMode();
+
+            // Since we want to create a question, disable the delete button
+            deleteMultipleChoiceQuestion.gameObject.SetActive(false);
+        } else {
+            Debug.Log("Input mode is on!");
+
+            // Deactivate the "change" and activate the "create" button
+             changeInput.gameObject.SetActive(false);
+             createInput.gameObject.SetActive(true);
+            ActivateInputMode();
+
+            // Since we want to create a question, disable the delete button
+            deleteInputQuestion.gameObject.SetActive(false);
+        }
+    }    
 
     // Method used to add the third multiple choice fields
     public void AddAnswerPossibility3()
@@ -919,7 +923,7 @@ public class Creator : MonoBehaviour
         DisplayNameCorrectly(inputQuestion.name);
     }
 
-    //
+    // Method that displays the name on the right button
     public void DisplayNameCorrectly(string name)
     {
         if(Menus.editModeOn == false)
@@ -949,6 +953,9 @@ public class Creator : MonoBehaviour
 
             // Case it is an already existing question
             File.WriteAllText(Menus.tempSavePath + Menus.editedFileName, json);
+
+            // Reset the name
+            Menus.editedFileName = "";
         }
     }
 
@@ -1089,6 +1096,10 @@ public class Creator : MonoBehaviour
         }
     }
 
+    // -------------------------------------------------------------------------------------------------------------------
+    // Editing questions again methods
+    // -------------------------------------------------------------------------------------------------------------------
+
     // Method that permitts to enter edit mode again on a certain question that is selected
     public void EnterEditMode()
     {
@@ -1122,16 +1133,22 @@ public class Creator : MonoBehaviour
             // Case input question
             InputQuestion question = JsonUtility.FromJson<InputQuestion>(json);
 
-            // Set the current mode to edit mode (so that the naming window does not create a new file)
-
             // Open the input mode window, copy the content back in
             EnableEditModeInput(question);
+            
+            // Enable the delete question button since the edit could have the goal of deleting the question
+            deleteInputQuestion.gameObject.SetActive(true);
 
         } else {
 
             // Case multiple choice question
             MultipleChoiceQuestion question = JsonUtility.FromJson<MultipleChoiceQuestion>(json);
+
+            // Open the multiple choice mode window, copy the content back in
             EnableEditModeMultipleChoice(question);
+
+            // Enable the delete question button since the edit could have the goal of deleting the question
+            deleteMultipleChoiceQuestion.gameObject.SetActive(true);
         }
     }
 
@@ -1243,6 +1260,10 @@ public class Creator : MonoBehaviour
         return files;
     }
 
+    // -------------------------------------------------------------------------------------------------------------------
+    // Set end save directory methods
+    // -------------------------------------------------------------------------------------------------------------------
+
     // Method that gives access to the brows directories menu
     public void SetDirectory()
     {
@@ -1263,6 +1284,10 @@ public class Creator : MonoBehaviour
         // Change the text
         savePathText.text = @"...\" + Globals.selectedPathShorten;
     }
+
+    // -------------------------------------------------------------------------------------------------------------------
+    // Save to end directory methods
+    // -------------------------------------------------------------------------------------------------------------------
 
     // Method that copies all files form one directory to another (used for temp save directory and end save directory)
     public void CopyFromPath1ToPath2(string path1, string path2)
@@ -1414,5 +1439,99 @@ public class Creator : MonoBehaviour
             newIndex = newIndex + 1;
         }
         return newIndex;
+    }
+
+    // -------------------------------------------------------------------------------------------------------------------
+    // Deletion of files, be it in the current temp save directory or end save directory
+    // -------------------------------------------------------------------------------------------------------------------
+
+    // Method activated when the used clicks on the "delete" buttons of the input or multiple choice question creators
+    public void DeleteQuestion()
+    {
+        // Case the question was only a temporary save
+        if(Menus.editedFileName == "" || Menus.editedFileName == null)
+        {
+            // First delete the file
+
+            // Then actualize the button preview
+
+        // Case the question was not a temporary save and is saved as a file in the back end folder
+        } else {
+            // Delete the right file in the end save folder
+            File.Delete(Globals.selectedPath + Menus.editedFileName);
+
+            // Extract the description files information and object
+            string json = File.ReadAllText(Globals.selectedPath + "Description.json");
+            Log descriptionLog = JsonUtility.FromJson<Log>(json);
+
+            // Reduce the number of questions by one
+            descriptionLog.numberOfQuestions = descriptionLog.numberOfQuestions - 1;
+
+            // Rename all questions correctly
+            RenameFilesPostDeletion(Globals.selectedPath, descriptionLog.numberOfQuestions);
+
+            // Delete the old description file
+            File.Delete(Globals.selectedPath + "Description.json");
+
+            // Save the description log file back in
+            string jsonActualized =  JsonUtility.ToJson(descriptionLog);
+            File.WriteAllText(Globals.selectedPath + "Description.json", jsonActualized);
+
+
+            // Delete all files in the temp save folder
+            string[] files = GetFilesArray(Menus.tempSavePath);
+            foreach(string file in files)
+            {
+                File.Delete(file);
+            }
+
+            // Delete the preview question name
+            previewQuestion1.GetComponentInChildren<TMP_Text>().text = "";
+
+            // At last, close the creator and delete the file in the temp save folder
+            ExitWithoutSavingYes();
+            ExitCreator();
+        }
+    }
+
+    // Method that returns the array of questions in a directory
+    static string[] GetQuestionsArray(string path) 
+    {
+        string[] questions = Directory.GetFiles(path, "Question", SearchOption.TopDirectoryOnly);
+        return questions;
+    }
+
+    // Method that renames all questionXYZ files correctly with a given path to a folder and number of files
+    public void RenameFilesPostDeletion(string path, int questionNumber)
+    {
+        // Get the question array
+        string[] questions = GetQuestionsArray(path);
+
+        // Give them a dumy name
+        int loopIndex = 0;
+        foreach(var question in questions)
+        {
+            System.IO.File.Move(question, Menus.tempSavePath + loopIndex.ToString());
+            Debug.Log(Path.GetFileName(question));
+            loopIndex = loopIndex + 1;
+        }
+
+        // Then rename them with names that it should have in the new save folder
+        int newIndex = 0;
+        foreach(var question in questions)
+        {
+            // Generate the right index at the end of the name
+            string ending = ReturnQuestionIndex(newIndex);
+            string name = "Question" + ending;
+            System.IO.File.Move(question, Menus.tempSavePath + name + ".json");
+            Debug.Log(Path.GetFileName(question));
+            newIndex = newIndex + 1;
+        }
+
+        // Check that no more questions are renamed then there should be
+        if(questionNumber != newIndex)
+        {
+            Debug.Log("The number of questions given is not equal to the number of questions renamed. Question number given: " + questionNumber + ", number of questions renamed: " + newIndex);
+        }
     }
 }
