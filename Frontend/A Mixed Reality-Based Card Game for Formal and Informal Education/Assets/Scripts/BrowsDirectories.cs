@@ -593,7 +593,7 @@ public class BrowsDirectories : MonoBehaviour
         Globals.currentPage = Globals.currentPage + 1;
         DisableOrEnableButtons();
         RenameButtons(Globals.currentPath);
-        GameObject.Find("HeadingText").GetComponent<TMP_Text>().text = "Page " + Globals.currentPage + "/" + Globals.numberOfPages;
+        GameObject.Find("HeadingTextBrowsDirectories").GetComponent<TMP_Text>().text = "Page " + Globals.currentPage + "/" + Globals.numberOfPages;
     }
 
     // Method that is activated when pressing previous (change the other directories)
@@ -601,7 +601,7 @@ public class BrowsDirectories : MonoBehaviour
         Globals.currentPage = Globals.currentPage - 1;
         DisableOrEnableButtons();
         RenameButtons(Globals.currentPath);
-        GameObject.Find("HeadingText").GetComponent<TMP_Text>().text = "Page " + Globals.currentPage + "/" + Globals.numberOfPages;
+        GameObject.Find("HeadingTextBrowsDirectories").GetComponent<TMP_Text>().text = "Page " + Globals.currentPage + "/" + Globals.numberOfPages;
     }
 
     // Method that is activated when pressing the return arrow (get to the parent directory)
@@ -660,9 +660,8 @@ public class BrowsDirectories : MonoBehaviour
         if(Globals.flagVariable == true && Globals.theseAreFiles == true && fileName != "Description")
         {
 
-            // Activate the creator menu, deactivate the brows directories menu
+            // Activate the creator menu
             creatorMenu.SetActive(true);
-            browsDirectoriesMenu.SetActive(false);
 
             // Set the path to save to that directory
             savePathField.text = Globals.currentPath;
@@ -692,6 +691,7 @@ public class BrowsDirectories : MonoBehaviour
             // Add the name of the exercise to the preview and enable it
             previewQuestion1.GetComponentInChildren<TMP_Text>().text = questionName;
             previewQuestion1.interactable = true;
+            Debug.Log("PreviewQuestion1 button is now interactable.");
 
             // Here change the button from "save" to "change"
             saveButton.gameObject.SetActive(false);
@@ -706,6 +706,9 @@ public class BrowsDirectories : MonoBehaviour
 
             // Reset the menu so that next time the user accesses the selection is back at the root directory
             resetBrowsDirectories();
+
+            // Deactivate the brows directories menu
+            browsDirectoriesMenu.SetActive(false);
         }
 
         // Case theses are files, and it was the description that was clicked
@@ -728,6 +731,7 @@ public class BrowsDirectories : MonoBehaviour
             descriptionHeading.text = descriptionLog.heading;
             descriptionText.text = descriptionLog.description;
         }
+        Debug.Log("Current path: " + Globals.currentPath);
     }
 
     // Method that saves the changed description back in the old file
@@ -841,13 +845,13 @@ public class BrowsDirectories : MonoBehaviour
                 Globals.currentPage = 1;
                 double value = (double)Globals.numberOfFiles/(double)5;
                 Globals.numberOfPages = System.Convert.ToInt32(System.Math.Ceiling(value));
-                GameObject.Find("HeadingText").GetComponent<TMP_Text>().text = "Page " + Globals.currentPage + "/" + Globals.numberOfPages;
+                GameObject.Find("HeadingTextBrowsDirectories").GetComponent<TMP_Text>().text = "Page " + Globals.currentPage + "/" + Globals.numberOfPages;
 
             } else {
                 // Case neither files not directories
                 Globals.currentPage = 1;
                 Globals.numberOfPages = 1;
-                GameObject.Find("HeadingText").GetComponent<TMP_Text>().text = "Page " + Globals.currentPage + "/" + Globals.numberOfPages;
+                GameObject.Find("HeadingTextBrowsDirectories").GetComponent<TMP_Text>().text = "Page " + Globals.currentPage + "/" + Globals.numberOfPages;
             }
 
         // Case directories
@@ -872,10 +876,11 @@ public class BrowsDirectories : MonoBehaviour
             mainMenu.SetActive(true);
         }
 
-        browsDirectoriesMenu.SetActive(false);
-
         // First reset the globals so that everything is reset the next time the user enters the menu
         resetBrowsDirectories();
+
+        // Disable the menu
+        browsDirectoriesMenu.SetActive(false);
 
         // Disable the select button after exiting
         selectButton.gameObject.SetActive(false);

@@ -189,7 +189,12 @@ public class Creator : MonoBehaviour
         GameObject.Find("Add3DModel3").GetComponent<Button>().interactable = false;
         GameObject.Find("Add3DModel4").GetComponent<Button>().interactable = false;
         GameObject.Find("Add3DModel5").GetComponent<Button>().interactable = false;
-        GameObject.Find("PreviewQuestion1").GetComponent<Button>().interactable = false;
+
+        // Disable the interactability of the preview question one only if the user is not changing a file currently
+        if(Globals.currentlyChangingFile != true)
+        {
+            GameObject.Find("PreviewQuestion1").GetComponent<Button>().interactable = false;
+        }
         GameObject.Find("PreviewQuestion2").GetComponent<Button>().interactable = false;
         GameObject.Find("PreviewQuestion3").GetComponent<Button>().interactable = false;
         GameObject.Find("PreviewQuestion4").GetComponent<Button>().interactable = false;
@@ -355,6 +360,12 @@ public class Creator : MonoBehaviour
     // -------------------------------------------------------------------------------------------------------------------
     // Navigation methods
     // -------------------------------------------------------------------------------------------------------------------
+
+    // Method that makes the preview button 1 interactable
+    public void MakePreviewButton1Interactable()
+    {
+        previewQuestion1.interactable = true;
+    }
 
     // Method that deactivates the naming window when clicked on cancel
     public void CancelEnterName()
@@ -1238,12 +1249,12 @@ public class Creator : MonoBehaviour
         // First set the selection button of the brows directories menu active
         Menus.directorySelection = true;
 
-        // Set the main creator as last menu
-        Menus.lastMenu = mainCreator;
-
         // Then enable / disable the menus
         mainCreator.SetActive(false);
         browsDirectoriesMenu.SetActive(true);
+
+        // Enable the select button
+        selectButton.gameObject.SetActive(true);
     }
 
     // Method that gets the selected path (where to save the exercises) from the brows directory script  and actualizes the text that should display it
