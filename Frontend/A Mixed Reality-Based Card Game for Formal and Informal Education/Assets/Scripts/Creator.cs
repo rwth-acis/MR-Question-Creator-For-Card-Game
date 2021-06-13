@@ -386,29 +386,6 @@ public class Creator : MonoBehaviour
         }
     }
 
-    // Method that summons the "are you sure you do not want to save" window if something was already done
-    public void ExitWithoutSaving(bool isEmpty)
-    {
-        // First check if something was added
-        if(isEmpty == true)
-        {
-            // Activate the exit without save window
-            Debug.Log("Not empty!");
-            ActivateExitWithoutSaveWindow();
-        } else {
-            // Everything is empty, so reset the menus
-            Debug.Log("Nothing to save!");
-            Menus.lastMenu.SetActive(true);
-            Menus.currentMenu.SetActive(false);
-            veilLargeWindow.SetActive(false);
-
-            // Since this is only used to exit specialized exercises creator, the last menu is always the main creator
-            // The currentMenu does not go to the mainMenu, so that it does not need to be set when returning in the creator menu
-            Menus.currentMenu = mainCreator;
-            Menus.lastMenu = mainMenu;
-        }
-    }
-
     // Method to navigate from the multiple choice mode back to the main creator
     // For now it only checks if the answers are not filled, ignores the question, can be improved TODO
     public void GetBackFromMultipleChoice()
@@ -531,6 +508,33 @@ public class Creator : MonoBehaviour
             // Delete the name of the button and disable it
             rightButton.GetComponentInChildren<TMP_Text>().text = "";
             rightButton.interactable = false;
+        }
+    }
+
+    // -------------------------------------------------------------------------------------------------------------------
+    // Exit without saving methods
+    // -------------------------------------------------------------------------------------------------------------------
+
+    // Method that summons the "are you sure you do not want to save" window if something was already done
+    public void ExitWithoutSaving(bool isEmpty)
+    {
+        // First check if something was added
+        if(isEmpty == true)
+        {
+            // Activate the exit without save window
+            Debug.Log("Not empty!");
+            ActivateExitWithoutSaveWindow();
+        } else {
+            // Everything is empty, so reset the menus
+            Debug.Log("Nothing to save!");
+            Menus.lastMenu.SetActive(true);
+            Menus.currentMenu.SetActive(false);
+            veilLargeWindow.SetActive(false);
+
+            // Since this is only used to exit specialized exercises creator, the last menu is always the main creator
+            // The currentMenu does not go to the mainMenu, so that it does not need to be set when returning in the creator menu
+            Menus.currentMenu = mainCreator;
+            Menus.lastMenu = mainMenu;
         }
     }
 
@@ -1416,6 +1420,7 @@ public class Creator : MonoBehaviour
     }
 
     // Method that renames all files in the given path to QuestionX given an index X
+    // This could create problems, since all files are taken and not only files with names QuestionXYZ
     public int renameFilesAdding(string path, int index)
     {
         // First rename the files with names that do not exist
@@ -1451,9 +1456,17 @@ public class Creator : MonoBehaviour
         // Case the question was only a temporary save
         if(Menus.editedFileName == "" || Menus.editedFileName == null)
         {
-            // First delete the file
+            // Delete the file
+            File.Delete(Globals.tempSavePath + Menus.editedFileName);
+
+            // Second reduce the current question index by one
+            Menus.currentQuestionIndex = Menus.currentQuestionIndex - 1;
+
+            // Rename all files
+            RenameFilesPostDeletion(Menus.tempSavePath, Menus.currentQuestionIndex + 1);
 
             // Then actualize the button preview
+            ActualizeQuestionPreview();
 
         // Case the question was not a temporary save and is saved as a file in the back end folder
         } else {
@@ -1533,5 +1546,50 @@ public class Creator : MonoBehaviour
         {
             Debug.Log("The number of questions given is not equal to the number of questions renamed. Question number given: " + questionNumber + ", number of questions renamed: " + newIndex);
         }
+    }
+
+    // Method that actualizes the question preview after a question was deleted
+    public void ActualizeQuestionPreview()
+    {
+        // Get the question array
+        string[] questions = GetQuestionsArray(Menus.tempSavePath);
+
+        // Get the current page
+        int page = Menus.currentPage;
+
+        // Rename all buttons that preview questions accordingly
+        for(int index = 1; index <= 5; index = index + 1)
+        {
+            // Get the name of the file
+            string questionName = GetFileNameFromButtonName("PreviewQuestion" + index);
+
+            // Extract the string of the file
+            string json = File.ReadAllText(Globals.selectedPath + questionName);
+
+            // Find out what type of question it is
+            if(json.Contains("input question") == true)
+            {
+                // Extract the input question object
+                InputQuestion question = JsonUtility.FromJson<InputQuestion>(json);
+
+                // Get the name
+                string name = question.name;
+
+                // Rename the correct button
+                GameObject.Find("PreviewQuestion" + index).GetComponent<Button>().GetComponentInChildren<TMP_Text>().text = name;
+
+            } else {
+                // Extract the multiple choice question object
+                MultipleChoiceQuestion question = JsonUtility.FromJson<MultipleChoiceQuestion>(json);
+
+                // Get the name
+                string name = question.name;
+
+                // Rename the correct button
+                GameObject.Find("PreviewQuestion" + index).GetComponent<Button>().GetComponentInChildren<TMP_Text>().text = name;
+                
+            }
+        }
+
     }
 }
