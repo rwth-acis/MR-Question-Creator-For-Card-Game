@@ -6,6 +6,7 @@ using System;
 using System.IO;
 using TMPro;
 using UnityEngine.EventSystems;
+using i5.Toolkit.Core.ModelImporters;
 
 // TODO: Create a way of deleting questions (meaning renaming files)
 
@@ -46,6 +47,7 @@ public class Creator : MonoBehaviour
     public GameObject inputModeCreator;
     public GameObject enterNameWindow;
     public GameObject exitWithoutSavingWindow;
+    public GameObject importModelWindow;
 
     // The veils are invisible, they are used to block access to the buttons on the menu under it
     public GameObject veilLargeWindow;
@@ -69,6 +71,9 @@ public class Creator : MonoBehaviour
 
     // The read only input field that displays the current save path
     public TMP_InputField savePathText;
+
+    // The input field to type in the url of the 3D model to inport
+    public TMP_InputField enterUrl;
 
     // Defining the button
     // Button to select a directory as end save directory
@@ -116,12 +121,19 @@ public class Creator : MonoBehaviour
     public Toggle fifthAnswerCorrect;
 
     // Define the error texts that need to be displayed if an input field is empty
+    // For the question creators
     public TextMeshProUGUI errorNoQuestionInput;
     public TextMeshProUGUI errorNoAnswerInput;
     public TextMeshProUGUI errorNoQuestionMultipleChoice;
     public TextMeshProUGUI errorNotEnoughAnswersMultipleChoice;
+
+    // When clicking on the "save" button to save the questions in the back end directory
     public TextMeshProUGUI noPathSelected;
     public TextMeshProUGUI noQuestionCreated;
+
+    // For the import model window 
+    public TextMeshProUGUI noUrlTypedInErrorMessage;
+    public TextMeshProUGUI urlObjectOfWrongTypeErrorMessage;
 
     // Define the heading text that gives the current page
     public TextMeshProUGUI headingPageNumber;
@@ -218,6 +230,9 @@ public class Creator : MonoBehaviour
 
         // Initialize the edited file name
         Menus.editedFileName = "";
+
+        ObjImporter objImporter = new ObjImporter();
+        ServiceManager.RegisterService(objImporter);
     }
 
     // -------------------------------------------------------------------------------------------------------------------
@@ -369,6 +384,21 @@ public class Creator : MonoBehaviour
         enterNameWindow.SetActive(false);
         veilSmallWindow.SetActive(false);
         enterName.text = "";
+    }
+
+    // Method that activates everything for the enter url window
+    public void ActivateImportModelWindow()
+    {
+        importModelWindow.SetActive(true);
+        veilSmallWindow.SetActive(true);
+    }
+
+    // Method that deactivates everything for the enter url window and resets the name that was typed in
+    public void DeactivateImportModelWindow()
+    {
+        importModelWindow.SetActive(false);
+        veilSmallWindow.SetActive(false);
+        enterUrl.text = "";
     }
 
     // -------------------------------------------------------------------------------------------------------------------
@@ -1610,6 +1640,46 @@ public class Creator : MonoBehaviour
             // Delete the name of the button
             GameObject.Find("PreviewQuestion" + emptyIndex).GetComponent<Button>().GetComponentInChildren<TMP_Text>().text = "";
         }
+    }
 
+    // -------------------------------------------------------------------------------------------------------------------
+    // Import of 3D models
+    // -------------------------------------------------------------------------------------------------------------------
+
+    // Method that is triggered when clicking on the import button of the import 3D model window
+    public void ImportModel()
+    {
+        // Disable the error messages
+        noUrlTypedInErrorMessage.gameObject.SetActive(false);
+        urlObjectOfWrongTypeErrorMessage.gameObject.SetActive(false);
+
+        // Get the string that is displayed in the input field and deffine the .obj ending as a string
+        string url = enterUrl.text;
+        string ending = ".obj";
+
+        // Check if the impult field is non empty
+        if(url == "")
+        {
+            // If it is empty, then display the "no url typed in" error message
+            noUrlTypedInErrorMessage.gameObject.SetActive(true);
+        } else {
+            //If it is non empty, check if the url goes to a .obj object
+            if(url.EndsWith(ending) != true)
+            {
+                // Case the ending is not .obj, display the url does not point on .obj model error message
+                urlObjectOfWrongTypeErrorMessage.gameObject.SetActive(true);
+            } else {
+                // Case the url points to a .obj object, import it
+
+                // First register the objImporter as a service
+                // ObjImporter objImporter = new ObjImporter();
+                // ServiceManager.RegisterService(objImporter);
+
+                // Create the game object
+                GameObject obj = await ServiceManager.GetService<ObjImporter>().ImportAsync(url);
+
+                
+            }
+        }
     }
 }
