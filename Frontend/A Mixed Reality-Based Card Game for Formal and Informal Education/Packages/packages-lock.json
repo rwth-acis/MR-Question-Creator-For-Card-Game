@@ -1,5 +1,14 @@
 {
   "dependencies": {
+    "com.i5.toolkit.core": {
+      "version": "https://github.com/rwth-acis/i5-Toolkit-for-Unity.git#upm",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {
+        "com.unity.textmeshpro": "2.0.1"
+      },
+      "hash": "ba035e6fac3646cf8bfd71336cc876d0102f3161"
+    },
     "com.ptc.vuforia.engine": {
       "version": "git+https://git-packages.developer.vuforia.com#9.8.8",
       "depth": 0,
