@@ -27,6 +27,10 @@ static class Menus
 
     // Save an index for the current question
     public static int currentQuestionIndex;
+    public static int currentModelIndex;
+
+    // Save the current url
+    public static string  currentUri;
 
     // Save an index for the current displayed page of the displayed questions
     public static int currentPage;
@@ -53,6 +57,7 @@ public class Creator : MonoBehaviour
     public GameObject enterNameWindow;
     public GameObject exitWithoutSavingWindow;
     public GameObject importModelWindow;
+    public GameObject duplicateModelWindow;
 
     // The veils are invisible, they are used to block access to the buttons on the menu under it
     public GameObject veilLargeWindow;
@@ -80,9 +85,19 @@ public class Creator : MonoBehaviour
     // The input field to type in the url of the 3D model to inport
     public TMP_InputField enterUrl;
 
+    // The input field to type in the new name of the 3D model that will be inported
+    public TMP_InputField enterNewModelName;
+
     // Defining the button
     // Button to select a directory as end save directory
     public Button selectButton;
+
+    // The five preview model button used to edit created questions
+    public Button previewModel1;
+    public Button previewModel2;
+    public Button previewModel3;
+    public Button previewModel4;
+    public Button previewModel5;
 
     // The five preview question button used to edit created questions
     public Button previewQuestion1;
@@ -235,6 +250,9 @@ public class Creator : MonoBehaviour
 
         // Initialize the edited file name
         Menus.editedFileName = "";
+
+        // Initialize the current model index
+        Menus.currentModelIndex = 0;
 
         // ObjImporter objImporter = new ObjImporter();
         // ServiceManager.RegisterService(objImporter);
@@ -404,6 +422,21 @@ public class Creator : MonoBehaviour
         importModelWindow.SetActive(false);
         veilSmallWindow.SetActive(false);
         enterUrl.text = "";
+    }
+
+    // Method that activates everything for the enter url window
+    public void ActivateEnterNewModelNameWindow()
+    {
+        duplicateModelWindow.SetActive(true);
+        veilSmallWindow.SetActive(true);
+    }
+
+    // Method that deactivates everything for the enter url window and resets the name that was typed in
+    public void DeactivateEnterNewModelNameWindow()
+    {
+        duplicateModelWindow.SetActive(false);
+        veilSmallWindow.SetActive(false);
+        enterNewModelName.text = "";
     }
 
     // -------------------------------------------------------------------------------------------------------------------
@@ -1660,9 +1693,11 @@ public class Creator : MonoBehaviour
         noUrlTypedInErrorMessage.gameObject.SetActive(false);
         urlObjectOfWrongTypeErrorMessage.gameObject.SetActive(false);
 
+        // Get the url form the input field
+        string url = enterUrl.text;
+
         // Get the string that is displayed in the input field and deffine the .obj ending as a string
         // string url = enterUrl.text;
-        string url = "https://raw.githubusercontent.com/rwth-acis/i5-Toolkit-for-Unity/master/Assets/i5%20Toolkit%20for%20Unity/Samples%7E/Importers/ObjImporter/Obj%20Models/Monkey_textured.obj";
         string ending = ".obj";
 
         // Check if the impult field is non empty
@@ -1682,20 +1717,72 @@ public class Creator : MonoBehaviour
                 Debug.Log("Url correct");
                 // Case the url points to a .obj object, import it
 
-                // First register the objImporter as a service
-                // ObjImporter objImporter = new ObjImporter();
-                // ServiceManager.RegisterService(objImporter);
+                // Extract the file name
+                System.Uri uri = new Uri(url);
+                string fileName = System.IO.Path.GetFileName(uri.LocalPath);
+                Debug.Log("File name: " + fileName);
 
-                // // Create the game object
-                // ServiceManager.GetService<ObjImporter>().ExtendedLogging = extendedLogging;
-                // GameObject obj = await ServiceManager.GetService<ObjImporter>().ImportAsync(url);
-                // Download it
-                using (var client = new WebClient())
+                // Check if a file with that name already exist in the temp save folder
+                if(File.Exists(Menus.tempSavePath + fileName))
                 {
-                    Debug.Log("Downloading file?");
-                    client.DownloadFile(url, Menus.tempSavePath + "ExampleModelImport.obj");
+                    // Open a window that tells you that a file with that name already was imported. Ask if the user wants to replace it or to cancel.
+                    ActivateImportModelWindow();
+
+                    // Deactivate the enter url window
+                    DeactivateImportModelWindow();
+
+                    // Save the current uri
+                    Menus.currentUri = url;
+                    
+                } else {
+                    // Name does not already exist, download the file and save it in the temp save folder
+                    using (var client = new WebClient())
+                    {
+                        Debug.Log("Downloading file?");
+                        client.DownloadFile(url, Menus.tempSavePath + fileName);
+                    }
+
+                    // Preview the name of the 3D model on the right button
+                    PreviewModelName(fileName);
+
+                    // Close the window
+                    DeactivateImportModelWindow();
+
+                    // Increase the current model index by one
+                    Menus.currentModelIndex = Menus.currentModelIndex  + 1;
                 }
             }
+        }
+    }
+
+    // Method that displays the current model name in the preview
+    public void PreviewModelName(string name)
+    {
+        // Display the model at the right place
+        switch(Menus.currentModelIndex)
+        {
+            case 0:
+                previewModel1.GetComponentInChildren<TMP_Text>().text = name;
+                previewModel2.interactable = true;
+            break;
+            case 1:
+                previewModel2.GetComponentInChildren<TMP_Text>().text = name;
+                previewModel3.interactable = true;
+                previewModel3.GetComponentInChildren<TMP_Text>().text = "+";
+            break;
+            case 2:
+                previewModel3.GetComponentInChildren<TMP_Text>().text = name;
+                previewModel4.interactable = true;
+                previewModel4.GetComponentInChildren<TMP_Text>().text = "+";
+            break;
+            case 3:
+                previewModel4.GetComponentInChildren<TMP_Text>().text = name;
+                previewModel5.interactable = true;
+                previewModel5.GetComponentInChildren<TMP_Text>().text = "+";
+            break;
+            case 4:
+                previewModel5.GetComponentInChildren<TMP_Text>().text = name;
+            break;
         }
     }
 }
