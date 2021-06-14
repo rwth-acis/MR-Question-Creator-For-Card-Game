@@ -215,6 +215,9 @@ public class Creator : MonoBehaviour
         Menus.numberOfPages = 1;
         Menus.editModeOn = false;
         Menus.directorySelection = false;
+
+        // Initialize the edited file name
+        Menus.editedFileName = "";
     }
 
     // -------------------------------------------------------------------------------------------------------------------
@@ -1046,14 +1049,14 @@ public class Creator : MonoBehaviour
 
         if(Menus.editModeOn == false)
         {
+            // Increase the current question index by one
+            Menus.currentQuestionIndex = Menus.currentQuestionIndex + 1;
+
             // Actualize the number of pages
             ActualizePageNumber();
 
             // Enable the right buttons
             ActualizeButtons();
-
-            // Increase the current question index by one
-            Menus.currentQuestionIndex = Menus.currentQuestionIndex + 1;
         }
 
         // Deactivate the "no question" error message on the creator menu
@@ -1086,7 +1089,7 @@ public class Creator : MonoBehaviour
     // Method that is used to actualize the page number
     public void ActualizePageNumber()
     {
-        double value = (double) (Menus.currentQuestionIndex + 1) / (double) 5;
+        double value = (double) Menus.currentQuestionIndex / (double) 5;
         Debug.Log(Menus.currentQuestionIndex);
         Debug.Log(value);
         Menus.numberOfPages = System.Convert.ToInt32(System.Math.Ceiling(value));
@@ -1348,7 +1351,9 @@ public class Creator : MonoBehaviour
                 Debug.Log("The old number of question was: " + number);
 
                 // Rename all questionXYZ files in the temp save folder accordingly
-                int newNumber = renameFilesAdding(Menus.tempSavePath, number);
+                int newNumber = renameQuestions(Menus.tempSavePath, number);
+
+                // Rename all modelXYZ in the temp save folder accordingly TODO later
 
                 Debug.Log("The new number of question was: " + newNumber);
 
@@ -1419,30 +1424,35 @@ public class Creator : MonoBehaviour
         public string description; // The description text of the content / concepts that are needed for solving the exercises
     }
 
-    // Method that renames all files in the given path to QuestionX given an index X
-    // This could create problems, since all files are taken and not only files with names QuestionXYZ
-    public int renameFilesAdding(string path, int index)
+    // Method that renames all question in the given path to QuestionXYZ given an index V
+       public int renameQuestions(string path, int index)
     {
-        // First rename the files with names that do not exist
+        // Get the question array
+        string[] questions = GetQuestionsArray(path);
+
+        // Give them a dumy name
         int loopIndex = index;
-        foreach(var file in Directory.GetFiles(path))
+        int lastIndex = questions.Length;
+        foreach(string question in questions)
         {
-            System.IO.File.Move(file, Menus.tempSavePath + loopIndex.ToString());
-            Debug.Log(Path.GetFileName(file));
+            System.IO.File.Move(question, path + loopIndex.ToString());
+            Debug.Log(Path.GetFileName(question));
             loopIndex = loopIndex + 1;
         }
+        Debug.Log("loop index is:" + loopIndex);
 
         // Then rename them with names that it should have in the new save folder
         int newIndex = index;
-        foreach(var file in Directory.GetFiles(path))
+        foreach(string question in questions)
         {
             // Generate the right index at the end of the name
             string ending = ReturnQuestionIndex(newIndex);
             string name = "Question" + ending;
-            System.IO.File.Move(file, Menus.tempSavePath + name + ".json");
-            Debug.Log(Path.GetFileName(file));
+            System.IO.File.Move(path +newIndex.ToString(), path + name + ".json");
+            Debug.Log(Path.GetFileName(question));
             newIndex = newIndex + 1;
         }
+        Debug.Log("new index is:" + newIndex);
         return newIndex;
     }
 
@@ -1453,20 +1463,38 @@ public class Creator : MonoBehaviour
     // Method activated when the used clicks on the "delete" buttons of the input or multiple choice question creators
     public void DeleteQuestion()
     {
+        Debug.Log("Initialy, the current question index was: " + Menus.currentQuestionIndex);
+        Debug.Log("Currently changing file: " + Globals.currentlyChangingFile);
         // Case the question was only a temporary save
-        if(Menus.editedFileName == "" || Menus.editedFileName == null)
+        if(Globals.currentlyChangingFile == false)
         {
             // Delete the file
-            File.Delete(Globals.tempSavePath + Menus.editedFileName);
+            File.Delete(Menus.tempSavePath + Menus.editedFileName);
 
             // Second reduce the current question index by one
             Menus.currentQuestionIndex = Menus.currentQuestionIndex - 1;
 
-            // Rename all files
-            RenameFilesPostDeletion(Menus.tempSavePath, Menus.currentQuestionIndex + 1);
+            Debug.Log("The current question index is: " + Menus.currentQuestionIndex);
 
-            // Then actualize the button preview
-            ActualizeQuestionPreview();
+            // If there still are questions, rename them
+            if(Menus.currentQuestionIndex != 0)
+            {
+                Debug.Log("Files are geting renamed");
+                // Rename all files
+                RenameFilesPostDeletion(Menus.tempSavePath, Menus.currentQuestionIndex);
+            }
+
+            // Then actualize the button preview, the integer number is the first button that should be empty
+            ActualizeQuestionPreview(Menus.currentQuestionIndex + 1);
+
+            // Actualize the page number
+            ActualizePageNumber();
+
+            // Disable buttons if needed
+            ActualizeButtons();
+
+            // Close the question window, reset the inputs
+            ExitWithoutSavingYes();
 
         // Case the question was not a temporary save and is saved as a file in the back end folder
         } else {
@@ -1480,7 +1508,7 @@ public class Creator : MonoBehaviour
             // Reduce the number of questions by one
             descriptionLog.numberOfQuestions = descriptionLog.numberOfQuestions - 1;
 
-            // Rename all questions correctly
+            // Rename all questions and models correctly
             RenameFilesPostDeletion(Globals.selectedPath, descriptionLog.numberOfQuestions);
 
             // Delete the old description file
@@ -1510,46 +1538,24 @@ public class Creator : MonoBehaviour
     // Method that returns the array of questions in a directory
     static string[] GetQuestionsArray(string path) 
     {
-        string[] questions = Directory.GetFiles(path, "Question", SearchOption.TopDirectoryOnly);
+        Debug.Log("The question array was created");
+        string[] questions = Directory.GetFiles(path, "Question*", SearchOption.TopDirectoryOnly);
         return questions;
     }
 
-    // Method that renames all questionXYZ files correctly with a given path to a folder and number of files
+    // Method that renames all questionXYZ files correctly with a given path to a folder and number of files, TODO add models
     public void RenameFilesPostDeletion(string path, int questionNumber)
     {
-        // Get the question array
-        string[] questions = GetQuestionsArray(path);
+        int number = renameQuestions(path, 0);
 
-        // Give them a dumy name
-        int loopIndex = 0;
-        foreach(var question in questions)
+        if(questionNumber != number)
         {
-            System.IO.File.Move(question, Menus.tempSavePath + loopIndex.ToString());
-            Debug.Log(Path.GetFileName(question));
-            loopIndex = loopIndex + 1;
-        }
-
-        // Then rename them with names that it should have in the new save folder
-        int newIndex = 0;
-        foreach(var question in questions)
-        {
-            // Generate the right index at the end of the name
-            string ending = ReturnQuestionIndex(newIndex);
-            string name = "Question" + ending;
-            System.IO.File.Move(question, Menus.tempSavePath + name + ".json");
-            Debug.Log(Path.GetFileName(question));
-            newIndex = newIndex + 1;
-        }
-
-        // Check that no more questions are renamed then there should be
-        if(questionNumber != newIndex)
-        {
-            Debug.Log("The number of questions given is not equal to the number of questions renamed. Question number given: " + questionNumber + ", number of questions renamed: " + newIndex);
+            Debug.Log("Number of questions given and actual number is not the same!");
         }
     }
 
     // Method that actualizes the question preview after a question was deleted
-    public void ActualizeQuestionPreview()
+    public void ActualizeQuestionPreview(int number)
     {
         // Get the question array
         string[] questions = GetQuestionsArray(Menus.tempSavePath);
@@ -1557,14 +1563,23 @@ public class Creator : MonoBehaviour
         // Get the current page
         int page = Menus.currentPage;
 
+        Debug.Log("The number is: " + number);
+        int maxNumber = 0;
+        if(number > 6)
+        {
+            maxNumber = 6;
+        } else {
+            maxNumber = number;
+        }
+
         // Rename all buttons that preview questions accordingly
-        for(int index = 1; index <= 5; index = index + 1)
+        for(int index = 1; index < maxNumber; index = index + 1)
         {
             // Get the name of the file
             string questionName = GetFileNameFromButtonName("PreviewQuestion" + index);
 
             // Extract the string of the file
-            string json = File.ReadAllText(Globals.selectedPath + questionName);
+            string json = File.ReadAllText(Menus.tempSavePath + questionName);
 
             // Find out what type of question it is
             if(json.Contains("input question") == true)
@@ -1589,6 +1604,11 @@ public class Creator : MonoBehaviour
                 GameObject.Find("PreviewQuestion" + index).GetComponent<Button>().GetComponentInChildren<TMP_Text>().text = name;
                 
             }
+        }
+        for(int emptyIndex = maxNumber; emptyIndex < 6; emptyIndex = emptyIndex + 1)
+        {
+            // Delete the name of the button
+            GameObject.Find("PreviewQuestion" + emptyIndex).GetComponent<Button>().GetComponentInChildren<TMP_Text>().text = "";
         }
 
     }
