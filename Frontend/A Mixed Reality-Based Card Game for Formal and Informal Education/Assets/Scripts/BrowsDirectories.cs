@@ -1004,4 +1004,12 @@ public class BrowsDirectories : MonoBehaviour
         // Get back to the old menu
         Back();
     }
+
+    public void SearchForModel()
+    {
+        // Save the old current and root directory paths
+    }
+
+    // Method that resets the path to the root directory
+    
 }

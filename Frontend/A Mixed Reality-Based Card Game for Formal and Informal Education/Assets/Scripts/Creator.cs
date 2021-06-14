@@ -7,6 +7,11 @@ using System.IO;
 using TMPro;
 using UnityEngine.EventSystems;
 using i5.Toolkit.Core.ModelImporters;
+using System.Net;
+using i5.Toolkit.Core.ModelImporters;
+using i5.Toolkit.Core.ProceduralGeometry;
+using i5.Toolkit.Core.ServiceCore;
+using i5.Toolkit.Core.Utilities;
 
 // TODO: Create a way of deleting questions (meaning renaming files)
 
@@ -231,8 +236,8 @@ public class Creator : MonoBehaviour
         // Initialize the edited file name
         Menus.editedFileName = "";
 
-        ObjImporter objImporter = new ObjImporter();
-        ServiceManager.RegisterService(objImporter);
+        // ObjImporter objImporter = new ObjImporter();
+        // ServiceManager.RegisterService(objImporter);
     }
 
     // -------------------------------------------------------------------------------------------------------------------
@@ -1646,6 +1651,8 @@ public class Creator : MonoBehaviour
     // Import of 3D models
     // -------------------------------------------------------------------------------------------------------------------
 
+    public bool extendedLogging = true;
+
     // Method that is triggered when clicking on the import button of the import 3D model window
     public void ImportModel()
     {
@@ -1654,31 +1661,40 @@ public class Creator : MonoBehaviour
         urlObjectOfWrongTypeErrorMessage.gameObject.SetActive(false);
 
         // Get the string that is displayed in the input field and deffine the .obj ending as a string
-        string url = enterUrl.text;
+        // string url = enterUrl.text;
+        string url = "https://raw.githubusercontent.com/rwth-acis/i5-Toolkit-for-Unity/master/Assets/i5%20Toolkit%20for%20Unity/Samples%7E/Importers/ObjImporter/Obj%20Models/Monkey_textured.obj";
         string ending = ".obj";
 
         // Check if the impult field is non empty
         if(url == "")
         {
+            Debug.Log("Url is empty");
             // If it is empty, then display the "no url typed in" error message
             noUrlTypedInErrorMessage.gameObject.SetActive(true);
         } else {
             //If it is non empty, check if the url goes to a .obj object
             if(url.EndsWith(ending) != true)
             {
+                Debug.Log("Url is not ending on .obj");
                 // Case the ending is not .obj, display the url does not point on .obj model error message
                 urlObjectOfWrongTypeErrorMessage.gameObject.SetActive(true);
             } else {
+                Debug.Log("Url correct");
                 // Case the url points to a .obj object, import it
 
                 // First register the objImporter as a service
                 // ObjImporter objImporter = new ObjImporter();
                 // ServiceManager.RegisterService(objImporter);
 
-                // Create the game object
-                GameObject obj = await ServiceManager.GetService<ObjImporter>().ImportAsync(url);
-
-                
+                // // Create the game object
+                // ServiceManager.GetService<ObjImporter>().ExtendedLogging = extendedLogging;
+                // GameObject obj = await ServiceManager.GetService<ObjImporter>().ImportAsync(url);
+                // Download it
+                using (var client = new WebClient())
+                {
+                    Debug.Log("Downloading file?");
+                    client.DownloadFile(url, Menus.tempSavePath + "ExampleModelImport.obj");
+                }
             }
         }
     }
