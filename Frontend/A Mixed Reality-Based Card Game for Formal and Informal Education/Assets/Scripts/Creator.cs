@@ -29,8 +29,10 @@ static class Menus
     public static int currentQuestionIndex;
     public static int currentModelIndex;
 
-    // Save the current url
+    // Save the current uri and current model name that is being edited
     public static string  currentUri;
+    public static string editedModelName;
+    public static int editedModelIndex;
 
     // Save an index for the current displayed page of the displayed questions
     public static int currentPage;
@@ -58,6 +60,7 @@ public class Creator : MonoBehaviour
     public GameObject exitWithoutSavingWindow;
     public GameObject importModelWindow;
     public GameObject duplicateModelWindow;
+    public GameObject replaceModelWindow;
 
     // The veils are invisible, they are used to block access to the buttons on the menu under it
     public GameObject veilLargeWindow;
@@ -87,6 +90,9 @@ public class Creator : MonoBehaviour
 
     // The input field to type in the new name of the 3D model that will be inported
     public TMP_InputField enterNewModelName;
+
+    // The input field to type in the uri of the new 3D model to replace the old one
+    public TMP_InputField enterNewModelUri;
 
     // Defining the button
     // Button to select a directory as end save directory
@@ -155,8 +161,21 @@ public class Creator : MonoBehaviour
     public TextMeshProUGUI noUrlTypedInErrorMessage;
     public TextMeshProUGUI urlObjectOfWrongTypeErrorMessage;
 
+    // For the replace model window
+    public TextMeshProUGUI noUrlTypedInErrorMessageReplacement;
+    public TextMeshProUGUI urlObjectOfWrongTypeErrorMessageReplacement;
+
+    // For the rename duplicate model window
+    public TextMeshProUGUI noNameToRenameTypedIn;
+
     // Define the heading text that gives the current page
     public TextMeshProUGUI headingPageNumber;
+
+    // Define the heading text of the duplicate name window
+    public TextMeshProUGUI duplicateName;
+
+    // Define the heading text of the replace / delete model window
+    public TextMeshProUGUI wishToReplaceHeading;
 
     // The JSON Serialization for the input questions
     [Serializable]
@@ -250,9 +269,11 @@ public class Creator : MonoBehaviour
 
         // Initialize the edited file name
         Menus.editedFileName = "";
+        Menus.editedModelName = "";
 
         // Initialize the current model index
         Menus.currentModelIndex = 0;
+        Menus.editedModelIndex = 5;
 
         // ObjImporter objImporter = new ObjImporter();
         // ServiceManager.RegisterService(objImporter);
@@ -439,6 +460,22 @@ public class Creator : MonoBehaviour
         enterNewModelName.text = "";
     }
 
+    // Method that activates everything for the enter url window
+    public void ActivateReplaceModelWindow()
+    {
+        replaceModelWindow.SetActive(true);
+        veilSmallWindow.SetActive(true);
+    }
+
+    // Method that deactivates everything for the enter url window and resets the name that was typed in
+    public void DeactivateReplaceModelWindow()
+    {
+        replaceModelWindow.SetActive(false);
+        veilSmallWindow.SetActive(false);
+        enterNewModelUri.text = "";
+    }
+
+
     // -------------------------------------------------------------------------------------------------------------------
     // Navigation methods
     // -------------------------------------------------------------------------------------------------------------------
@@ -623,30 +660,30 @@ public class Creator : MonoBehaviour
             Debug.Log(Menus.lastMenu);
 
             // Reset the buttons that preview names of 3D models and currently created questions
-            GameObject.Find("Add3DModel1").GetComponent<Button>().GetComponentInChildren<TMP_Text>().text = "+";
-            GameObject.Find("Add3DModel2").GetComponent<Button>().GetComponentInChildren<TMP_Text>().text = "";
-            GameObject.Find("Add3DModel3").GetComponent<Button>().GetComponentInChildren<TMP_Text>().text = "";
-            GameObject.Find("Add3DModel4").GetComponent<Button>().GetComponentInChildren<TMP_Text>().text = "";
-            GameObject.Find("Add3DModel5").GetComponent<Button>().GetComponentInChildren<TMP_Text>().text = "";
-            GameObject.Find("PreviewQuestion1").GetComponent<Button>().GetComponentInChildren<TMP_Text>().text = "";
-            GameObject.Find("PreviewQuestion2").GetComponent<Button>().GetComponentInChildren<TMP_Text>().text = "";
-            GameObject.Find("PreviewQuestion3").GetComponent<Button>().GetComponentInChildren<TMP_Text>().text = "";
-            GameObject.Find("PreviewQuestion4").GetComponent<Button>().GetComponentInChildren<TMP_Text>().text = "";
-            GameObject.Find("PreviewQuestion5").GetComponent<Button>().GetComponentInChildren<TMP_Text>().text = "";
+            previewModel1.GetComponentInChildren<TMP_Text>().text = "+";
+            previewModel2.GetComponentInChildren<TMP_Text>().text = "";
+            previewModel3.GetComponentInChildren<TMP_Text>().text = "";
+            previewModel4.GetComponentInChildren<TMP_Text>().text = "";
+            previewModel5.GetComponentInChildren<TMP_Text>().text = "";
+            previewQuestion1.GetComponentInChildren<TMP_Text>().text = "";
+            previewQuestion2.GetComponentInChildren<TMP_Text>().text = "";
+            previewQuestion3.GetComponentInChildren<TMP_Text>().text = "";
+            previewQuestion4.GetComponentInChildren<TMP_Text>().text = "";
+            previewQuestion5.GetComponentInChildren<TMP_Text>().text = "";
 
             // Reset the toggle, check the one that is selected as default, because it is a toggle group the other is set to false automatically
             GameObject.Find("MultipleChoice").GetComponent<Toggle>().isOn = true;
 
             // Reset the interactability of the buttons
-            GameObject.Find("Add3DModel2").GetComponent<Button>().interactable = false;
-            GameObject.Find("Add3DModel3").GetComponent<Button>().interactable = false;
-            GameObject.Find("Add3DModel4").GetComponent<Button>().interactable = false;
-            GameObject.Find("Add3DModel5").GetComponent<Button>().interactable = false;
-            GameObject.Find("PreviewQuestion1").GetComponent<Button>().interactable = false;
-            GameObject.Find("PreviewQuestion2").GetComponent<Button>().interactable = false;
-            GameObject.Find("PreviewQuestion3").GetComponent<Button>().interactable = false;
-            GameObject.Find("PreviewQuestion4").GetComponent<Button>().interactable = false;
-            GameObject.Find("PreviewQuestion5").GetComponent<Button>().interactable = false;
+            previewModel2.interactable = false;
+            previewModel3.interactable = false;
+            previewModel4.interactable = false;
+            previewModel5.interactable = false;
+            previewQuestion1.interactable = false;
+            previewQuestion2.interactable = false;
+            previewQuestion3.interactable = false;
+            previewQuestion4.interactable = false;
+            previewQuestion5.interactable = false;
 
             // Then it is needed to set the right windows as current menu and deactivate / activate the right menus
             DeactivateCreatorMenu();
@@ -668,10 +705,11 @@ public class Creator : MonoBehaviour
 
             Debug.Log("all files have been deleted");
 
-            // Reset the page count and question index
+            // Reset the page count, model and question index
             Menus.currentPage = 1;
             Menus.numberOfPages = 1;
             Menus.currentQuestionIndex = 0;
+            Menus.currentModelIndex = 0;
 
             // Disable the errors
             noQuestionCreated.gameObject.SetActive(false);
@@ -1686,6 +1724,36 @@ public class Creator : MonoBehaviour
 
     public bool extendedLogging = true;
 
+    // Method activated when clicking on the add 3D model button
+    public void Add3DModel()
+    {
+        // Get the button name
+        string buttonName = EventSystem.current.currentSelectedGameObject.name;
+        Button currentButton = GameObject.Find(buttonName).GetComponent<Button>();
+        string modelName = currentButton.GetComponentInChildren<TMP_Text>().text;
+
+        // Check if a 3D model was already imported on that button
+        if(currentButton.GetComponentInChildren<TMP_Text>().text == "+")
+        {
+            // Case no model added, open the import model window
+            ActivateImportModelWindow();
+
+        } else {
+            // Case 3D model already imported on that button, open a window where the user can delete this model
+            // Open the replace model window
+            ActivateReplaceModelWindow();
+
+            // Set the right edited model index
+            SetEditedModelIndex(buttonName);
+
+            // Change the heading
+            wishToReplaceHeading.text = "You already imported a model here. Do you wish to delete or replace the model " + modelName + "?";
+
+            // Set the current model name as the one being edited
+            Menus.editedModelName = modelName;
+        }
+    }
+
     // Method that is triggered when clicking on the import button of the import 3D model window
     public void ImportModel()
     {
@@ -1725,8 +1793,10 @@ public class Creator : MonoBehaviour
                 // Check if a file with that name already exist in the temp save folder
                 if(File.Exists(Menus.tempSavePath + fileName))
                 {
+                    Debug.Log("Went in the open window loop");
                     // Open a window that tells you that a file with that name already was imported. Ask if the user wants to replace it or to cancel.
-                    ActivateImportModelWindow();
+                    ActivateEnterNewModelNameWindow();
+                    duplicateName.text = "There are currently more than one file with the name: " + fileName + ". If they are not the same model, enter a new name:";
 
                     // Deactivate the enter url window
                     DeactivateImportModelWindow();
@@ -1735,6 +1805,7 @@ public class Creator : MonoBehaviour
                     Menus.currentUri = url;
                     
                 } else {
+                    Debug.Log("Downloading the file");
                     // Name does not already exist, download the file and save it in the temp save folder
                     using (var client = new WebClient())
                     {
@@ -1743,46 +1814,298 @@ public class Creator : MonoBehaviour
                     }
 
                     // Preview the name of the 3D model on the right button
-                    PreviewModelName(fileName);
+                    PreviewModelName(fileName, Menus.currentModelIndex);
 
                     // Close the window
                     DeactivateImportModelWindow();
 
                     // Increase the current model index by one
                     Menus.currentModelIndex = Menus.currentModelIndex  + 1;
+
+                    // Activate the next preview button
+                    ActivateNextPreviewModelButton();
                 }
             }
         }
     }
 
-    // Method that displays the current model name in the preview
-    public void PreviewModelName(string name)
+    // Method that replace a model with the new given through an uri
+    public void ReplaceModel()
     {
-        // Display the model at the right place
+        // Disable the error messages
+        noUrlTypedInErrorMessageReplacement.gameObject.SetActive(false);
+        urlObjectOfWrongTypeErrorMessageReplacement.gameObject.SetActive(false);
+
+        // Get the typed in uri
+        string url = enterNewModelUri.text;
+
+        // Get the string that is displayed in the input field and define the .obj ending as a string
+        string ending = ".obj";
+
+        // Check if the impult field is non empty
+        if(url == "")
+        {
+            Debug.Log("Url is empty");
+            // If it is empty, then display the "no url typed in" error message
+            noUrlTypedInErrorMessageReplacement.gameObject.SetActive(true);
+
+        } else {
+            //If it is non empty, check if the url goes to a .obj object
+            if(url.EndsWith(ending) != true)
+            {
+                Debug.Log("Url is not ending on .obj");
+                // Case the ending is not .obj, display the url does not point on .obj model error message
+                urlObjectOfWrongTypeErrorMessageReplacement.gameObject.SetActive(true);
+
+            } else {
+                Debug.Log("Url correct");
+                // Case the url points to a .obj object, import it
+
+                // Extract the file name
+                System.Uri uri = new Uri(url);
+                string fileName = System.IO.Path.GetFileName(uri.LocalPath);
+                Debug.Log("File name: " + fileName);
+
+                // Check if a file with that name already exist in the temp save folder
+                if(File.Exists(Menus.tempSavePath + fileName))
+                {
+                    Debug.Log("Went in the open window loop");
+                    // Open a window that tells you that a file with that name already was imported. Ask if the user wants to replace it or to cancel.
+                    ActivateEnterNewModelNameWindow();
+                    duplicateName.text = "There are currently more than one file with the name: " + fileName + ". If they are not the same model, enter a new name:";
+
+                    // Deactivate the enter url window
+                    DeactivateReplaceModelWindow();
+
+                    // Save the current uri
+                    Menus.currentUri = url;
+                    
+                } else {
+                    Debug.Log("Downloading the file");
+                    // Name does not already exist, download the file and save it in the temp save folder
+                    using (var client = new WebClient())
+                    {
+                        Debug.Log("Downloading file?");
+                        client.DownloadFile(url, Menus.tempSavePath + fileName);
+                    }
+
+                    // Preview the name of the 3D model on the right button
+                    PreviewModelName(fileName, Menus.editedModelIndex);
+
+                    // Close the window
+                    DeactivateReplaceModelWindow();
+
+                    // Set the edited model index on a number that cannot be reached to reset it
+                    Menus.editedModelIndex = 5;
+                }
+            }
+        }
+    }
+
+    // Method that deletes the currently edited model
+    public void DeleteModel()
+    {
+        // Delete the model
+        File.Delete(Menus.tempSavePath + Menus.editedModelName);
+
+        // Reduce the current model index by one
+        Menus.currentModelIndex = Menus.currentModelIndex - 1;
+
+        // Change the preview buttons
+        ActualizePreviewModelButtons();
+
+        // Activate the right button next
+        ActivateNextPreviewModelButton();
+
+        // Deactivate the window
+        DeactivateReplaceModelWindow();
+    }
+
+    // Method that activates the next model preview button
+    public void ActivateNextPreviewModelButton()
+    {
         switch(Menus.currentModelIndex)
         {
             case 0:
-                previewModel1.GetComponentInChildren<TMP_Text>().text = name;
-                previewModel2.interactable = true;
+                previewModel1.interactable = true;
+                previewModel1.GetComponentInChildren<TMP_Text>().text = "+";
             break;
             case 1:
-                previewModel2.GetComponentInChildren<TMP_Text>().text = name;
+                previewModel2.interactable = true;
+                previewModel2.GetComponentInChildren<TMP_Text>().text = "+";
+            break;
+            case 2:
                 previewModel3.interactable = true;
                 previewModel3.GetComponentInChildren<TMP_Text>().text = "+";
             break;
-            case 2:
-                previewModel3.GetComponentInChildren<TMP_Text>().text = name;
+            case 3:
                 previewModel4.interactable = true;
                 previewModel4.GetComponentInChildren<TMP_Text>().text = "+";
             break;
-            case 3:
-                previewModel4.GetComponentInChildren<TMP_Text>().text = name;
+            case 4:
                 previewModel5.interactable = true;
                 previewModel5.GetComponentInChildren<TMP_Text>().text = "+";
+            break;
+        }
+    }
+
+    // Method that displays the current model name in the preview
+    public void PreviewModelName(string name, int index)
+    {
+        // Rename the name on the right button
+        switch(index)
+        {
+            case 0:
+                previewModel1.GetComponentInChildren<TMP_Text>().text = name;
+            break;
+            case 1:
+                previewModel2.GetComponentInChildren<TMP_Text>().text = name;
+            break;
+            case 2:
+                previewModel3.GetComponentInChildren<TMP_Text>().text = name;
+            break;
+            case 3:
+                previewModel4.GetComponentInChildren<TMP_Text>().text = name;
             break;
             case 4:
                 previewModel5.GetComponentInChildren<TMP_Text>().text = name;
             break;
+        }
+    }
+
+    // Method that resets the model preview buttons correctly after a button deletion
+    public void ActualizePreviewModelButtons()
+    {
+        // Get the array of models
+        string[] models = GetModelsArray(Menus.tempSavePath);
+
+        // Reset the buttons
+        ResetPreviewModelButtons();
+
+        // Create the current model index
+        int modelIndex = 0;
+
+        // Set the right names on the buttons
+        foreach(string model in models)
+        {
+            // Preview the model name
+            PreviewModelName(Path.GetFileName(model), modelIndex);
+
+            // Increase the current model index by 1
+            modelIndex = modelIndex + 1;
+        }
+    }
+
+    // Method that sets the right edited model index given a button name
+    public void SetEditedModelIndex(string buttonName)
+    {
+        // Set the edited model index correctly
+         switch(buttonName)
+        {
+            case "Add3DModel1":
+                Menus.editedModelIndex = 0;
+            break;
+            case "Add3DModel2":
+                Menus.editedModelIndex = 1;
+            break;
+            case "Add3DModel3":
+                Menus.editedModelIndex = 2;
+            break;
+            case "Add3DModel4":
+                Menus.editedModelIndex = 3;
+            break;
+            case "Add3DModel5":
+                Menus.editedModelIndex = 4;
+            break;
+        }
+    }
+
+    // Method that resets the state of the preview model buttons
+    public void ResetPreviewModelButtons()
+    {
+        // Reset the text
+        previewModel1.GetComponentInChildren<TMP_Text>().text = "+";
+        previewModel2.GetComponentInChildren<TMP_Text>().text = "";
+        previewModel3.GetComponentInChildren<TMP_Text>().text = "";
+        previewModel4.GetComponentInChildren<TMP_Text>().text = "";
+        previewModel5.GetComponentInChildren<TMP_Text>().text = "";
+
+        // Reset the interactability
+        previewModel2.interactable = false;
+        previewModel3.interactable = false;
+        previewModel4.interactable = false;
+        previewModel5.interactable = false;
+    }
+
+    // Method that returns the array of models in the given path
+    static string[] GetModelsArray(string path) 
+    {
+        Debug.Log("The model array was created");
+        string[] questions = Directory.GetFiles(path, "*.obj", SearchOption.TopDirectoryOnly);
+        return questions;
+    }
+
+
+    // Method that changes the name of the improrted model (case two different models with same name)
+    public void RenameDuplicate()
+    {
+        // Disable error Message
+        noNameToRenameTypedIn.gameObject.SetActive(false);
+
+        // Get the typed in name
+        string newName = enterNewModelName.text;
+
+        // Check that the name is non empty
+        if(newName == "")
+        {
+            // Display error message
+            noNameToRenameTypedIn.gameObject.SetActive(true);
+
+        } else {
+
+            // Get the right button to rename index
+            int index = 0;
+            if(Menus.editedModelIndex != 5)
+            {
+                // Case old model need to be replaced by a new one. Set the index on the edited model index
+                index = Menus.editedModelIndex;
+
+                // Delete the old model
+                File.Delete(Menus.tempSavePath + Menus.editedModelName);
+
+            } else {
+                
+                // Case a newly added model needs to be renamed. Set the index on the current model index
+                index = Menus.currentModelIndex;
+            }
+
+            // Check if the name ends with ".obj", if not add the ending
+            string ending = ".obj";
+            if(newName.EndsWith(ending) != true)
+            {
+                newName = newName + ending;
+            }
+
+            // Downsload the file
+            using (var client = new WebClient())
+            {
+                Debug.Log("Downloading file?");
+                client.DownloadFile(Menus.currentUri, Menus.tempSavePath + newName);
+            }
+
+            // Preview the name of the 3D model on the right button
+            PreviewModelName(newName, index);
+
+            // Close the window
+            DeactivateEnterNewModelNameWindow();
+
+            if(Menus.editedModelIndex == 5)
+            {
+                // Increase the current model index by one
+                Menus.currentModelIndex = Menus.currentModelIndex  + 1;
+            } else {
+                Menus.editedModelIndex = 5;
+            }
         }
     }
 }
