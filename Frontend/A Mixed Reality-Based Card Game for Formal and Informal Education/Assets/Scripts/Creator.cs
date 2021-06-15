@@ -21,10 +21,6 @@ static class Menus
     public static GameObject lastMenu;
     public static GameObject currentMenu;
 
-    // Save an index and exercise name to be able to link different questions and models together
-    public static int currentExerciseIndex; // Used to generate correct exercise names
-    public static string currentExerciseName;
-
     // Save an index for the current question
     public static int currentQuestionIndex;
     public static int currentModelIndex;
@@ -167,6 +163,7 @@ public class Creator : MonoBehaviour
 
     // For the rename duplicate model window
     public TextMeshProUGUI noNameToRenameTypedIn;
+    public TextMeshProUGUI nameAlreadyExist;
 
     // Define the heading text that gives the current page
     public TextMeshProUGUI headingPageNumber;
@@ -182,10 +179,15 @@ public class Creator : MonoBehaviour
     public class InputQuestion
     {
         public string exerciseType = "input question";
-        public string exerciseName;
         public string name;
         public string question;
         public string answer;
+        public int numberOfModels;
+        public string model1Name;
+        public string model2Name;
+        public string model3Name;
+        public string model4Name;
+        public string model5Name;
     }
 
     // The JSON Serialization for the multiple choice questions
@@ -193,7 +195,6 @@ public class Creator : MonoBehaviour
     public class MultipleChoiceQuestion
     {
         public string exerciseType = "multiple choice question";
-        public string exerciseName;
         public string name;
         public string question;
         public int numberOfAnswers;
@@ -207,21 +208,12 @@ public class Creator : MonoBehaviour
         public bool answer3Correct;
         public bool answer4Correct;
         public bool answer5Correct;
-    }
-
-    // Still need to save the 3D models somehow
-    // The exercise name is used to link the questions to the 3D models
-    // The names are the names of the files that are uploaded by the user
-    [Serializable]
-    public class Models
-    {
-        public string exerciseName;
         public int numberOfModels;
-        public string nameFirstModel;
-        public string nameSecondModel;
-        public string nameThirdModel;
-        public string nameFourthModel;
-        public string nameFifthModel;
+        public string model1Name;
+        public string model2Name;
+        public string model3Name;
+        public string model4Name;
+        public string model5Name;
     }
 
     // -------------------------------------------------------------------------------------------------------------------
@@ -252,7 +244,6 @@ public class Creator : MonoBehaviour
         Menus.currentMenu = mainCreator;
 
         // Set the current exercise index
-        Menus.currentExerciseIndex = 0;
         Menus.currentQuestionIndex = 0;
 
         // Initialize the save path. This will have to be saved later on
@@ -312,9 +303,6 @@ public class Creator : MonoBehaviour
     // Method used to enter the creator
     public void EnterCreator() 
     {
-        // Set the right exercise name
-        Menus.currentExerciseName = "exerciseName" + Menus.currentExerciseIndex;
-        Menus.currentExerciseIndex = Menus.currentExerciseIndex + 1;
 
         // Set the right page as current
         Menus.currentPage = 1;
@@ -1008,7 +996,6 @@ public class Creator : MonoBehaviour
     {
         // First enter the information that is already known
         InputQuestion inputQuestion = new InputQuestion();
-        inputQuestion.exerciseName = Menus.currentExerciseName;
         inputQuestion.question = enterQuestionInput.text;
         inputQuestion.answer = enterAnswerInput.text;
 
@@ -1077,7 +1064,6 @@ public class Creator : MonoBehaviour
     {
         // First enter the information that is already known
         MultipleChoiceQuestion multipleChoiceQuestion = new MultipleChoiceQuestion();
-        multipleChoiceQuestion.exerciseName = Menus.currentExerciseName;
         multipleChoiceQuestion.question = enterQuestionMultiple.text;
         multipleChoiceQuestion.answer1 = enterFirstAnswer.text;
         multipleChoiceQuestion.answer2 = enterSecondAnswer.text;
@@ -1406,8 +1392,6 @@ public class Creator : MonoBehaviour
     public void CopyFromPath1ToPath2(string path1, string path2)
     {
         // Copy all files that are in the path1 to the directory in path 2
-        //Directory.CreateDirectory(path2);
-
         foreach(var file in Directory.GetFiles(path1))
         {
             File.Copy(file, Path.Combine(path2, Path.GetFileName(file)));
@@ -1476,9 +1460,11 @@ public class Creator : MonoBehaviour
                 File.WriteAllText(Menus.tempSavePath + "Description.json", jsonNew);
             }
 
+            // Add all 3D model information to the questions
+            AddModelInformation();
+
             // Copy all files form the temp save directory to the end save directory
             CopyFromPath1ToPath2(Menus.tempSavePath, Globals.selectedPath);
-
 
             // Exit the creator
             ExitWithoutSavingYes();
@@ -1495,6 +1481,145 @@ public class Creator : MonoBehaviour
                 noPathSelected.gameObject.SetActive(true);
             }
         }
+    }
+
+    // Method that adds the 3D model information to all questions that will get saved in the end save directory
+    public void AddModelInformation()
+    {
+        // Get the questions array
+        string[] questions = GetQuestionsArray(Menus.tempSavePath);
+
+        // Extract the json string of the description
+        string jsonDescription = File.ReadAllText(Menus.tempSavePath + "Description.json");
+        Log description = JsonUtility.FromJson<Log>(jsonDescription);
+
+        // Initialize the number of models
+        int numberOfModels = 0;
+
+        foreach(string question in questions)
+        {
+            string json = File.ReadAllText(question);
+
+            // Find out what type of question it is
+            if(json.Contains("input question") == true)
+            {
+                Debug.Log("Entered input question edit");
+                // Case input question
+                InputQuestion inputQuestion = JsonUtility.FromJson<InputQuestion>(json);
+
+                // Set the number of models and models
+                // Set the first model if there is one
+                if(previewModel1.GetComponentInChildren<TMP_Text>().text != "+")
+                {
+                    inputQuestion.model1Name = previewModel1.GetComponentInChildren<TMP_Text>().text;
+                    numberOfModels = numberOfModels + 1;
+                }
+
+                // Set the second model if there is one
+                if(previewModel2.GetComponentInChildren<TMP_Text>().text != "+" && previewModel2.GetComponentInChildren<TMP_Text>().text != "")
+                {
+                    inputQuestion.model2Name = previewModel2.GetComponentInChildren<TMP_Text>().text;
+                    numberOfModels = numberOfModels + 1;
+                }
+
+                // Set the third model if there is one
+                if(previewModel3.GetComponentInChildren<TMP_Text>().text != "+" && previewModel3.GetComponentInChildren<TMP_Text>().text != "")
+                {
+                    inputQuestion.model3Name = previewModel3.GetComponentInChildren<TMP_Text>().text;
+                    numberOfModels = numberOfModels + 1;
+                }
+
+                // Set the fourth model if there is one
+                if(previewModel4.GetComponentInChildren<TMP_Text>().text != "+" && previewModel4.GetComponentInChildren<TMP_Text>().text != "")
+                {
+                    inputQuestion.model4Name = previewModel4.GetComponentInChildren<TMP_Text>().text;
+                    numberOfModels = numberOfModels + 1;
+                }
+
+                // Set the fifth model if there is one
+                if(previewModel5.GetComponentInChildren<TMP_Text>().text != "+" && previewModel5.GetComponentInChildren<TMP_Text>().text != "")
+                {
+                    inputQuestion.model5Name = previewModel5.GetComponentInChildren<TMP_Text>().text;
+                    numberOfModels = numberOfModels + 1;
+                }
+
+                // Set the number of models
+                inputQuestion.numberOfModels = numberOfModels;
+                description.numberOfModels = numberOfModels;
+
+                // Delete old save file
+                File.Delete(question);
+
+                // Convert to json
+                string newJson = JsonUtility.ToJson(inputQuestion);
+
+                // Create new save file
+                File.WriteAllText(question, newJson);
+
+            } else {
+
+                Debug.Log("Entered multiple choice question edit");
+                // Case multiple choice question
+                MultipleChoiceQuestion multipleChoiceQuestion = JsonUtility.FromJson<MultipleChoiceQuestion>(json);
+
+                // Set the number of models and models
+                // Set the first model if there is one
+                if(previewModel1.GetComponentInChildren<TMP_Text>().text != "+")
+                {
+                    multipleChoiceQuestion.model1Name = previewModel1.GetComponentInChildren<TMP_Text>().text;
+                    numberOfModels = numberOfModels + 1;
+                }
+
+                // Set the second model if there is one
+                if(previewModel2.GetComponentInChildren<TMP_Text>().text != "+" && previewModel2.GetComponentInChildren<TMP_Text>().text != "")
+                {
+                    multipleChoiceQuestion.model2Name = previewModel2.GetComponentInChildren<TMP_Text>().text;
+                    numberOfModels = numberOfModels + 1;
+                }
+
+                // Set the third model if there is one
+                if(previewModel3.GetComponentInChildren<TMP_Text>().text != "+" && previewModel3.GetComponentInChildren<TMP_Text>().text != "")
+                {
+                    multipleChoiceQuestion.model3Name = previewModel3.GetComponentInChildren<TMP_Text>().text;
+                    numberOfModels = numberOfModels + 1;
+                }
+
+                // Set the fourth model if there is one
+                if(previewModel4.GetComponentInChildren<TMP_Text>().text != "+" && previewModel4.GetComponentInChildren<TMP_Text>().text != "")
+                {
+                    multipleChoiceQuestion.model4Name = previewModel4.GetComponentInChildren<TMP_Text>().text;
+                    numberOfModels = numberOfModels + 1;
+                }
+
+                // Set the fifth model if there is one
+                if(previewModel5.GetComponentInChildren<TMP_Text>().text != "+" && previewModel5.GetComponentInChildren<TMP_Text>().text != "")
+                {
+                    multipleChoiceQuestion.model5Name = previewModel5.GetComponentInChildren<TMP_Text>().text;
+                    numberOfModels = numberOfModels + 1;
+                }
+
+                // Set the number of models
+                multipleChoiceQuestion.numberOfModels = numberOfModels;
+                description.numberOfModels = numberOfModels;
+
+                // Delete old save file
+                File.Delete(question);
+
+                // Convert to json
+                string newJson = JsonUtility.ToJson(multipleChoiceQuestion);
+
+                // Create new save file
+                File.WriteAllText(question, newJson);
+            }
+        }
+        // Delete old save file
+        File.Delete(Menus.tempSavePath + "Description.json");
+
+        // Convert to json
+        string newDescriptionJson = JsonUtility.ToJson(description);
+
+        // Create new save file
+        File.WriteAllText(Menus.tempSavePath + "Description.json", newDescriptionJson);
     }
 
     // Method that saves the question back in the back-end save directory after editing it (when choosing the question in the brows directories menu)
@@ -1867,7 +1992,7 @@ public class Creator : MonoBehaviour
                 Debug.Log("File name: " + fileName);
 
                 // Check if a file with that name already exist in the temp save folder
-                if(File.Exists(Menus.tempSavePath + fileName))
+                if(File.Exists(Menus.tempSavePath + fileName) && Menus.editedModelName != fileName)
                 {
                     Debug.Log("Went in the open window loop");
                     // Open a window that tells you that a file with that name already was imported. Ask if the user wants to replace it or to cancel.
@@ -1897,6 +2022,7 @@ public class Creator : MonoBehaviour
 
                     // Set the edited model index on a number that cannot be reached to reset it
                     Menus.editedModelIndex = 5;
+                    Menus.editedModelName = "";
                 }
             }
         }
@@ -1919,6 +2045,12 @@ public class Creator : MonoBehaviour
 
         // Deactivate the window
         DeactivateReplaceModelWindow();
+
+        // Reset the edited model index
+        Menus.editedModelIndex = 5;
+
+        // Reset the edited model name
+        Menus.editedModelName = "";
     }
 
     // Method that activates the next model preview button
@@ -2051,6 +2183,7 @@ public class Creator : MonoBehaviour
     {
         // Disable error Message
         noNameToRenameTypedIn.gameObject.SetActive(false);
+        nameAlreadyExist.gameObject.SetActive(false);
 
         // Get the typed in name
         string newName = enterNewModelName.text;
@@ -2063,22 +2196,6 @@ public class Creator : MonoBehaviour
 
         } else {
 
-            // Get the right button to rename index
-            int index = 0;
-            if(Menus.editedModelIndex != 5)
-            {
-                // Case old model need to be replaced by a new one. Set the index on the edited model index
-                index = Menus.editedModelIndex;
-
-                // Delete the old model
-                File.Delete(Menus.tempSavePath + Menus.editedModelName);
-
-            } else {
-                
-                // Case a newly added model needs to be renamed. Set the index on the current model index
-                index = Menus.currentModelIndex;
-            }
-
             // Check if the name ends with ".obj", if not add the ending
             string ending = ".obj";
             if(newName.EndsWith(ending) != true)
@@ -2086,25 +2203,53 @@ public class Creator : MonoBehaviour
                 newName = newName + ending;
             }
 
-            // Downsload the file
-            using (var client = new WebClient())
+            // Check if a file with that name already exist in the temp save folder
+            if(File.Exists(Menus.tempSavePath + newName) && Menus.editedModelName != newName)
             {
-                Debug.Log("Downloading file?");
-                client.DownloadFile(Menus.currentUri, Menus.tempSavePath + newName);
-            }
-
-            // Preview the name of the 3D model on the right button
-            PreviewModelName(newName, index);
-
-            // Close the window
-            DeactivateEnterNewModelNameWindow();
-
-            if(Menus.editedModelIndex == 5)
-            {
-                // Increase the current model index by one
-                Menus.currentModelIndex = Menus.currentModelIndex  + 1;
+                // Display error message
+                nameAlreadyExist.gameObject.SetActive(true);
             } else {
-                Menus.editedModelIndex = 5;
+                // Get the right button to rename index
+                int index = 0;
+                if(Menus.editedModelIndex != 5)
+                {
+                    // Case old model need to be replaced by a new one. Set the index on the edited model index
+                    index = Menus.editedModelIndex;
+    
+                    // Delete the old model
+                    File.Delete(Menus.tempSavePath + Menus.editedModelName);
+
+                } else {
+                
+                    // Case a newly added model needs to be renamed. Set the index on the current model index
+                    index = Menus.currentModelIndex;
+                }
+
+                // Downsload the file
+                using (var client = new WebClient())
+                {
+                    Debug.Log("Downloading file?");
+                    client.DownloadFile(Menus.currentUri, Menus.tempSavePath + newName);
+                }
+
+                // Preview the name of the 3D model on the right button
+                PreviewModelName(newName, index);
+
+                // Close the window
+                DeactivateEnterNewModelNameWindow();
+    
+                if(Menus.editedModelIndex == 5)
+                {
+                    // Increase the current model index by one
+                    Menus.currentModelIndex = Menus.currentModelIndex  + 1;
+                } else {
+                    Menus.editedModelIndex = 5;
+                    Menus.editedModelName = "";
+                }
+
+                // Activate the next button
+                ActivateNextPreviewModelButton();
+                Debug.Log(Menus.currentModelIndex);
             }
         }
     }
