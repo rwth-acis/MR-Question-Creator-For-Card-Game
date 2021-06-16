@@ -82,15 +82,27 @@ public class BrowsDirectories : MonoBehaviour
     public Button changeButton;
     public Button createDirectory;
 
+    // Define the model preview buttons
+    public Button previewModel1;
+    public Button previewModel2;
+    public Button previewModel3;
+    public Button previewModel4;
+    public Button previewModel5;
+
     // The JSON Serialization for the input questions
     [Serializable]
     public class InputQuestion
     {
         public string exerciseType = "input question";
-        public string exerciseName;
         public string name;
         public string question;
         public string answer;
+        public int numberOfModels;
+        public string model1Name;
+        public string model2Name;
+        public string model3Name;
+        public string model4Name;
+        public string model5Name;
     }
 
     // The JSON Serialization for the multiple choice questions
@@ -98,7 +110,6 @@ public class BrowsDirectories : MonoBehaviour
     public class MultipleChoiceQuestion
     {
         public string exerciseType = "multiple choice question";
-        public string exerciseName;
         public string name;
         public string question;
         public int numberOfAnswers;
@@ -112,6 +123,12 @@ public class BrowsDirectories : MonoBehaviour
         public bool answer3Correct;
         public bool answer4Correct;
         public bool answer5Correct;
+        public int numberOfModels;
+        public string model1Name;
+        public string model2Name;
+        public string model3Name;
+        public string model4Name;
+        public string model5Name;
     }
 
     // The log, which will become the Description.json file
@@ -131,6 +148,15 @@ public class BrowsDirectories : MonoBehaviour
     public Button okDescription;
     public Button cancelDescription;
     public Button backDescription;
+
+    // The JSON Serialization for the Models
+    [Serializable]
+    public class Model
+    {
+        public string modelName;
+        public int numberOfQuestionsUsedIn;
+
+    }
 
     // Start is called before the first frame update
     void Start()
@@ -693,6 +719,79 @@ public class BrowsDirectories : MonoBehaviour
             previewQuestion1.interactable = true;
             Debug.Log("PreviewQuestion1 button is now interactable.");
 
+            // Get the json string
+            string json = File.ReadAllText(filePath);
+
+            // Find our what kind of question it is
+            if(json.Contains("input question") == true)
+            {
+                // Extract the object
+                InputQuestion question = JsonUtility.FromJson<InputQuestion>(json);
+
+                // Load all model files
+                if(question.numberOfModels >= 1)
+                {
+                    // Load the first model file
+                    File.Copy(Path.Combine(Globals.selectedPath, question.model1Name), Path.Combine(Globals.tempSavePath, question.model1Name));
+                }
+                if(question.numberOfModels >= 2)
+                {
+                    // Load the second model file
+                    File.Copy(Path.Combine(Globals.selectedPath, question.model2Name), Path.Combine(Globals.tempSavePath, question.model2Name));
+                }
+                if(question.numberOfModels >= 3)
+                {
+                    // Load the third model file
+                    File.Copy(Path.Combine(Globals.selectedPath, question.model3Name), Path.Combine(Globals.tempSavePath, question.model3Name));
+                }
+                if(question.numberOfModels >= 4)
+                {
+                    // Load the fourth model file
+                    File.Copy(Path.Combine(Globals.selectedPath, question.model4Name), Path.Combine(Globals.tempSavePath, question.model4Name));
+                }
+                if(question.numberOfModels == 5)
+                {
+                    // Load the fifth model file
+                    File.Copy(Path.Combine(Globals.selectedPath, question.model5Name), Path.Combine(Globals.tempSavePath, question.model5Name));
+                }
+
+                // Get the models array
+                string[] modelArray = GetModelsArray(Globals.tempSavePath);
+
+                int index = 0;
+
+                // Set the models
+                foreach(string model in modelArray)
+                {
+                    // Get the json string
+                    string jsonModel = File.ReadAllText(model);
+
+                    // Extract the object
+                    Model modelObject = JsonUtility.FromJson<Model>(jsonModel);
+
+                    // Get the right button
+                    Button previewButton = GetRightModelPreviewButton(index);
+
+                    // Set the name of the button correctly
+                    previewButton.GetComponentInChildren<TMP_Text>().text = modelObject.modelName;
+
+                    // Make it interactable
+                    previewButton.interactable  = true;
+
+                    // Increase index by one
+                    index = index + 1;
+                }
+
+                // Setup the next button, so that a model can be added
+                Button previewButtonNext = GetRightModelPreviewButton(index);
+
+                // Set the name of the button correctly
+                previewButtonNext.GetComponentInChildren<TMP_Text>().text = "+";
+
+                // Make it interactable
+                previewButtonNext.interactable  = true;
+            }
+
             // Here change the button from "save" to "change"
             saveButton.gameObject.SetActive(false);
             changeButton.gameObject.SetActive(true);
@@ -732,6 +831,40 @@ public class BrowsDirectories : MonoBehaviour
             descriptionText.text = descriptionLog.description;
         }
         Debug.Log("Current path: " + Globals.currentPath);
+    }
+
+    // Method that returns the array of models (json files) in the given path
+    static string[] GetModelsArray(string path) 
+    {
+        Debug.Log("The model array was created");
+        string[] questions = Directory.GetFiles(path, "Model*", SearchOption.TopDirectoryOnly);
+        return questions;
+    }
+
+    // Method that returns you the right model preview button given the index
+    public Button GetRightModelPreviewButton(int index)
+    {
+        switch(index)
+        {
+            case 0:
+                return previewModel1;
+            break;
+            case 1:
+                return previewModel2;
+            break;
+            case 2:
+                return previewModel3;
+            break;
+            case 3:
+                return previewModel4;
+            break;
+            case 4:
+                return previewModel5;
+            break;
+            default:
+                return previewModel5;
+            break;
+        }
     }
 
     // Method that saves the changed description back in the old file
