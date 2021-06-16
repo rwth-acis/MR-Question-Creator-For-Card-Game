@@ -57,6 +57,7 @@ public class Creator : MonoBehaviour
     public GameObject importModelWindow;
     public GameObject duplicateModelWindow;
     public GameObject replaceModelWindow;
+    public GameObject modelMarchesWindow;
 
     // The veils are invisible, they are used to block access to the buttons on the menu under it
     public GameObject veilLargeWindow;
@@ -89,6 +90,13 @@ public class Creator : MonoBehaviour
 
     // The input field to type in the uri of the new 3D model to replace the old one
     public TMP_InputField enterNewModelUri;
+
+    // The input fields to rename models that match models in the end directory
+    public TMP_InputField enterNewModelNameMatch1;
+    public TMP_InputField enterNewModelNameMatch2;
+    public TMP_InputField enterNewModelNameMatch3;
+    public TMP_InputField enterNewModelNameMatch4;
+    public TMP_InputField enterNewModelNameMatch5;
 
     // Defining the button
     // Button to select a directory as end save directory
@@ -134,6 +142,13 @@ public class Creator : MonoBehaviour
     // Buttons used to delete questions
     public Button deleteInputQuestion;
     public Button deleteMultipleChoiceQuestion;
+
+    // The five preview model matches button shown when trying to save models in the end save directory when there are matches
+    public Button modelNameMatch1;
+    public Button modelNameMatch2;
+    public Button modelNameMatch3;
+    public Button modelNameMatch4;
+    public Button modelNameMatch5;
 
     // Define the toggles used in the multiple choice mode
     public Toggle firstAnswerCorrect;
@@ -216,6 +231,25 @@ public class Creator : MonoBehaviour
         public string model5Name;
     }
 
+    // The JSON Serialization for the Models
+    [Serializable]
+    public class Model
+    {
+        public string modelName;
+        public int numberOfQuestionsUsedIn;
+
+    }
+
+    // The JSON Serialization for the log file
+    [Serializable]
+    public class Log
+    {
+        public int numberOfQuestions; // The number of already existing questions in the folder so that the new ones can be renamed
+        public int numberOfModels; // The number of already existing model files in the folder so that the new ones can be renamed
+        public string heading; // Heading of the description, name that users can give
+        public string description; // The description text of the content / concepts that are needed for solving the exercises
+    }
+
     // -------------------------------------------------------------------------------------------------------------------
     // Start method, used to initialize all Menus variables and set all buttons on interactable or not
     // -------------------------------------------------------------------------------------------------------------------
@@ -266,8 +300,12 @@ public class Creator : MonoBehaviour
         Menus.currentModelIndex = 0;
         Menus.editedModelIndex = 5;
 
-        // ObjImporter objImporter = new ObjImporter();
-        // ServiceManager.RegisterService(objImporter);
+        // Deactivate the matches buttons
+        modelNameMatch1.interactable = false;
+        modelNameMatch2.interactable = false;
+        modelNameMatch3.interactable = false;
+        modelNameMatch4.interactable = false;
+        modelNameMatch5.interactable = false;
     }
 
     // -------------------------------------------------------------------------------------------------------------------
@@ -461,6 +499,87 @@ public class Creator : MonoBehaviour
         replaceModelWindow.SetActive(false);
         veilSmallWindow.SetActive(false);
         enterNewModelUri.text = "";
+    }
+
+    // Method that activates the matches window and pastes the right names in the buttons
+    public void ActivateMatchesWindow(string[] matchesArray, int matches)
+    {
+        modelMarchesWindow.SetActive(true);
+        veilLargeWindow.SetActive(true);
+
+        // Initialize the index
+        int index = 0;
+
+        // If matches is 0, this method is not started
+        if(matches >= 1)
+        {
+            // Display the match name on the first button
+            modelNameMatch1.GetComponentInChildren<TMP_Text>().text = matchesArray[index];
+            enterNewModelNameMatch1.gameObject.SetActive(true);
+            index = index + 1;
+        }
+
+        // Display the right text on the second button
+        if(matches >= 2)
+        {
+            // Display the match name on the second button
+            modelNameMatch2.GetComponentInChildren<TMP_Text>().text = matchesArray[index];
+            enterNewModelNameMatch2.gameObject.SetActive(true);
+            index = index + 1;
+        } else {
+            modelNameMatch2.GetComponentInChildren<TMP_Text>().text = "";
+            enterNewModelNameMatch2.gameObject.SetActive(false);
+        }
+
+        // Display the right text on the third button
+        if(matches >= 3)
+        {
+            // Display the match name on the third button
+            modelNameMatch3.GetComponentInChildren<TMP_Text>().text = matchesArray[index];
+            enterNewModelNameMatch3.gameObject.SetActive(true);
+            index = index + 1;
+        } else {
+            modelNameMatch3.GetComponentInChildren<TMP_Text>().text = "";
+            enterNewModelNameMatch3.gameObject.SetActive(false);
+        }
+
+        // Display the right text on the fourth button
+        if(matches >= 4)
+        {
+            // Display the match name on the fourth button
+            modelNameMatch4.GetComponentInChildren<TMP_Text>().text = matchesArray[index];
+            enterNewModelNameMatch4.gameObject.SetActive(true);
+            index = index + 1;
+        } else {
+            modelNameMatch4.GetComponentInChildren<TMP_Text>().text = "";
+            enterNewModelNameMatch4.gameObject.SetActive(false);
+        }
+
+        // Display the right text on the fifth button
+        if(matches >= 5)
+        {
+            // Display the match name on the fifth button
+            modelNameMatch5.GetComponentInChildren<TMP_Text>().text = matchesArray[index];
+            enterNewModelNameMatch5.gameObject.SetActive(true);
+            index = index + 1;
+        } else {
+            modelNameMatch5.GetComponentInChildren<TMP_Text>().text = "";
+            enterNewModelNameMatch5.gameObject.SetActive(false);
+        }
+    }
+
+    // Method that deactivates the matches window and pastes the right names in the buttons
+    public void DeactivateMatchesWindow()
+    {
+        modelMarchesWindow.SetActive(false);
+        veilLargeWindow.SetActive(false);
+
+        // Reset the name fields
+        enterNewModelNameMatch1.text = "";
+        enterNewModelNameMatch2.text = "";
+        enterNewModelNameMatch3.text = "";
+        enterNewModelNameMatch4.text = "";
+        enterNewModelNameMatch5.text = "";
     }
 
 
@@ -1463,6 +1582,9 @@ public class Creator : MonoBehaviour
             // Add all 3D model information to the questions
             AddModelInformation();
 
+            // Delete models that have no model file in the folder
+            DeleteDuplicateModels();
+
             // Copy all files form the temp save directory to the end save directory
             CopyFromPath1ToPath2(Menus.tempSavePath, Globals.selectedPath);
 
@@ -1483,11 +1605,195 @@ public class Creator : MonoBehaviour
         }
     }
 
+    // Method that deletes the duplicate models in the temp save folder before all files are transfered
+    public void DeleteDuplicateModels()
+    {
+        // Get the string of paths to .obj files in the temp save filder
+        string[] modelsTemSave = GetModelsObjArray(Menus.tempSavePath);
+
+        // Get the models array of the end save folder
+        string[] modelsEndSave = GetModelsObjArray(Globals.selectedPath);
+
+        foreach(string tempModel in modelsTemSave)
+        {
+            foreach(string endModel in modelsEndSave)
+            {
+                if(Path.GetFileName(tempModel) == Path.GetFileName(endModel))
+                {
+                    // Delete the model that is a duplicate
+                    File.Delete(tempModel);
+                }
+            }
+        }
+    }
+
+    // Method that checks if there are 3D models with the same name in the end save directory
+    public void MergeModels()
+    {
+        // Get the models array of the temp save folder
+        string[] modelsTemSave = GetModelsObjArray(Menus.tempSavePath);
+
+        // Get the models array of the end save folder
+        string[] modelsEndSave = GetModelsObjArray(Globals.selectedPath);
+
+        // Initialize a counter variable that counts the number of matches
+        int matches = 0;
+
+        // Initialize an array that contain the name of the files that coincide
+        string[] modelMatches = new string[4];
+
+        // Check if no name coincide
+        foreach(string modelTemp in modelsTemSave)
+        {
+            foreach(string modelEnd in modelsEndSave)
+            {
+                if(Path.GetFileName(modelEnd) == Path.GetFileName(modelTemp))
+                {
+                    // Add the name of the file that already exist in the end save directory to the array
+                    modelMatches[matches] = Path.GetFileName(modelTemp);
+
+                    // Increase the match variable by one
+                    matches = matches + 1;
+                }
+            }
+        }
+
+        // If no match, then can start the next method that will save evertything
+        if(matches == 0)
+        {
+            // Launch the save method
+            SaveQuestionsInEndDirectory();
+        } else {
+            ActivateMatchesWindow(modelMatches, matches);
+        }
+    }
+
+    // Method that saves the new names for the matches and proceeds to the saving
+    public void SaveMatchNamesAndProceedWithSaving()
+    {
+        // First rename the matches
+        RenameMatches();
+
+        // Close the matches window
+        DeactivateMatchesWindow();
+
+        // Proceed with the saving
+        SaveQuestionsInEndDirectory();
+    }
+
+    // Method that merges the models that were not renamed, and rename the models that were given a new name
+    public void RenameMatches()
+    {
+        // Define the .obj ending
+        string ending = ".obj";
+
+        // Check if the first button has a name, and check if the input field was filled
+        if(modelNameMatch1.GetComponentInChildren<TMP_Text>().text != "")
+        {
+            string oldName = modelNameMatch1.GetComponentInChildren<TMP_Text>().text;
+            if(enterNewModelNameMatch1.text != "")
+            {
+                // 
+                string name = enterNewModelNameMatch1.text;
+                if(name.EndsWith(ending) != true)
+                {
+                    // Add the .obj ending if it was not used
+                    name = name + ending;
+                }
+
+                // Rename the model
+                System.IO.File.Move(Menus.tempSavePath + oldName, Menus.tempSavePath + name);
+            }
+        }
+
+        // Check if the second button has a name, and check if the input field was filled
+        if(modelNameMatch2.GetComponentInChildren<TMP_Text>().text != "")
+        {
+            string oldName = modelNameMatch2.GetComponentInChildren<TMP_Text>().text;
+            if(enterNewModelNameMatch2.text != "")
+            {
+                // 
+                string name = enterNewModelNameMatch2.text;
+                if(name.EndsWith(ending) != true)
+                {
+                    // Add the .obj ending if it was not used
+                    name = name + ending;
+                }
+
+                // Rename the model
+                System.IO.File.Move(Menus.tempSavePath + oldName, Menus.tempSavePath + name);
+            }
+        }
+
+        // Check if the third button has a name, and check if the input field was filled
+        if(modelNameMatch3.GetComponentInChildren<TMP_Text>().text != "")
+        {
+            string oldName = modelNameMatch3.GetComponentInChildren<TMP_Text>().text;
+            if(enterNewModelNameMatch3.text != "")
+            {
+                // 
+                string name = enterNewModelNameMatch3.text;
+                if(name.EndsWith(ending) != true)
+                {
+                    // Add the .obj ending if it was not used
+                    name = name + ending;
+                }
+
+                // Rename the model
+                System.IO.File.Move(Menus.tempSavePath + oldName, Menus.tempSavePath + name);
+            }
+        }
+
+        // Check if the fourth button has a name, and check if the input field was filled
+        if(modelNameMatch4.GetComponentInChildren<TMP_Text>().text != "")
+        {
+            string oldName = modelNameMatch4.GetComponentInChildren<TMP_Text>().text;
+            if(enterNewModelNameMatch4.text != "")
+            {
+                // 
+                string name = enterNewModelNameMatch4.text;
+                if(name.EndsWith(ending) != true)
+                {
+                    // Add the .obj ending if it was not used
+                    name = name + ending;
+                }
+
+                // Rename the model
+                System.IO.File.Move(Menus.tempSavePath + oldName, Menus.tempSavePath + name);
+            }
+        }
+
+        // Check if the fifth button has a name, and check if the input field was filled
+        if(modelNameMatch5.GetComponentInChildren<TMP_Text>().text != "")
+        {
+            string oldName = modelNameMatch5.GetComponentInChildren<TMP_Text>().text;
+            if(enterNewModelNameMatch5.text != "")
+            {
+                // 
+                string name = enterNewModelNameMatch5.text;
+                if(name.EndsWith(ending) != true)
+                {
+                    // Add the .obj ending if it was not used
+                    name = name + ending;
+                }
+
+                // Rename the model
+                System.IO.File.Move(Menus.tempSavePath + oldName, Menus.tempSavePath + name);
+            }
+        }
+    }
+
     // Method that adds the 3D model information to all questions that will get saved in the end save directory
     public void AddModelInformation()
     {
         // Get the questions array
         string[] questions = GetQuestionsArray(Menus.tempSavePath);
+
+        // Get the model obj array in the temp save folder
+        string[] tempModelObjArray = GetModelsObjArray(Menus.tempSavePath);
+
+        // Get the model array in the selected end save folder
+        string[] endModelArray = GetModelsArray(Globals.selectedPath);
 
         // Extract the json string of the description
         string jsonDescription = File.ReadAllText(Menus.tempSavePath + "Description.json");
@@ -1496,124 +1802,197 @@ public class Creator : MonoBehaviour
         // Initialize the number of models
         int numberOfModels = 0;
 
+        // Get the right number of models
+        foreach(string tempModelObj in tempModelObjArray)
+        {
+            numberOfModels = numberOfModels + 1;
+        }
+
+        // Initialize the number of questions
+        int numberOfQuestions = 0;
+
+        // Get the right number of models
         foreach(string question in questions)
         {
-            string json = File.ReadAllText(question);
+            numberOfQuestions = numberOfQuestions + 1;
+        }
 
-            // Find out what type of question it is
-            if(json.Contains("input question") == true)
+        int currentModelIndex = 0;
+
+        // For each model in the temp save folder, check if the name exist in a ModelXYZ file in the end save folder
+        foreach(string tempModelObj in tempModelObjArray)
+        {
+            string match = "";
+            foreach(string endModel in endModelArray)
             {
-                Debug.Log("Entered input question edit");
-                // Case input question
-                InputQuestion inputQuestion = JsonUtility.FromJson<InputQuestion>(json);
+                // Extract the json string and get the object
+                string jsonModel = File.ReadAllText(endModel);
+                Model model = JsonUtility.FromJson<Model>(jsonModel);
 
-                // Set the number of models and models
-                // Set the first model if there is one
-                if(previewModel1.GetComponentInChildren<TMP_Text>().text != "+")
+                if(model.modelName == Path.GetFileName(tempModelObj))
                 {
-                    inputQuestion.model1Name = previewModel1.GetComponentInChildren<TMP_Text>().text;
-                    numberOfModels = numberOfModels + 1;
+                    match = endModel;
                 }
+            }
 
-                // Set the second model if there is one
-                if(previewModel2.GetComponentInChildren<TMP_Text>().text != "+" && previewModel2.GetComponentInChildren<TMP_Text>().text != "")
-                {
-                    inputQuestion.model2Name = previewModel2.GetComponentInChildren<TMP_Text>().text;
-                    numberOfModels = numberOfModels + 1;
-                }
+            string modelFileName = "";
 
-                // Set the third model if there is one
-                if(previewModel3.GetComponentInChildren<TMP_Text>().text != "+" && previewModel3.GetComponentInChildren<TMP_Text>().text != "")
-                {
-                    inputQuestion.model3Name = previewModel3.GetComponentInChildren<TMP_Text>().text;
-                    numberOfModels = numberOfModels + 1;
-                }
+            // If there is no match, create a new ModelXYZ file and write it in each question
+            if(match == "")
+            {
+                // Case no match, create a new model and set the information
+                Model model = new Model();
+                model.numberOfQuestionsUsedIn = numberOfQuestions;
+                model.modelName = Path.GetFileName(tempModelObj);
 
-                // Set the fourth model if there is one
-                if(previewModel4.GetComponentInChildren<TMP_Text>().text != "+" && previewModel4.GetComponentInChildren<TMP_Text>().text != "")
-                {
-                    inputQuestion.model4Name = previewModel4.GetComponentInChildren<TMP_Text>().text;
-                    numberOfModels = numberOfModels + 1;
-                }
+                // Get the index
+                string index = ReturnQuestionIndex(description.numberOfModels);
 
-                // Set the fifth model if there is one
-                if(previewModel5.GetComponentInChildren<TMP_Text>().text != "+" && previewModel5.GetComponentInChildren<TMP_Text>().text != "")
-                {
-                    inputQuestion.model5Name = previewModel5.GetComponentInChildren<TMP_Text>().text;
-                    numberOfModels = numberOfModels + 1;
-                }
+                string newJson = JsonUtility.ToJson(model);
 
-                // Set the number of models
-                inputQuestion.numberOfModels = numberOfModels;
-                description.numberOfModels = numberOfModels;
+                // Create the model file
+                File.WriteAllText(Menus.tempSavePath + "Model" + index + ".json", newJson);
 
-                // Delete old save file
-                File.Delete(question);
-
-                // Convert to json
-                string newJson = JsonUtility.ToJson(inputQuestion);
-
-                // Create new save file
-                File.WriteAllText(question, newJson);
+                // Set the model file name correctly
+                modelFileName = "Model" + index + ".json";
 
             } else {
+                // Case match, extract the model object
+                string jsonModel = File.ReadAllText(match);
+                Model model = JsonUtility.FromJson<Model>(jsonModel);
 
-                Debug.Log("Entered multiple choice question edit");
-                // Case multiple choice question
-                MultipleChoiceQuestion multipleChoiceQuestion = JsonUtility.FromJson<MultipleChoiceQuestion>(json);
+                // Increase the number of questions used in
+                model.numberOfQuestionsUsedIn = model.numberOfQuestionsUsedIn + numberOfQuestions;
 
-                // Set the number of models and models
-                // Set the first model if there is one
-                if(previewModel1.GetComponentInChildren<TMP_Text>().text != "+")
-                {
-                    multipleChoiceQuestion.model1Name = previewModel1.GetComponentInChildren<TMP_Text>().text;
-                    numberOfModels = numberOfModels + 1;
-                }
-
-                // Set the second model if there is one
-                if(previewModel2.GetComponentInChildren<TMP_Text>().text != "+" && previewModel2.GetComponentInChildren<TMP_Text>().text != "")
-                {
-                    multipleChoiceQuestion.model2Name = previewModel2.GetComponentInChildren<TMP_Text>().text;
-                    numberOfModels = numberOfModels + 1;
-                }
-
-                // Set the third model if there is one
-                if(previewModel3.GetComponentInChildren<TMP_Text>().text != "+" && previewModel3.GetComponentInChildren<TMP_Text>().text != "")
-                {
-                    multipleChoiceQuestion.model3Name = previewModel3.GetComponentInChildren<TMP_Text>().text;
-                    numberOfModels = numberOfModels + 1;
-                }
-
-                // Set the fourth model if there is one
-                if(previewModel4.GetComponentInChildren<TMP_Text>().text != "+" && previewModel4.GetComponentInChildren<TMP_Text>().text != "")
-                {
-                    multipleChoiceQuestion.model4Name = previewModel4.GetComponentInChildren<TMP_Text>().text;
-                    numberOfModels = numberOfModels + 1;
-                }
-
-                // Set the fifth model if there is one
-                if(previewModel5.GetComponentInChildren<TMP_Text>().text != "+" && previewModel5.GetComponentInChildren<TMP_Text>().text != "")
-                {
-                    multipleChoiceQuestion.model5Name = previewModel5.GetComponentInChildren<TMP_Text>().text;
-                    numberOfModels = numberOfModels + 1;
-                }
-
-                // Set the number of models
-                multipleChoiceQuestion.numberOfModels = numberOfModels;
-                description.numberOfModels = numberOfModels;
-
-                // Delete old save file
-                File.Delete(question);
+                // Delete the old save file
+                File.Delete(match);
 
                 // Convert to json
-                string newJson = JsonUtility.ToJson(multipleChoiceQuestion);
+                string newJson = JsonUtility.ToJson(model);
 
                 // Create new save file
-                File.WriteAllText(question, newJson);
+                File.WriteAllText(match, newJson);
+
+                // Set the model file name correctly
+                modelFileName = Path.GetFileName(match);
             }
+
+            // Save the model file name in the questions
+            foreach(string question in questions)
+            {
+                string json = File.ReadAllText(question);
+
+                // Find out what type of question it is
+                if(json.Contains("input question") == true)
+                {
+                    Debug.Log("Entered input question edit");
+                    // Case input question
+                    InputQuestion inputQuestion = JsonUtility.FromJson<InputQuestion>(json);
+
+                    // Set the models name correctly
+                    // Set the first model if there is one
+                    if(currentModelIndex == 0)
+                    {
+                        inputQuestion.model1Name = modelFileName;
+                    }
+
+                    // Set the second model if there is one
+                    if(currentModelIndex == 1)
+                    {
+                        inputQuestion.model2Name = modelFileName;
+                    }
+
+                    // Set the third model if there is one
+                    if(currentModelIndex == 2)
+                    {
+                        inputQuestion.model3Name = modelFileName;
+                    }
+
+                    // Set the fourth model if there is one
+                    if(currentModelIndex == 3)
+                    {
+                        inputQuestion.model4Name = modelFileName;
+                    }
+
+                    // Set the fifth model if there is one
+                    if(currentModelIndex == 4)
+                    {
+                        inputQuestion.model5Name = modelFileName;
+                    }
+
+                    // Set the number of models
+                    inputQuestion.numberOfModels = numberOfModels;
+
+                    // Delete old save file
+                    File.Delete(question);
+
+                    // Convert to json
+                    string newJson = JsonUtility.ToJson(inputQuestion);
+
+                    // Create new save file
+                    File.WriteAllText(question, newJson);
+
+                } else {
+
+                    Debug.Log("Entered multiple choice question edit");
+                    // Case multiple choice question
+                    MultipleChoiceQuestion multipleChoiceQuestion = JsonUtility.FromJson<MultipleChoiceQuestion>(json);
+
+                    // Set the number of models and models
+                    // Set the first model if there is one
+                    if(currentModelIndex == 0)
+                    {
+                        multipleChoiceQuestion.model1Name = modelFileName;
+                    }
+
+                    // Set the second model if there is one
+                    if(currentModelIndex == 1)
+                    {
+                        multipleChoiceQuestion.model2Name = modelFileName;
+                    }
+
+                    // Set the third model if there is one
+                    if(currentModelIndex == 2)
+                    {
+                        multipleChoiceQuestion.model3Name = modelFileName;
+                    }
+
+                    // Set the fourth model if there is one
+                    if(currentModelIndex == 3)
+                    {
+                        multipleChoiceQuestion.model4Name = modelFileName;
+                    }
+
+                    // Set the fifth model if there is one
+                    if(currentModelIndex == 4)
+                    {
+                        multipleChoiceQuestion.model5Name = modelFileName;
+                    }
+
+                    // Set the number of models
+                    multipleChoiceQuestion.numberOfModels = numberOfModels;
+                    description.numberOfModels = numberOfModels;
+
+                    // Delete old save file
+                    File.Delete(question);
+
+                    // Convert to json
+                    string newJson = JsonUtility.ToJson(multipleChoiceQuestion);
+
+                    // Create new save file
+                    File.WriteAllText(question, newJson);
+                }
+            }
+            
+            // Increase the current model index by one
+            currentModelIndex = currentModelIndex + 1;
         }
+
         // Delete old save file
         File.Delete(Menus.tempSavePath + "Description.json");
+
+        // Set the right number of models
+        description.numberOfModels = numberOfModels;
 
         // Convert to json
         string newDescriptionJson = JsonUtility.ToJson(description);
@@ -1644,16 +2023,6 @@ public class Creator : MonoBehaviour
     // -------------------------------------------------------------------------------------------------------------------
     // Creation of the log file in the back end, renaming of files
     // -------------------------------------------------------------------------------------------------------------------
-
-    // The JSON Serialization for the log file
-    [Serializable]
-    public class Log
-    {
-        public int numberOfQuestions; // The number of already existing questions in the folder so that the new ones can be renamed
-        public int numberOfModels; // The number of already existing model files in the folder so that the new ones can be renamed
-        public string heading; // Heading of the description, name that users can give
-        public string description; // The description text of the content / concepts that are needed for solving the exercises
-    }
 
     // Method that renames all question in the given path to QuestionXYZ given an index V
        public int renameQuestions(string path, int index)
@@ -2109,7 +2478,7 @@ public class Creator : MonoBehaviour
     public void ActualizePreviewModelButtons()
     {
         // Get the array of models
-        string[] models = GetModelsArray(Menus.tempSavePath);
+        string[] models = GetModelsObjArray(Menus.tempSavePath);
 
         // Reset the buttons
         ResetPreviewModelButtons();
@@ -2169,11 +2538,19 @@ public class Creator : MonoBehaviour
         previewModel5.interactable = false;
     }
 
-    // Method that returns the array of models in the given path
-    static string[] GetModelsArray(string path) 
+    // Method that returns the array of models (.obj files) in the given path
+    static string[] GetModelsObjArray(string path) 
     {
         Debug.Log("The model array was created");
         string[] questions = Directory.GetFiles(path, "*.obj", SearchOption.TopDirectoryOnly);
+        return questions;
+    }
+
+    // Method that returns the array of models (json files) in the given path
+    static string[] GetModelsArray(string path) 
+    {
+        Debug.Log("The model array was created");
+        string[] questions = Directory.GetFiles(path, "Model*", SearchOption.TopDirectoryOnly);
         return questions;
     }
 
