@@ -77,7 +77,7 @@
   <link rel="assets" href="https://github.githubassets.com/">
   
 
-  <meta name="request-id" content="C3A3:B093:3C08B48:3D7F7DE:60CB38D9" data-pjax-transient="true"/><meta name="html-safe-nonce" content="782dd8766207314f73561692ae4d202774ae4589c92d80a09d8b1a078177d484" data-pjax-transient="true"/><meta name="visitor-payload" content="eyJyZWZlcnJlciI6IiIsInJlcXVlc3RfaWQiOiJDM0EzOkIwOTM6M0MwOEI0ODozRDdGN0RFOjYwQ0IzOEQ5IiwidmlzaXRvcl9pZCI6IjU0NTc3OTM2MzI0NzA1MTM4ODEiLCJyZWdpb25fZWRnZSI6ImZyYSIsInJlZ2lvbl9yZW5kZXIiOiJmcmEifQ==" data-pjax-transient="true"/><meta name="visitor-hmac" content="919471ed1b2721e24a27d53584b69b7d3e6b278d6abef25c560f15c008bf90de" data-pjax-transient="true"/>
+  <meta name="request-id" content="DBAC:0C70:19CB17:1B0E69:60CB7C66" data-pjax-transient="true"/><meta name="html-safe-nonce" content="cbded2f7ec094426c7ad24c8f8dc05ac92fcbc83eed83883a1f198f8a2e54308" data-pjax-transient="true"/><meta name="visitor-payload" content="eyJyZWZlcnJlciI6IiIsInJlcXVlc3RfaWQiOiJEQkFDOjBDNzA6MTlDQjE3OjFCMEU2OTo2MENCN0M2NiIsInZpc2l0b3JfaWQiOiIzODAwMTAxOTUxNzU3ODQzNTU4IiwicmVnaW9uX2VkZ2UiOiJmcmEiLCJyZWdpb25fcmVuZGVyIjoiZnJhIn0=" data-pjax-transient="true"/><meta name="visitor-hmac" content="7336169c8606d5b739ad1059a7fe527d466509fb820c2eb9501e012985e1af9d" data-pjax-transient="true"/>
 
     <meta name="hovercard-subject-tag" content="repository:239718625" data-pjax-transient>
 
@@ -336,7 +336,7 @@
             spellcheck="false"
             autocomplete="off"
           >
-          <input type="hidden" data-csrf="true" class="js-data-jump-to-suggestions-path-csrf" value="4KHGNsGLhiEhTFuW6icS7PaJa8DkDlvdWubs+gai3PirwhJtSUqhyu8/emlt3OxAXp3Ushuxmnmv1g17CKCYoA==" />
+          <input type="hidden" data-csrf="true" class="js-data-jump-to-suggestions-path-csrf" value="OG+QW5PPornItttLIoZUUDG26xQ3nd8SPOXErkg06dpIw8t3h+3o2hCHa194DAbimXnBIafOQvLBwdGStBRfYA==" />
           <input type="hidden" class="js-site-search-type-field" name="type" >
               <img src="https://github.githubassets.com/images/search-key-slash.svg" alt="" class="mr-2 header-search-key-slash">
 
@@ -983,17 +983,80 @@
 
 
     <div class="Box d-flex flex-column flex-shrink-0 mb-3">
-      <include-fragment src="/rwth-acis/i5-Toolkit-for-Unity/contributors/master/Assets/i5%20Toolkit%20for%20Unity/Samples~/Importers/ObjImporter/Obj%20Models/Monkey_high_res.obj" class="commit-loader">
-        <div class="Box-header Box-header--blue d-flex flex-items-center">
-          <div class="Skeleton avatar avatar-user flex-shrink-0 ml-n1 mr-n1 mt-n1 mb-n1" style="width:24px;height:24px;"></div>
-          <div class="Skeleton Skeleton--text col-5 ml-2">&nbsp;</div>
-        </div>
+      
+  <div class="Box-header Box-header--blue Details js-details-container">
+      <div class="d-flex flex-items-center">
+        <span class="flex-shrink-0 ml-n1 mr-n1 mt-n1 mb-n1">
+          <a rel="contributor" data-skip-pjax="true" data-hovercard-type="user" data-hovercard-url="/users/BenediktHensen/hovercard" data-octo-click="hovercard-link-click" data-octo-dimensions="link_type:self" href="/BenediktHensen"><img class="avatar avatar-user" src="https://avatars.githubusercontent.com/u/29382867?s=48&amp;v=4" width="24" height="24" alt="@BenediktHensen" /></a>
+        </span>
+        <div class="flex-1 d-flex flex-items-center ml-3 min-width-0">
+          <div class="css-truncate css-truncate-overflow">
+            <a class="text-bold Link--primary" rel="contributor" data-hovercard-type="user" data-hovercard-url="/users/BenediktHensen/hovercard" data-octo-click="hovercard-link-click" data-octo-dimensions="link_type:self" href="/BenediktHensen">BenediktHensen</a>
 
-        <div class="Box-body d-flex flex-items-center" >
-          <div class="Skeleton Skeleton--text col-1">&nbsp;</div>
-          <span class="color-text-danger h6 loader-error">Cannot retrieve contributors at this time</span>
+                <span class="markdown-title">
+                  <a data-pjax="true" title="disabled samples" class="Link--secondary" href="/rwth-acis/i5-Toolkit-for-Unity/commit/cbe8fdff7fecc9e73f6badb88d607a587d172d38">disabled samples</a>
+                </span>
+          </div>
+
+
+          <span class="ml-2">
+            <include-fragment accept="text/fragment+html" src="/rwth-acis/i5-Toolkit-for-Unity/commit/cbe8fdff7fecc9e73f6badb88d607a587d172d38/rollup?direction=e" class="d-inline"></include-fragment>
+          </span>
         </div>
-</include-fragment>    </div>
+        <div class="ml-3 d-flex flex-shrink-0 flex-items-center flex-justify-end color-text-secondary no-wrap">
+          <span class="d-none d-md-inline">
+            <span>Latest commit</span>
+            <a class="text-small text-mono Link--secondary" href="/rwth-acis/i5-Toolkit-for-Unity/commit/cbe8fdff7fecc9e73f6badb88d607a587d172d38" data-pjax>cbe8fdf</a>
+            <span itemprop="dateModified"><relative-time datetime="2021-05-11T08:35:57Z" class="no-wrap">May 11, 2021</relative-time></span>
+          </span>
+
+          <a data-pjax href="/rwth-acis/i5-Toolkit-for-Unity/commits/master/Assets/i5%20Toolkit%20for%20Unity/Samples%7E/Importers/ObjImporter/Obj%20Models/Monkey_high_res.obj" class="ml-3 no-wrap Link--primary no-underline">
+            <svg aria-hidden="true" viewBox="0 0 16 16" version="1.1" data-view-component="true" height="16" width="16" class="octicon octicon-history text-gray">
+    <path fill-rule="evenodd" d="M1.643 3.143L.427 1.927A.25.25 0 000 2.104V5.75c0 .138.112.25.25.25h3.646a.25.25 0 00.177-.427L2.715 4.215a6.5 6.5 0 11-1.18 4.458.75.75 0 10-1.493.154 8.001 8.001 0 101.6-5.684zM7.75 4a.75.75 0 01.75.75v2.992l2.028.812a.75.75 0 01-.557 1.392l-2.5-1A.75.75 0 017 8.25v-3.5A.75.75 0 017.75 4z"></path>
+</svg>
+            <span class="d-none d-sm-inline">
+              <strong>History</strong>
+            </span>
+          </a>
+        </div>
+      </div>
+
+  </div>
+
+  <div class="Box-body d-flex flex-items-center flex-auto border-bottom-0 flex-wrap" >
+    <details class="details-reset details-overlay details-overlay-dark lh-default color-text-primary float-left mr-3" id="blob_contributors_box">
+      <summary class="Link--primary">
+        <svg aria-hidden="true" viewBox="0 0 16 16" version="1.1" data-view-component="true" height="16" width="16" class="octicon octicon-people text-gray">
+    <path fill-rule="evenodd" d="M5.5 3.5a2 2 0 100 4 2 2 0 000-4zM2 5.5a3.5 3.5 0 115.898 2.549 5.507 5.507 0 013.034 4.084.75.75 0 11-1.482.235 4.001 4.001 0 00-7.9 0 .75.75 0 01-1.482-.236A5.507 5.507 0 013.102 8.05 3.49 3.49 0 012 5.5zM11 4a.75.75 0 100 1.5 1.5 1.5 0 01.666 2.844.75.75 0 00-.416.672v.352a.75.75 0 00.574.73c1.2.289 2.162 1.2 2.522 2.372a.75.75 0 101.434-.44 5.01 5.01 0 00-2.56-3.012A3 3 0 0011 4z"></path>
+</svg>
+        <strong>1</strong>
+        
+        contributor
+      </summary>
+      <details-dialog
+        class="Box Box--overlay d-flex flex-column anim-fade-in fast"
+        aria-label="Users who have contributed to this file"
+        src="/rwth-acis/i5-Toolkit-for-Unity/contributors-list/master/Assets/i5%20Toolkit%20for%20Unity/Samples~/Importers/ObjImporter/Obj%20Models/Monkey_high_res.obj" preload>
+        <div class="Box-header">
+          <button class="Box-btn-octicon btn-octicon float-right" type="button" aria-label="Close dialog" data-close-dialog>
+            <svg aria-hidden="true" viewBox="0 0 16 16" version="1.1" data-view-component="true" height="16" width="16" class="octicon octicon-x">
+    <path fill-rule="evenodd" d="M3.72 3.72a.75.75 0 011.06 0L8 6.94l3.22-3.22a.75.75 0 111.06 1.06L9.06 8l3.22 3.22a.75.75 0 11-1.06 1.06L8 9.06l-3.22 3.22a.75.75 0 01-1.06-1.06L6.94 8 3.72 4.78a.75.75 0 010-1.06z"></path>
+</svg>
+          </button>
+          <h3 class="Box-title">
+            Users who have contributed to this file
+          </h3>
+        </div>
+        <include-fragment>
+          <svg style="box-sizing: content-box; color: var(--color-icon-primary);" viewBox="0 0 16 16" fill="none" data-view-component="true" width="32" height="32" class="my-3 mx-auto d-block anim-rotate">
+  <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-opacity="0.25" stroke-width="2" vector-effect="non-scaling-stroke" />
+  <path d="M15 8a7.002 7.002 0 00-7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" vector-effect="non-scaling-stroke" />
+</svg>
+        </include-fragment>
+      </details-dialog>
+    </details>
+  </div>
+    </div>
 
 
 
@@ -1039,7 +1102,7 @@
 </svg>
           </a>
 
-          <!-- '"` --><!-- </textarea></xmp> --></option></form><form class="inline-form" action="/rwth-acis/i5-Toolkit-for-Unity/delete/master/Assets/i5%20Toolkit%20for%20Unity/Samples~/Importers/ObjImporter/Obj%20Models/Monkey_high_res.obj" accept-charset="UTF-8" method="post"><input type="hidden" data-csrf="true" name="authenticity_token" value="IhuGIT9MPxrJGCG0Mzo3vW3bCpGbE9ea4JTBLDwrvR+JYK4tPow2Uc83rlCM0Dj3RsVVANe1ZPoJLz2bYkjEGg==" />
+          <!-- '"` --><!-- </textarea></xmp> --></option></form><form class="inline-form" action="/rwth-acis/i5-Toolkit-for-Unity/delete/master/Assets/i5%20Toolkit%20for%20Unity/Samples~/Importers/ObjImporter/Obj%20Models/Monkey_high_res.obj" accept-charset="UTF-8" method="post"><input type="hidden" data-csrf="true" name="authenticity_token" value="bV0kPLgvWRHSj/C9xhNpZC/3R2THMAvC+ir2j6S/9xwUkfkOvfOcCC0M0swT8QzpSs+m12Q9kKpL0v7QJ9Vf/w==" />
             <button class="btn-octicon btn-octicon-danger tooltipped tooltipped-nw" type="submit"
               aria-label="You must be signed in to make or propose changes" data-disable-with>
               <svg aria-hidden="true" viewBox="0 0 16 16" version="1.1" data-view-component="true" height="16" width="16" class="octicon octicon-trash">
