@@ -782,14 +782,22 @@ public class BrowsDirectories : MonoBehaviour
                     index = index + 1;
                 }
 
-                // Setup the next button, so that a model can be added
-                Button previewButtonNext = GetRightModelPreviewButton(index);
-
-                // Set the name of the button correctly
-                previewButtonNext.GetComponentInChildren<TMP_Text>().text = "+";
-
-                // Make it interactable
-                previewButtonNext.interactable  = true;
+                // Set the rest of the buttons correctly
+                for(int rest = index; rest < 5; rest = rest + 1)
+                {
+                    // Get the right button
+                    Button previewButton = GetRightModelPreviewButton(rest);
+                    if(rest == index)
+                    {
+                        // Set the name of the button correctly
+                        previewButton.GetComponentInChildren<TMP_Text>().text = "+";
+                        previewButton.interactable  = true;
+                    } else {
+                        // Set the name of the button correctly
+                        previewButton.GetComponentInChildren<TMP_Text>().text = "";
+                        previewButton.interactable  = false;
+                    }
+                }
             }
 
             // Here change the button from "save" to "change"
