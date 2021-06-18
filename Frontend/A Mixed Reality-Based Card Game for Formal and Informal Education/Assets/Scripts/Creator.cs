@@ -2371,8 +2371,20 @@ public class Creator : MonoBehaviour
                 // Delete the old file
                 File.Delete(path2 + Path.GetFileName(modelFileArray[index]));
 
-                // Copy the new file
-                System.IO.File.Move(modelFileArray[index], path2 + Path.GetFileName(modelFileArray[index]));
+                // Extract the object
+                string jsonModel = File.ReadAllText(modelFileArray[index]);
+                Model modelObjectNotUsed = JsonUtility.FromJson<Model>(jsonModel);
+
+                // Check the number of questions it is used in
+                if(modelObjectNotUsed.numberOfQuestionsUsedIn > 0)
+                {
+                    // If the number is at least one, copy the new file to the end save folder
+                    System.IO.File.Move(modelFileArray[index], path2 + Path.GetFileName(modelFileArray[index]));
+                } else {
+
+                    // If the number is 0, delete the .obj model
+                    File.Delete(path2 + modelObjectNotUsed.modelName);
+                }
 
                 // Delete the new file in the temp save folder
                 File.Delete(modelFileArray[index]);
