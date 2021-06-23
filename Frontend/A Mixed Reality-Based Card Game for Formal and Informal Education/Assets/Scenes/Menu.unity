@@ -6703,6 +6703,18 @@ PrefabInstance:
       propertyPath: m_text
       value: Directory 4
       objectReference: {fileID: 0}
+    - target: {fileID: 1059374346435632695, guid: bcd84097988686344b77999acd9b1070, type: 3}
+      propertyPath: m_fontSizeMax
+      value: 25
+      objectReference: {fileID: 0}
+    - target: {fileID: 1059374346435632695, guid: bcd84097988686344b77999acd9b1070, type: 3}
+      propertyPath: m_fontSizeMin
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 1059374346435632695, guid: bcd84097988686344b77999acd9b1070, type: 3}
+      propertyPath: m_enableAutoSizing
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 1612583209522244534, guid: bcd84097988686344b77999acd9b1070, type: 3}
       propertyPath: m_Name
       value: Directory4
@@ -10182,8 +10194,20 @@ PrefabInstance:
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1059374346435632695, guid: bcd84097988686344b77999acd9b1070, type: 3}
+      propertyPath: m_fontSizeMax
+      value: 25
+      objectReference: {fileID: 0}
+    - target: {fileID: 1059374346435632695, guid: bcd84097988686344b77999acd9b1070, type: 3}
+      propertyPath: m_fontSizeMin
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 1059374346435632695, guid: bcd84097988686344b77999acd9b1070, type: 3}
       propertyPath: m_isRightToLeft
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1059374346435632695, guid: bcd84097988686344b77999acd9b1070, type: 3}
+      propertyPath: m_enableAutoSizing
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1059374346435632695, guid: bcd84097988686344b77999acd9b1070, type: 3}
       propertyPath: m_TextStyleHashCode
@@ -12939,6 +12963,18 @@ PrefabInstance:
     - target: {fileID: 1059374346435632695, guid: bcd84097988686344b77999acd9b1070, type: 3}
       propertyPath: m_text
       value: Directory 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 1059374346435632695, guid: bcd84097988686344b77999acd9b1070, type: 3}
+      propertyPath: m_fontSizeMax
+      value: 25
+      objectReference: {fileID: 0}
+    - target: {fileID: 1059374346435632695, guid: bcd84097988686344b77999acd9b1070, type: 3}
+      propertyPath: m_fontSizeMin
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 1059374346435632695, guid: bcd84097988686344b77999acd9b1070, type: 3}
+      propertyPath: m_enableAutoSizing
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1612583209522244534, guid: bcd84097988686344b77999acd9b1070, type: 3}
       propertyPath: m_Name
@@ -17082,6 +17118,18 @@ PrefabInstance:
     - target: {fileID: 1059374346435632695, guid: bcd84097988686344b77999acd9b1070, type: 3}
       propertyPath: m_text
       value: Directory 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 1059374346435632695, guid: bcd84097988686344b77999acd9b1070, type: 3}
+      propertyPath: m_fontSizeMax
+      value: 25
+      objectReference: {fileID: 0}
+    - target: {fileID: 1059374346435632695, guid: bcd84097988686344b77999acd9b1070, type: 3}
+      propertyPath: m_fontSizeMin
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 1059374346435632695, guid: bcd84097988686344b77999acd9b1070, type: 3}
+      propertyPath: m_enableAutoSizing
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1612583209522244534, guid: bcd84097988686344b77999acd9b1070, type: 3}
       propertyPath: m_Name
@@ -39384,6 +39432,18 @@ PrefabInstance:
     - target: {fileID: 1059374346435632695, guid: bcd84097988686344b77999acd9b1070, type: 3}
       propertyPath: m_text
       value: Directory 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1059374346435632695, guid: bcd84097988686344b77999acd9b1070, type: 3}
+      propertyPath: m_fontSizeMax
+      value: 25
+      objectReference: {fileID: 0}
+    - target: {fileID: 1059374346435632695, guid: bcd84097988686344b77999acd9b1070, type: 3}
+      propertyPath: m_fontSizeMin
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 1059374346435632695, guid: bcd84097988686344b77999acd9b1070, type: 3}
+      propertyPath: m_enableAutoSizing
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1612583209522244534, guid: bcd84097988686344b77999acd9b1070, type: 3}
       propertyPath: m_Name
