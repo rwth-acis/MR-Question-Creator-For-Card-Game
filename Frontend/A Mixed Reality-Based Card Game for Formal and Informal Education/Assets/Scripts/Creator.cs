@@ -6,7 +6,6 @@ using System;
 using System.IO;
 using TMPro;
 using UnityEngine.EventSystems;
-using i5.Toolkit.Core.ModelImporters;
 using System.Net;
 using i5.Toolkit.Core.ModelImporters;
 using i5.Toolkit.Core.ProceduralGeometry;
