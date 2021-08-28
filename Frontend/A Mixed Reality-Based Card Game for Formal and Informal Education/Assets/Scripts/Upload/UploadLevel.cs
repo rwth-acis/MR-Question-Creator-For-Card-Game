@@ -19,6 +19,8 @@ public class UploadLevel : MonoBehaviour
     private TMP_Text errorEmptyName;
     [SerializeField]
     private TMP_Text errorSpecialCharacters;
+    [SerializeField]
+    private TMP_Text errorUploadFailed;
 
     // Start is called before the first frame update
     void Start()
@@ -41,14 +43,14 @@ public class UploadLevel : MonoBehaviour
             // Activate the empty name error message and deactivate the others
             errorEmptyName.gameObject.SetActive(true);
             errorSpecialCharacters.gameObject.SetActive(false);
-            errorAlreadyExists.gameObject.SetActive(false);
+            errorUploadFailed.gameObject.SetActive(false);
 
         } else if(Regex.IsMatch(levelNameInputField.text, @"^[a-zA-Z0-9]+$") == false)
         {
             // Activate the special character error message and deactivate the others
             errorEmptyName.gameObject.SetActive(false);
             errorSpecialCharacters.gameObject.SetActive(true);
-            errorAlreadyExists.gameObject.SetActive(false);
+            errorUploadFailed.gameObject.SetActive(false);
 
         } else {
 
@@ -56,19 +58,33 @@ public class UploadLevel : MonoBehaviour
             errorEmptyName.gameObject.SetActive(false);
             errorSpecialCharacters.gameObject.SetActive(false);
 
-            // Upload the level and get a truthvalue of if it worked
-            bool uploadWorked = UploadLevelMethod();
+            // // Get the array of all levels
+            // string[] levelArray = BackendConnector.GetLevels();
 
-            // Check if the upload did not work
-            if(uploadWorked == false)
-            {
-                // Enable the error message
-                errorAlreadyExists.gameObject.SetActive(true);
+            // // Check if the level name exist there
+            // if(levelArray.Contains(levelNameInputField.text) == true)
+            // {
+            //     // Enable the name already exists error message
+            //     errorAlreadyExists.gameObject.SetActive(true);
 
-            } else {
-                // Make sure the error message is disabled
-                errorAlreadyExists.gameObject.SetActive(false);
-            }
+            //     // Make sure the error message is disabled
+            //     errorUploadFailed.gameObject.SetActive(false);
+
+            // } else{
+                // Upload the level and get a truthvalue of if it worked
+                bool uploadWorked = UploadLevelMethod();
+
+                // Check if the upload did not work
+                if(uploadWorked == false)
+                {
+                    // Enable the error message
+                    errorUploadFailed.gameObject.SetActive(true);
+
+                } else {
+                    // Make sure the error message is disabled
+                    errorUploadFailed.gameObject.SetActive(false);
+                }
+            // }
         }
     }
 

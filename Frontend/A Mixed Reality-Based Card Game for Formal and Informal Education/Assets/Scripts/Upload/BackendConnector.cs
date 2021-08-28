@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Threading.Tasks;
+using i5.Toolkit.Core.Utilities;
 
 public class BackendConnector : MonoBehaviour
 {
@@ -23,6 +24,27 @@ public class BackendConnector : MonoBehaviour
     //     else
     //     {
     //         return false;
+    //     }
+    // }
+
+    // // The method used to access the list of all level folders that were uploaded
+    // public static async Task<string[]> GetLevels()
+    // {
+    //     Response resp = await Rest.GetAsync(ConnectionManager.Instance.BackendAPIBaseURL + "saves", null, -1, null, true);
+    //     ConnectionManager.Instance.CheckStatusCode(resp.ResponseCode);
+
+    //     // Check if the operation was a success
+    //     if (!resp.Successful)
+    //     {
+    //         Debug.LogError(resp.ResponseCode + ": " + resp.ResponseBody);
+    //         string[] newArray = new string[0];
+    //         return newArray;
+
+    //     } else {
+
+    //         // Get the array of levels
+    //         string[] levels = JsonArrayUtility.FromJson<string>(resp.ResponseBody);
+    //         return levels;
     //     }
     // }
 
