@@ -14,23 +14,32 @@ static class Globals
     // The path of the directory that is currently shown
     public static string currentPath;
     public static string currentPathShorten;
+
     // The path of the directory that is the root of the directory structure
     public static string rootDirectoryPath;
+
     // Current page and number of pages
     public static int currentPage;
     public static int numberOfPages;
+
     // Number of directories in the current directory
     public static int numberOfDirectories;
+
     // Array of all directories
     public static string[] directoriesArray;
+
     // Number of files in the current directory
     public static int numberOfFiles;
+
     // Array of all files
     public static string[] filesArray;
+
     // Current depth
     public static int depth;
+
     // Flags used for reset or freezing of the menu (to not go two directories deep in one click)
     public static bool flagVariable = true;
+
     // Path of the selected directory. Used for the creator menu to set the path where to save the questions and 3D models
     public static string selectedPath;
     public static string selectedPathShorten;
@@ -290,9 +299,14 @@ public class BrowsDirectories : MonoBehaviour
        return number;
     }
 
+    // Define the two previous sprites as well as the image of the button
     [SerializeField]
     private Sprite[] switchSprites;
     private Image switchImage;
+
+    // Define the upload button
+    [SerializeField]
+    private Button uploadButton;
 
     // Disabling or enabling of the buttons
     public void DisableOrEnableButtons()
@@ -410,6 +424,18 @@ public class BrowsDirectories : MonoBehaviour
                 Globals.theseAreFiles = true;
                 // First rename the buttons that should have button names, check that they are enabled
                 // for that initialize the range of the for loop
+
+                // Check if a file is currently being edited
+                if(Globals.currentlyChangingFile == false)
+                {
+                    // Enable the upload button
+                    uploadButton.gameObject.SetActive(true);
+
+                } else {
+
+                    // Disable the upload button
+                    uploadButton.gameObject.SetActive(false);
+                }
 
                 // Value at the begining of the for loop
                 int initialIndex = (Globals.currentPage - 1) * 5;
