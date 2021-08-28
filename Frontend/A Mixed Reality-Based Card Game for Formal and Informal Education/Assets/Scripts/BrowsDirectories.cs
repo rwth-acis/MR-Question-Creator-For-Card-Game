@@ -645,10 +645,10 @@ public class BrowsDirectories : MonoBehaviour
 
     IEnumerator FreezeCoroutine()
     {
-        //Print the time of when the function is first called.
+        // Print the time of when the function is first called.
         Globals.flagVariable = false;
 
-        //yield on a new YieldInstruction that waits for 5 seconds.
+        // Yield on a new YieldInstruction that waits for 0.5 seconds.
         yield return new WaitForSeconds(0.500F);
 
         //After we have waited 5 seconds print the time again.
