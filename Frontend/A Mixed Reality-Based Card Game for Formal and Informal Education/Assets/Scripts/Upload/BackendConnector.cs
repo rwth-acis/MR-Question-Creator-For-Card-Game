@@ -6,17 +6,28 @@ using i5.Toolkit.Core.Utilities;
 
 public class BackendConnector : MonoBehaviour
 {
+    // Start is called before the first frame update
+    void Start()
+    {
+        
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        
+    }
 
     // Sends the save data to the backend
 
     // parameter "levelName" is the name of the level to save
     // parameter "saveName" is the name of the file to save
-    // parameter "saveData" is the data to be saved
+    // parameter "saveJson" is the data to be saved
 
     // public static async Task<bool> Save(string levelName, string saveName, string saveJson)
     // {
-    //     Response resp = await Rest.PostAsync(ConnectionManager.Instance.BackendAPIBaseURL + "saves/" + levelName + "/" + saveName, saveJson);
-    //     ConnectionManager.Instance.CheckStatusCode(resp.ResponseCode);
+    //     Response resp = await Rest.PostAsync(Manager.Instance.BackendAPIBaseURL + "saves/" + levelName + "/" + saveName, saveJson);
+    //     Manager.Instance.CheckStatusCode(resp.ResponseCode);
     //     if (resp.Successful)
     //     {
     //         return true;
@@ -30,8 +41,8 @@ public class BackendConnector : MonoBehaviour
     // // The method used to access the list of all level folders that were uploaded
     // public static async Task<string[]> GetLevels()
     // {
-    //     Response resp = await Rest.GetAsync(ConnectionManager.Instance.BackendAPIBaseURL + "saves", null, -1, null, true);
-    //     ConnectionManager.Instance.CheckStatusCode(resp.ResponseCode);
+    //     Response resp = await Rest.GetAsync(Manager.Instance.BackendAPIBaseURL + "saves", null, -1, null, true);
+    //     Manager.Instance.CheckStatusCode(resp.ResponseCode);
 
     //     // Check if the operation was a success
     //     if (!resp.Successful)
@@ -47,17 +58,4 @@ public class BackendConnector : MonoBehaviour
     //         return levels;
     //     }
     // }
-
-
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
 }
