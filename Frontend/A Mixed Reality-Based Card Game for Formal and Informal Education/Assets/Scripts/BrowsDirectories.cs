@@ -163,6 +163,7 @@ public class BrowsDirectories : MonoBehaviour
     public class Model
     {
         public string modelName;
+        public string modelUrl;
         public int numberOfQuestionsUsedIn;
 
     }
@@ -674,8 +675,8 @@ public class BrowsDirectories : MonoBehaviour
         // Print the time of when the function is first called.
         Globals.flagVariable = false;
 
-        // Yield on a new YieldInstruction that waits for 0.5 seconds.
-        yield return new WaitForSeconds(0.500F);
+        // Yield on a new YieldInstruction that waits for 0.25 seconds.
+        yield return new WaitForSeconds(0.250F);
 
         //After we have waited 5 seconds print the time again.
         Globals.flagVariable = true;

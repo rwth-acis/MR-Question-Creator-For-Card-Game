@@ -241,6 +241,7 @@ public class Creator : MonoBehaviour
     public class Model
     {
         public string modelName;
+        public string modelUrl;
         public int numberOfQuestionsUsedIn;
 
     }
@@ -2851,14 +2852,18 @@ public class Creator : MonoBehaviour
             Debug.Log("Url is empty");
             // If it is empty, then display the "no url typed in" error message
             noUrlTypedInErrorMessage.gameObject.SetActive(true);
+
         } else {
+
             //If it is non empty, check if the url goes to a .obj object
             if(url.EndsWith(ending) != true)
             {
                 Debug.Log("Url is not ending on .obj");
                 // Case the ending is not .obj, display the url does not point on .obj model error message
                 urlObjectOfWrongTypeErrorMessage.gameObject.SetActive(true);
+
             } else {
+
                 Debug.Log("Url correct");
                 // Case the url points to a .obj object, import it
 
@@ -2912,11 +2917,18 @@ public class Creator : MonoBehaviour
 
                         // Save it again
                         File.WriteAllText(modelFile, jsonModelFileNew);
+                        
                     } else {
                         // Name does not already exist, download the file and save it in the temp save folder
                         using (var client = new WebClient())
                         {
                             client.DownloadFile(url, Menus.tempSavePath + fileName);
+
+                            // Create the model json 
+                            Model modelJson = new Model();
+
+                            modelJson.modelName = fileName;
+                            modelJson.modelUrl = url;
                         }
                     }
 

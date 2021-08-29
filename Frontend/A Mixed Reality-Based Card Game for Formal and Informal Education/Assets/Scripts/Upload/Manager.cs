@@ -8,6 +8,10 @@ public class ConnectionManager : MonoBehaviour
     [SerializeField]
     private string basePath = "saves";
 
+    // Define the backendAddress
+    [SerializeField]
+    private string backendAddress = "http://localhost";
+
     // Define the freed port
     [SerializeField]
     private int port = 8080;
