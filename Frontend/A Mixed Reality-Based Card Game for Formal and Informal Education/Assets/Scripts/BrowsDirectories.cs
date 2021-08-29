@@ -427,7 +427,7 @@ public class BrowsDirectories : MonoBehaviour
                 // for that initialize the range of the for loop
 
                 // Check if a file is currently being edited
-                if(Globals.currentlyChangingFile == false)
+                if(Globals.currentlyChangingFile == false && Menus.directorySelection == false)
                 {
                     // Enable the upload button
                     uploadButton.gameObject.SetActive(true);
@@ -526,6 +526,9 @@ public class BrowsDirectories : MonoBehaviour
             // Case there are no files in the folder
             } else {
 
+            // Disable the upload button
+            uploadButton.gameObject.SetActive(false);
+
             Button directory1 = GameObject.Find("Directory1").GetComponent<Button>();
             directory1.GetComponentInChildren<TMP_Text>().text = "";
             directory1.interactable = false;
@@ -545,6 +548,9 @@ public class BrowsDirectories : MonoBehaviour
 
         // Case there is at least one directory, then display the numbers 5*x + 1 to 5*x + 5 (x is number of the page)
         } else {
+
+            // Disable the upload button
+            uploadButton.gameObject.SetActive(false);
 
             // Disable the select directory button
             selectButton.interactable = false;
@@ -1044,6 +1050,9 @@ public class BrowsDirectories : MonoBehaviour
             mainMenu.SetActive(true);
         }
 
+        // Reset the flag that we are in the directory selection
+        Menus.directorySelection = false;
+
         // First reset the globals so that everything is reset the next time the user enters the menu
         resetBrowsDirectories();
 
@@ -1137,6 +1146,9 @@ public class BrowsDirectories : MonoBehaviour
 
         // Open the ask to enter Description window if the Description.json file does not exist in the folder
         AskToEnterDescription();
+
+        // Reset the flag that we are in the directory selection
+        Menus.directorySelection = false;
     }
 
     // Method that checks if there was a Description.json file in the selected folder
