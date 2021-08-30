@@ -57,6 +57,8 @@ static class Menus
     public static string url3 = "";
     public static string url4 = "";
     public static string url5 = "";
+
+    public static string[] unrenamedMatchesArray;
 }
 
 public class Creator : MonoBehaviour
@@ -276,6 +278,9 @@ public class Creator : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        // Initialize the rename matches array
+        Menus.unrenamedMatchesArray = new string[5];
+
         // Disable all buttons that cannot be used at the begining
         if(Globals.currentlyChangingFile != true)
         {
@@ -1690,6 +1695,7 @@ public class Creator : MonoBehaviour
     // Method that deletes all files that exist in the first path in the second path
     public void DeleteAllDuplicateFiles(string path1, string path2)
     {
+        Debug.Log("Deleting duplicate files");
         // Get the array of all files in the temp save folder
         string[] tempArray = GetJsonFileArray(path1);
 
@@ -1770,6 +1776,9 @@ public class Creator : MonoBehaviour
     // Method that saves the new names for the matches and proceeds to the saving
     public void SaveMatchNamesAndProceedWithSaving()
     {
+        // Reset the rename matches array
+        Menus.unrenamedMatchesArray = new string[5];
+
         // First rename the matches
         RenameMatches();
 
@@ -1791,26 +1800,37 @@ public class Creator : MonoBehaviour
         {
             if(enterNewModelNameMatch1.text != "")
             {
-                // Find the model Name
-                string modelPath = GetFileFromModelName(Menus.tempSavePath, modelNameMatch1.GetComponentInChildren<TMP_Text>().text);
+                // Get the button on which the name was displayed
+                Button previewButton = ReturnPreviewModelButtonFromModelName(modelNameMatch1.GetComponentInChildren<TMP_Text>().text);
 
-                // Extract the json
-                string jsonModel = File.ReadAllText(modelPath);
+                // Rename the button in the given text
+                previewButton.GetComponentInChildren<TMP_Text>().text = enterNewModelNameMatch1.text;
 
-                // Create the model json 
-                Model modelJson = JsonUtility.FromJson<Model>(jsonModel);
+                // // Find the model Name
+                // string modelPath = GetFileFromModelName(Menus.tempSavePath, modelNameMatch1.GetComponentInChildren<TMP_Text>().text);
 
-                // Fill the number of questions used in
-                modelJson.modelName = enterNewModelNameMatch1.text;
+                // // Extract the json
+                // string jsonModel = File.ReadAllText(modelPath);
 
-                // Create the new json string
-                string jsonModelNew = JsonUtility.ToJson(modelJson);
+                // // Create the model json 
+                // Model modelJson = JsonUtility.FromJson<Model>(jsonModel);
 
-                // Delete the old file
-                File.Delete(modelPath);
+                // // Fill the number of questions used in
+                // modelJson.modelName = enterNewModelNameMatch1.text;
 
-                // Save the new model file in the end save folder
-                File.WriteAllText(modelPath, jsonModelNew);
+                // // Create the new json string
+                // string jsonModelNew = JsonUtility.ToJson(modelJson);
+
+                // // Delete the old file
+                // File.Delete(modelPath);
+
+                // // Save the new model file in the end save folder
+                // File.WriteAllText(modelPath, jsonModelNew);
+
+            } else {
+
+                // Save the unrenamed matches in the array
+                Menus.unrenamedMatchesArray[0] = modelNameMatch1.GetComponentInChildren<TMP_Text>().text;
             }
         }
 
@@ -1819,26 +1839,36 @@ public class Creator : MonoBehaviour
         {
             if(enterNewModelNameMatch2.text != "")
             {
-                // Find the model Name
-                string modelPath = GetFileFromModelName(Menus.tempSavePath, modelNameMatch2.GetComponentInChildren<TMP_Text>().text);
+                // Get the button on which the name was displayed
+                Button previewButton = ReturnPreviewModelButtonFromModelName(modelNameMatch2.GetComponentInChildren<TMP_Text>().text);
 
-                // Extract the json
-                string jsonModel = File.ReadAllText(modelPath);
+                // Rename the button in the given text
+                previewButton.GetComponentInChildren<TMP_Text>().text = enterNewModelNameMatch2.GetComponentInChildren<TMP_Text>().text;
 
-                // Create the model json 
-                Model modelJson = JsonUtility.FromJson<Model>(jsonModel);
+                // // Find the model Name
+                // string modelPath = GetFileFromModelName(Menus.tempSavePath, modelNameMatch2.GetComponentInChildren<TMP_Text>().text);
 
-                // Fill the number of questions used in
-                modelJson.modelName = enterNewModelNameMatch1.text;
+                // // Extract the json
+                // string jsonModel = File.ReadAllText(modelPath);
 
-                // Create the new json string
-                string jsonModelNew = JsonUtility.ToJson(modelJson);
+                // // Create the model json 
+                // Model modelJson = JsonUtility.FromJson<Model>(jsonModel);
 
-                // Delete the old file
-                File.Delete(modelPath);
+                // // Fill the number of questions used in
+                // modelJson.modelName = enterNewModelNameMatch1.text;
 
-                // Save the new model file in the end save folder
-                File.WriteAllText(modelPath, jsonModelNew);
+                // // Create the new json string
+                // string jsonModelNew = JsonUtility.ToJson(modelJson);
+
+                // // Delete the old file
+                // File.Delete(modelPath);
+
+                // // Save the new model file in the end save folder
+                // File.WriteAllText(modelPath, jsonModelNew);
+            } else {
+
+                // Save the unrenamed matches in the array
+                Menus.unrenamedMatchesArray[0] = modelNameMatch2.GetComponentInChildren<TMP_Text>().text;
             }
         }
 
@@ -1847,26 +1877,36 @@ public class Creator : MonoBehaviour
         {
             if(enterNewModelNameMatch3.text != "")
             {
-                // Find the model Name
-                string modelPath = GetFileFromModelName(Menus.tempSavePath, modelNameMatch3.GetComponentInChildren<TMP_Text>().text);
+                // Get the button on which the name was displayed
+                Button previewButton = ReturnPreviewModelButtonFromModelName(modelNameMatch3.GetComponentInChildren<TMP_Text>().text);
 
-                // Extract the json
-                string jsonModel = File.ReadAllText(modelPath);
+                // Rename the button in the given text
+                previewButton.GetComponentInChildren<TMP_Text>().text = enterNewModelNameMatch3.GetComponentInChildren<TMP_Text>().text;
 
-                // Create the model json 
-                Model modelJson = JsonUtility.FromJson<Model>(jsonModel);
+                // // Find the model Name
+                // string modelPath = GetFileFromModelName(Menus.tempSavePath, modelNameMatch3.GetComponentInChildren<TMP_Text>().text);
 
-                // Fill the number of questions used in
-                modelJson.modelName = enterNewModelNameMatch1.text;
+                // // Extract the json
+                // string jsonModel = File.ReadAllText(modelPath);
 
-                // Create the new json string
-                string jsonModelNew = JsonUtility.ToJson(modelJson);
+                // // Create the model json 
+                // Model modelJson = JsonUtility.FromJson<Model>(jsonModel);
 
-                // Delete the old file
-                File.Delete(modelPath);
+                // // Fill the number of questions used in
+                // modelJson.modelName = enterNewModelNameMatch1.text;
 
-                // Save the new model file in the end save folder
-                File.WriteAllText(modelPath, jsonModelNew);
+                // // Create the new json string
+                // string jsonModelNew = JsonUtility.ToJson(modelJson);
+
+                // // Delete the old file
+                // File.Delete(modelPath);
+
+                // // Save the new model file in the end save folder
+                // File.WriteAllText(modelPath, jsonModelNew);
+            } else {
+
+                // Save the unrenamed matches in the array
+                Menus.unrenamedMatchesArray[0] = modelNameMatch3.GetComponentInChildren<TMP_Text>().text;
             }
         }
 
@@ -1875,26 +1915,36 @@ public class Creator : MonoBehaviour
         {
             if(enterNewModelNameMatch4.text != "")
             {
-                // Find the model Name
-                string modelPath = GetFileFromModelName(Menus.tempSavePath, modelNameMatch4.GetComponentInChildren<TMP_Text>().text);
+                // Get the button on which the name was displayed
+                Button previewButton = ReturnPreviewModelButtonFromModelName(modelNameMatch4.GetComponentInChildren<TMP_Text>().text);
 
-                // Extract the json
-                string jsonModel = File.ReadAllText(modelPath);
+                // Rename the button in the given text
+                previewButton.GetComponentInChildren<TMP_Text>().text = enterNewModelNameMatch4.GetComponentInChildren<TMP_Text>().text;
 
-                // Create the model json 
-                Model modelJson = JsonUtility.FromJson<Model>(jsonModel);
+                // // Find the model Name
+                // string modelPath = GetFileFromModelName(Menus.tempSavePath, modelNameMatch4.GetComponentInChildren<TMP_Text>().text);
 
-                // Fill the number of questions used in
-                modelJson.modelName = enterNewModelNameMatch1.text;
+                // // Extract the json
+                // string jsonModel = File.ReadAllText(modelPath);
 
-                // Create the new json string
-                string jsonModelNew = JsonUtility.ToJson(modelJson);
+                // // Create the model json 
+                // Model modelJson = JsonUtility.FromJson<Model>(jsonModel);
 
-                // Delete the old file
-                File.Delete(modelPath);
+                // // Fill the number of questions used in
+                // modelJson.modelName = enterNewModelNameMatch1.text;
 
-                // Save the new model file in the end save folder
-                File.WriteAllText(modelPath, jsonModelNew);
+                // // Create the new json string
+                // string jsonModelNew = JsonUtility.ToJson(modelJson);
+
+                // // Delete the old file
+                // File.Delete(modelPath);
+
+                // // Save the new model file in the end save folder
+                // File.WriteAllText(modelPath, jsonModelNew);
+            } else {
+
+                // Save the unrenamed matches in the array
+                Menus.unrenamedMatchesArray[0] = modelNameMatch4.GetComponentInChildren<TMP_Text>().text;
             }
         }
 
@@ -1903,26 +1953,36 @@ public class Creator : MonoBehaviour
         {
             if(enterNewModelNameMatch5.text != "")
             {
-                // Find the model Name
-                string modelPath = GetFileFromModelName(Menus.tempSavePath, modelNameMatch5.GetComponentInChildren<TMP_Text>().text);
+                // Get the button on which the name was displayed
+                Button previewButton = ReturnPreviewModelButtonFromModelName(modelNameMatch5.GetComponentInChildren<TMP_Text>().text);
 
-                // Extract the json
-                string jsonModel = File.ReadAllText(modelPath);
+                // Rename the button in the given text
+                previewButton.GetComponentInChildren<TMP_Text>().text = enterNewModelNameMatch5.GetComponentInChildren<TMP_Text>().text;
+                
+                // // Find the model Name
+                // string modelPath = GetFileFromModelName(Menus.tempSavePath, modelNameMatch5.GetComponentInChildren<TMP_Text>().text);
 
-                // Create the model json 
-                Model modelJson = JsonUtility.FromJson<Model>(jsonModel);
+                // // Extract the json
+                // string jsonModel = File.ReadAllText(modelPath);
 
-                // Fill the number of questions used in
-                modelJson.modelName = enterNewModelNameMatch1.text;
+                // // Create the model json 
+                // Model modelJson = JsonUtility.FromJson<Model>(jsonModel);
 
-                // Create the new json string
-                string jsonModelNew = JsonUtility.ToJson(modelJson);
+                // // Fill the number of questions used in
+                // modelJson.modelName = enterNewModelNameMatch1.text;
 
-                // Delete the old file
-                File.Delete(modelPath);
+                // // Create the new json string
+                // string jsonModelNew = JsonUtility.ToJson(modelJson);
 
-                // Save the new model file in the end save folder
-                File.WriteAllText(modelPath, jsonModelNew);
+                // // Delete the old file
+                // File.Delete(modelPath);
+
+                // // Save the new model file in the end save folder
+                // File.WriteAllText(modelPath, jsonModelNew);
+            } else {
+
+                // Save the unrenamed matches in the array
+                Menus.unrenamedMatchesArray[0] = modelNameMatch5.GetComponentInChildren<TMP_Text>().text;
             }
         }
     }
@@ -2620,11 +2680,14 @@ public class Creator : MonoBehaviour
     // Method used to rename and create the model files when saving them in the end save directory
     public int RenameModels(string path, int index)
     {
-        // Initialize the model name array
+        // Get the array of new models names
         string[] newModelNames = ReturnPreviewModelNames();
 
         // Get the array of models in the end save directory
-        string[] oldModelNames = GetModelsArray(path);
+        string[] oldModelsArray = GetModelsArray(path);
+
+        // Get the array of old models names
+        string[] oldModelNames = GetModelsNamesFromArray(oldModelsArray);
 
         int numberOfModelsThatNeedNames = Menus.currentModelIndex + 1;
 
@@ -2710,13 +2773,24 @@ public class Creator : MonoBehaviour
 
         // Initialize the number of models that still need a name and file
         int numberThatStillNeed = numberOfModelsThatNeedNames;
+        int currentIndex = 0;
         int indexRest = 0;
 
-        while(indexRest <= numberOfModelsThatNeedNames)
+        int newAddedModelNumber = 0;
+
+        while(indexRest < numberOfModelsThatNeedNames)
         {
             // Generate the right index at the end of the name
-            string ending = ReturnQuestionIndex(i);
+            string ending = ReturnQuestionIndex(currentIndex);
             string name = "Model" + ending + ".json";
+
+            if(oldModelNames != null)
+            {
+                foreach(string oldModelName in oldModelNames)
+                {
+                    Debug.Log("Checking if: " + name + " was equalto: " + oldModelName);
+                }
+            }
 
             if(isContained(oldModelNames, name) != true)
             {
@@ -2727,7 +2801,7 @@ public class Creator : MonoBehaviour
                 string modelName = "";
 
                 // Get the right uri
-                switch(numberOfModelsThatNeedNames)
+                switch(numberThatStillNeed)
                 {
                     case 1:
                         url = Menus.url1;
@@ -2755,36 +2829,61 @@ public class Creator : MonoBehaviour
                     break;
                 }
 
-                // if(url == "")
-                // {
-                //     url = Menus.url1;
-                //     modelName = previewModel1.GetComponentInChildren<TMP_Text>().text;
-                // }
+                // Check if this was a model that was not renamed and has a duplicate in the end save folder = no new file created
+                if(isContained(Menus.unrenamedMatchesArray, modelName) == true)
+                {
+                    // Find the modelXYZ file that contains this model
+                    string modelFilePath = GetFileFromModelName(Globals.selectedPath, modelName);
 
-                // // Extract the file name
-                // System.Uri uri = new Uri(url);
-                // string modelName = System.IO.Path.GetFileName(uri.LocalPath);
+                    // Copy the file to the temp save folder
+                    File.Copy(modelFilePath , Menus.tempSavePath + Path.GetFileName(modelFilePath));
 
-                // Create the model file with that name
-                Model modelJson = new Model();
+                    // Get the json string
+                    string jsonModel = File.ReadAllText(Menus.tempSavePath + Path.GetFileName(modelFilePath));
 
-                // Fill the model name and the url
-                modelJson.modelName = modelName;
-                modelJson.modelUrl = url;
-                modelJson.numberOfQuestionsUsedIn = Menus.currentQuestionIndex;
+                    // Extract the model object
+                    Model model = JsonUtility.FromJson<Model>(jsonModel);
 
-                // Create the new json string
-                string jsonModelNew = JsonUtility.ToJson(modelJson);
+                    // Increase the number of questions used in by the number of questions
+                    model.numberOfQuestionsUsedIn = model.numberOfQuestionsUsedIn + Menus.currentQuestionIndex;
 
-                // Save the new model file in the end save folder
-                File.WriteAllText(Menus.tempSavePath + name, jsonModelNew);
+                    // Create the new json string
+                    string jsonModelNew = JsonUtility.ToJson(model);
 
-                Debug.Log("The model file with name: " + name + " should have been saved in: " + Menus.tempSavePath);
+                    // Save the new model file in the end save folder
+                    File.WriteAllText(Menus.tempSavePath + Path.GetFileName(modelFilePath), jsonModelNew);
 
-                // // Increase the new index by one since the maximum model name was changed
-                // newIndex = newIndex + 1;
+                } else {
+
+                    // Create the model file with that name
+                    Model modelJson = new Model();
+
+                    // Fill the model name and the url
+                    modelJson.modelName = modelName;
+                    modelJson.modelUrl = url;
+                    modelJson.numberOfQuestionsUsedIn = Menus.currentQuestionIndex;
+
+                    // Create the new json string
+                    string jsonModelNew = JsonUtility.ToJson(modelJson);
+
+                    // Save the new model file in the end save folder
+                    File.WriteAllText(Menus.tempSavePath + name, jsonModelNew);
+
+                    Debug.Log("The model file with name: " + name + " should have been saved in: " + Menus.tempSavePath);
+
+                    // Increase the number of newly added models
+                    newAddedModelNumber = newAddedModelNumber + 1;
+                }
+
+                // Increase the index rest because a model file was created
                 indexRest = indexRest + 1;
+
+                // Decrease the number that still need to be created
+                numberThatStillNeed = numberThatStillNeed - 1;
             }
+
+            // Increase the index
+            currentIndex = currentIndex + 1;
         }
 
         // // Create as much model files as is needed
@@ -2870,7 +2969,8 @@ public class Creator : MonoBehaviour
         // }
         // return newIndex;
 
-        return numberOfModelsThatNeedNames + index;
+        // Return the number of old models + the number of newly added models
+        return index + newAddedModelNumber;
     }
 
     // -------------------------------------------------------------------------------------------------------------------
@@ -3706,6 +3806,29 @@ public class Creator : MonoBehaviour
         return models;
     }
 
+    // Method that returns the array of model names in the given array
+    static string[] GetModelsNamesFromArray(string[] array) 
+    {
+        // Initialize an array of the same length
+        string[] newArray = new string[array.Length];
+
+        // Initialize the index
+        int index = 0;
+
+        // Go through all model paths in the given array
+        foreach(string model in array)
+        {
+            // Insert the model name
+            newArray[index] = Path.GetFileName(model);
+
+            // Increase the index by one
+            index = index + 1;
+        }
+
+        // Return the names array
+        return newArray;
+    }
+
 
     // // Method that changes the name of the improrted model (case two different models with same name)
     // public void RenameDuplicate()
@@ -4161,6 +4284,8 @@ public class Creator : MonoBehaviour
         {
             return previewModel5;
         }
+
+        return previewModel1;
     }
 
     // Method that checks if a name is contained in the model preview butons

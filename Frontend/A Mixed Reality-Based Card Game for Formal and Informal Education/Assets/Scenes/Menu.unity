@@ -28285,7 +28285,7 @@ MonoBehaviour:
   headingPageNumber: {fileID: 1226051464}
   duplicateName: {fileID: 11153807}
   wishToReplaceHeading: {fileID: 1620728529}
-  matchesHeading: {fileID: 0}
+  matchesHeading: {fileID: 78635262}
   extendedLogging: 1
 --- !u!1 &1446520878
 GameObject:
