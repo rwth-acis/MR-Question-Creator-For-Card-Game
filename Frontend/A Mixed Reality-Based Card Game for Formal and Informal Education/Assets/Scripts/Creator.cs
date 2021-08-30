@@ -1729,6 +1729,8 @@ public class Creator : MonoBehaviour
         // Initialize the obj name array
         string[] modelsTemSave = ReturnPreviewModelNames();
 
+        Debug.Log("When merging models, the path to the selected directory was: " + Globals.selectedPath);
+
         // Get the models array of the end save folder
         string[] modelsEndSave = ReturnModelNames(Globals.selectedPath);
 
@@ -1795,6 +1797,8 @@ public class Creator : MonoBehaviour
         // Define the .obj ending
         string ending = ".obj";
 
+        string name = "";
+
         // Check if the first button has a name, and check if the input field was filled
         if(modelNameMatch1.GetComponentInChildren<TMP_Text>().text != "")
         {
@@ -1803,8 +1807,18 @@ public class Creator : MonoBehaviour
                 // Get the button on which the name was displayed
                 Button previewButton = ReturnPreviewModelButtonFromModelName(modelNameMatch1.GetComponentInChildren<TMP_Text>().text);
 
+                // Check that no ".obj" ending was ommitted
+                if(enterNewModelNameMatch1.text.EndsWith(ending) == false)
+                {
+                    name = enterNewModelNameMatch1.text + ending;
+
+                } else {
+
+                    name = enterNewModelNameMatch1.text;
+                }
+
                 // Rename the button in the given text
-                previewButton.GetComponentInChildren<TMP_Text>().text = enterNewModelNameMatch1.text;
+                previewButton.GetComponentInChildren<TMP_Text>().text = name;
 
                 // // Find the model Name
                 // string modelPath = GetFileFromModelName(Menus.tempSavePath, modelNameMatch1.GetComponentInChildren<TMP_Text>().text);
@@ -1842,8 +1856,18 @@ public class Creator : MonoBehaviour
                 // Get the button on which the name was displayed
                 Button previewButton = ReturnPreviewModelButtonFromModelName(modelNameMatch2.GetComponentInChildren<TMP_Text>().text);
 
+                // Check that no ".obj" ending was ommitted
+                if(enterNewModelNameMatch2.text.EndsWith(ending) == false)
+                {
+                    name = enterNewModelNameMatch2.text + ending;
+
+                } else {
+
+                    name = enterNewModelNameMatch2.text;
+                }
+
                 // Rename the button in the given text
-                previewButton.GetComponentInChildren<TMP_Text>().text = enterNewModelNameMatch2.GetComponentInChildren<TMP_Text>().text;
+                previewButton.GetComponentInChildren<TMP_Text>().text = name;
 
                 // // Find the model Name
                 // string modelPath = GetFileFromModelName(Menus.tempSavePath, modelNameMatch2.GetComponentInChildren<TMP_Text>().text);
@@ -1880,8 +1904,18 @@ public class Creator : MonoBehaviour
                 // Get the button on which the name was displayed
                 Button previewButton = ReturnPreviewModelButtonFromModelName(modelNameMatch3.GetComponentInChildren<TMP_Text>().text);
 
+                // Check that no ".obj" ending was ommitted
+                if(enterNewModelNameMatch3.text.EndsWith(ending) == false)
+                {
+                    name = enterNewModelNameMatch3.text + ending;
+
+                } else {
+
+                    name = enterNewModelNameMatch3.text;
+                }
+
                 // Rename the button in the given text
-                previewButton.GetComponentInChildren<TMP_Text>().text = enterNewModelNameMatch3.GetComponentInChildren<TMP_Text>().text;
+                previewButton.GetComponentInChildren<TMP_Text>().text = name;
 
                 // // Find the model Name
                 // string modelPath = GetFileFromModelName(Menus.tempSavePath, modelNameMatch3.GetComponentInChildren<TMP_Text>().text);
@@ -1918,8 +1952,18 @@ public class Creator : MonoBehaviour
                 // Get the button on which the name was displayed
                 Button previewButton = ReturnPreviewModelButtonFromModelName(modelNameMatch4.GetComponentInChildren<TMP_Text>().text);
 
+                // Check that no ".obj" ending was ommitted
+                if(enterNewModelNameMatch4.text.EndsWith(ending) == false)
+                {
+                    name = enterNewModelNameMatch4.text + ending;
+
+                } else {
+
+                    name = enterNewModelNameMatch4.text;
+                }
+
                 // Rename the button in the given text
-                previewButton.GetComponentInChildren<TMP_Text>().text = enterNewModelNameMatch4.GetComponentInChildren<TMP_Text>().text;
+                previewButton.GetComponentInChildren<TMP_Text>().text = name;
 
                 // // Find the model Name
                 // string modelPath = GetFileFromModelName(Menus.tempSavePath, modelNameMatch4.GetComponentInChildren<TMP_Text>().text);
@@ -1956,8 +2000,18 @@ public class Creator : MonoBehaviour
                 // Get the button on which the name was displayed
                 Button previewButton = ReturnPreviewModelButtonFromModelName(modelNameMatch5.GetComponentInChildren<TMP_Text>().text);
 
+                // Check that no ".obj" ending was ommitted
+                if(enterNewModelNameMatch5.text.EndsWith(ending) == false)
+                {
+                    name = enterNewModelNameMatch5.text + ending;
+
+                } else {
+
+                    name = enterNewModelNameMatch5.text;
+                }
+
                 // Rename the button in the given text
-                previewButton.GetComponentInChildren<TMP_Text>().text = enterNewModelNameMatch5.GetComponentInChildren<TMP_Text>().text;
+                previewButton.GetComponentInChildren<TMP_Text>().text = name;
                 
                 // // Find the model Name
                 // string modelPath = GetFileFromModelName(Menus.tempSavePath, modelNameMatch5.GetComponentInChildren<TMP_Text>().text);
@@ -2683,13 +2737,15 @@ public class Creator : MonoBehaviour
         // Get the array of new models names
         string[] newModelNames = ReturnPreviewModelNames();
 
+        Debug.Log("When renaming models, the number of models was: " + newModelNames.Length);
+
         // Get the array of models in the end save directory
         string[] oldModelsArray = GetModelsArray(path);
 
         // Get the array of old models names
         string[] oldModelNames = GetModelsNamesFromArray(oldModelsArray);
 
-        int numberOfModelsThatNeedNames = Menus.currentModelIndex + 1;
+        int numberOfModelsThatNeedNames = Menus.currentModelIndex;
 
         // int newIndex = index;
 
@@ -2776,6 +2832,8 @@ public class Creator : MonoBehaviour
         int currentIndex = 0;
         int indexRest = 0;
 
+        bool increasing = true;
+
         int newAddedModelNumber = 0;
 
         while(indexRest < numberOfModelsThatNeedNames)
@@ -2832,6 +2890,8 @@ public class Creator : MonoBehaviour
                 // Check if this was a model that was not renamed and has a duplicate in the end save folder = no new file created
                 if(isContained(Menus.unrenamedMatchesArray, modelName) == true)
                 {
+                    increasing = false;
+
                     // Find the modelXYZ file that contains this model
                     string modelFilePath = GetFileFromModelName(Globals.selectedPath, modelName);
 
@@ -2854,6 +2914,8 @@ public class Creator : MonoBehaviour
                     File.WriteAllText(Menus.tempSavePath + Path.GetFileName(modelFilePath), jsonModelNew);
 
                 } else {
+
+                    increasing = true;
 
                     // Create the model file with that name
                     Model modelJson = new Model();
@@ -2882,8 +2944,11 @@ public class Creator : MonoBehaviour
                 numberThatStillNeed = numberThatStillNeed - 1;
             }
 
-            // Increase the index
-            currentIndex = currentIndex + 1;
+            if(increasing == true)
+            {
+                // Increase the index
+                currentIndex = currentIndex + 1;
+            }
         }
 
         // // Create as much model files as is needed
