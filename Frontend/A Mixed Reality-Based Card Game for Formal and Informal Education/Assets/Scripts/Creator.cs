@@ -2059,13 +2059,15 @@ public class Creator : MonoBehaviour
         Log description = JsonUtility.FromJson<Log>(jsonDescription);
 
         // Initialize the number of models
-        int numberOfModels = 0;
+        int numberOfModels = numberOfModelsInPreview();
 
-        // Get the right number of models
-        foreach(string tempModelName in tempModelArray)
-        {
-            numberOfModels = numberOfModels + 1;
-        }
+        Debug.Log("The number of models that you get with returnpreviewmodelName.Length is " + numberOfModels);
+
+        // // Get the right number of models
+        // foreach(string tempModelName in tempModelArray)
+        // {
+        //     numberOfModels = numberOfModels + 1;
+        // }
 
         // Initialize the number of questions
         int numberOfQuestions = 0;
@@ -2227,118 +2229,122 @@ public class Creator : MonoBehaviour
             // Get the question to edit
             string questionToChange = questions[0];
 
-            // Initialize the number of buttons that have names
-            int numberOfButtonsWithModelName = 0;
+            // // Initialize the number of buttons that have names
+            // int numberOfButtonsWithModelName = 0;
 
-            // Get the text of all model preview button
-            string previewModel1Text = previewModel1.GetComponentInChildren<TMP_Text>().text;
-            string previewModel2Text = previewModel2.GetComponentInChildren<TMP_Text>().text;
-            string previewModel3Text = previewModel3.GetComponentInChildren<TMP_Text>().text;
-            string previewModel4Text = previewModel4.GetComponentInChildren<TMP_Text>().text;
-            string previewModel5Text = previewModel5.GetComponentInChildren<TMP_Text>().text;
+            // // Get the text of all model preview button
+            // string previewModel1Text = previewModel1.GetComponentInChildren<TMP_Text>().text;
+            // string previewModel2Text = previewModel2.GetComponentInChildren<TMP_Text>().text;
+            // string previewModel3Text = previewModel3.GetComponentInChildren<TMP_Text>().text;
+            // string previewModel4Text = previewModel4.GetComponentInChildren<TMP_Text>().text;
+            // string previewModel5Text = previewModel5.GetComponentInChildren<TMP_Text>().text;
 
-            // Create all ModelXYZ files
+            // // Create all ModelXYZ files
 
-            // If the first button has a heading, check if there is a .obj object of that name
-            string firstModelExist = CreateOrLoadModelFileIfNeeded(previewModel1Text, endModelArray, description.numberOfModels, 1);
+            // // If the first button has a heading, check if there is a .obj object of that name
+            // string firstModelExist = CreateOrLoadModelFileIfNeeded(previewModel1Text, endModelArray, description.numberOfModels, 1);
 
-            if(firstModelExist != "no")
-            {
-                Debug.Log("Button preview 1 is not empty");
-                Debug.Log("The outcome of the create or load model file was: " + firstModelExist);
+            // if(firstModelExist != "no")
+            // {
+            //     Debug.Log("Button preview 1 is not empty");
+            //     Debug.Log("The outcome of the create or load model file was: " + firstModelExist);
 
-                // Increase the number of buttons that have a model name by one
-                numberOfButtonsWithModelName = numberOfButtonsWithModelName + 1;
+            //     // Increase the number of buttons that have a model name by one
+            //     numberOfButtonsWithModelName = numberOfButtonsWithModelName + 1;
 
-                // Increase the number of models in the description by one if a new model was added
-                if(firstModelExist == "increase")
-                {
-                    description.numberOfModels = description.numberOfModels + 1;
-                    Debug.Log("The number of models in the description is: " + description.numberOfModels);
-                }
-            }
+            //     // Increase the number of models in the description by one if a new model was added
+            //     if(firstModelExist == "increase")
+            //     {
+            //         description.numberOfModels = description.numberOfModels + 1;
+            //         Debug.Log("The number of models in the description is: " + description.numberOfModels);
+            //     }
+            // }
 
-            // If the second button has a heading, check if there is a .obj object of that name
-            string secondModelExist = CreateOrLoadModelFileIfNeeded(previewModel2Text, endModelArray, description.numberOfModels, 1);
-            if(secondModelExist != "no") 
-            {
-                Debug.Log("Button preview 2 is not empty");
-                Debug.Log("The outcome of the create or load model file was: " + secondModelExist);
+            // // If the second button has a heading, check if there is a .obj object of that name
+            // string secondModelExist = CreateOrLoadModelFileIfNeeded(previewModel2Text, endModelArray, description.numberOfModels, 1);
+            // if(secondModelExist != "no") 
+            // {
+            //     Debug.Log("Button preview 2 is not empty");
+            //     Debug.Log("The outcome of the create or load model file was: " + secondModelExist);
 
-                // Increase the number of buttons that have a model name by one
-                numberOfButtonsWithModelName = numberOfButtonsWithModelName + 1;
+            //     // Increase the number of buttons that have a model name by one
+            //     numberOfButtonsWithModelName = numberOfButtonsWithModelName + 1;
 
-                // Increase the number of models in the description by one if a new model was added
-                if(secondModelExist == "increase")
-                {
-                    // description.numberOfModels = description.numberOfModels + 1;
-                    // Debug.Log("The number of models in the description is: " + description.numberOfModels);
-                }
-            }
+            //     // Increase the number of models in the description by one if a new model was added
+            //     if(secondModelExist == "increase")
+            //     {
+            //         // description.numberOfModels = description.numberOfModels + 1;
+            //         // Debug.Log("The number of models in the description is: " + description.numberOfModels);
+            //     }
+            // }
 
-            // If the third button has a heading, check if there is a .obj object of that name
-            string thirdModelExist = CreateOrLoadModelFileIfNeeded(previewModel3Text, endModelArray, description.numberOfModels, 1);
-            if(thirdModelExist != "no") 
-            {
-                Debug.Log("Button preview 3 is not empty");
-                Debug.Log("The outcome of the create or load model file was: " + thirdModelExist);
+            // // If the third button has a heading, check if there is a .obj object of that name
+            // string thirdModelExist = CreateOrLoadModelFileIfNeeded(previewModel3Text, endModelArray, description.numberOfModels, 1);
+            // if(thirdModelExist != "no") 
+            // {
+            //     Debug.Log("Button preview 3 is not empty");
+            //     Debug.Log("The outcome of the create or load model file was: " + thirdModelExist);
 
-                // Increase the number of buttons that have a model name by one
-                numberOfButtonsWithModelName = numberOfButtonsWithModelName + 1;
+            //     // Increase the number of buttons that have a model name by one
+            //     numberOfButtonsWithModelName = numberOfButtonsWithModelName + 1;
 
-                // Increase the number of models in the description by one if a new model was added
-                if(thirdModelExist == "increase")
-                {
-                    // description.numberOfModels = description.numberOfModels + 1;
-                    // Debug.Log("The number of models in the description is: " + description.numberOfModels);
-                }
-            }
+            //     // Increase the number of models in the description by one if a new model was added
+            //     if(thirdModelExist == "increase")
+            //     {
+            //         // description.numberOfModels = description.numberOfModels + 1;
+            //         // Debug.Log("The number of models in the description is: " + description.numberOfModels);
+            //     }
+            // }
 
-            // If the fourth button has a heading, check if there is a .obj object of that name
-            string fourthModelExist = CreateOrLoadModelFileIfNeeded(previewModel4Text, endModelArray, description.numberOfModels, 1);
-            if(fourthModelExist != "no") 
-            {
-                Debug.Log("Button preview 4 is not empty");
-                Debug.Log("The outcome of the create or load model file was: " + fourthModelExist);
+            // // If the fourth button has a heading, check if there is a .obj object of that name
+            // string fourthModelExist = CreateOrLoadModelFileIfNeeded(previewModel4Text, endModelArray, description.numberOfModels, 1);
+            // if(fourthModelExist != "no") 
+            // {
+            //     Debug.Log("Button preview 4 is not empty");
+            //     Debug.Log("The outcome of the create or load model file was: " + fourthModelExist);
 
-                // Increase the number of buttons that have a model name by one
-                numberOfButtonsWithModelName = numberOfButtonsWithModelName + 1;
+            //     // Increase the number of buttons that have a model name by one
+            //     numberOfButtonsWithModelName = numberOfButtonsWithModelName + 1;
 
-                // Increase the number of models in the description by one if a new model was added
-                if(fourthModelExist == "increase")
-                {
-                    // description.numberOfModels = description.numberOfModels + 1;
-                    // Debug.Log("The number of models in the description is: " + description.numberOfModels);
-                }
-            }
+            //     // Increase the number of models in the description by one if a new model was added
+            //     if(fourthModelExist == "increase")
+            //     {
+            //         // description.numberOfModels = description.numberOfModels + 1;
+            //         // Debug.Log("The number of models in the description is: " + description.numberOfModels);
+            //     }
+            // }
             
-            // If the fifth button has a heading, check if there is a .obj object of that name
-            string fifthModelExist = CreateOrLoadModelFileIfNeeded(previewModel5Text, endModelArray, description.numberOfModels, 1);
-            if(fifthModelExist != "no") 
-            {
-                Debug.Log("Button preview 5 is not empty");
+            // // If the fifth button has a heading, check if there is a .obj object of that name
+            // string fifthModelExist = CreateOrLoadModelFileIfNeeded(previewModel5Text, endModelArray, description.numberOfModels, 1);
+            // if(fifthModelExist != "no") 
+            // {
+            //     Debug.Log("Button preview 5 is not empty");
 
-                // Increase the number of buttons that have a model name by one
-                numberOfButtonsWithModelName = numberOfButtonsWithModelName + 1;
+            //     // Increase the number of buttons that have a model name by one
+            //     numberOfButtonsWithModelName = numberOfButtonsWithModelName + 1;
 
-                // Increase the number of models in the description by one if a new model was added
-                if(fifthModelExist == "increase")
-                {
-                    // description.numberOfModels = description.numberOfModels + 1;
-                    // Debug.Log("The number of models in the description is: " + description.numberOfModels);
-                }
-            }
+            //     // Increase the number of models in the description by one if a new model was added
+            //     if(fifthModelExist == "increase")
+            //     {
+            //         // description.numberOfModels = description.numberOfModels + 1;
+            //         // Debug.Log("The number of models in the description is: " + description.numberOfModels);
+            //     }
+            // }
 
-            // Copy the model files that are not needed back to the end save folder
-            CopyNotUsedModelFilesBack(Menus.tempSavePath, Globals.selectedPath);
+            // // Copy the model files that are not needed back to the end save folder
+            // CopyNotUsedModelFilesBack(Menus.tempSavePath, Globals.selectedPath);
 
             // Now that all model files are created and loaded in the temp save file, add all model files to the question
+
+            // get the number of models that have to be added to the question
+            int numberOfButtonsWithModelName = numberOfModelsInPreview();
 
             // Get the json string
             string jsonChangeQuestion = File.ReadAllText(questionToChange);
 
             // Get the modelXYZ array in the temp save folder
-            string[] tempModelArray2 = GetModelsArray(Menus.tempSavePath);
+            // string[] tempModelArray2 = GetModelsArray(Menus.tempSavePath);
+            string[] tempModelArray2 = ReturnPreviewModelNames();
 
             // Extract the object
             if(jsonChangeQuestion.Contains("input question") == true)
@@ -2346,11 +2352,20 @@ public class Creator : MonoBehaviour
                 // Case it is an input question
                 InputQuestion inputQuestion = JsonUtility.FromJson<InputQuestion>(jsonChangeQuestion);
 
+                // Reset the model names
+                inputQuestion.model1Name = "";
+                inputQuestion.model2Name = "";
+                inputQuestion.model3Name = "";
+                inputQuestion.model4Name = "";
+                inputQuestion.model5Name = "";
+
                 int fillLoopIndex = 0;
 
                 foreach(string TempModelFile in tempModelArray2)
                 {
-                    string modelFileName = Path.GetFileName(TempModelFile);
+                    string filePath = GetFileFromModelName(Menus.tempSavePath, TempModelFile);
+                    string modelFileName = Path.GetFileName(filePath);
+                    
                     switch(fillLoopIndex)
                     {
                         case 0:
@@ -2388,11 +2403,19 @@ public class Creator : MonoBehaviour
                 // Case it is a multiple choice question
                 MultipleChoiceQuestion multipleChoiceQuestion = JsonUtility.FromJson<MultipleChoiceQuestion>(jsonChangeQuestion);
 
+                // Reset the model names
+                multipleChoiceQuestion.model1Name = "";
+                multipleChoiceQuestion.model2Name = "";
+                multipleChoiceQuestion.model3Name = "";
+                multipleChoiceQuestion.model4Name = "";
+                multipleChoiceQuestion.model5Name = "";
+
                 int fillLoopIndex = 0;
 
                 foreach(string TempModelFile in tempModelArray)
                 {
-                    string modelFileName = Path.GetFileName(TempModelFile);
+                    string filePath = GetFileFromModelName(Menus.tempSavePath, TempModelFile);
+                    string modelFileName = Path.GetFileName(filePath);
                     switch(fillLoopIndex)
                     {
                         case 0:
@@ -2427,20 +2450,20 @@ public class Creator : MonoBehaviour
             }
         }
 
-        // Delete old save file
-        File.Delete(Menus.tempSavePath + "Description.json");
+        // // Delete old save file
+        // File.Delete(Menus.tempSavePath + "Description.json");
 
-        // Set the right number of models
-        if(Globals.currentlyChangingFile == true)
-        {
-            // If a file is getting changed, then the number of models can just be added TODO could be wrong
-            description.numberOfModels = description.numberOfModels + numberOfModels;
-        }
-        // Convert to json
-        string newDescriptionJson = JsonUtility.ToJson(description);
+        // // Set the right number of models
+        // if(Globals.currentlyChangingFile == true)
+        // {
+        //     // // If a file is getting changed, then the number of models can just be added TODO could be wrong
+        //     // description.numberOfModels = description.numberOfModels + numberOfModels;
+        // }
+        // // Convert to json
+        // string newDescriptionJson = JsonUtility.ToJson(description);
 
-        // Create new save file
-        File.WriteAllText(Menus.tempSavePath + "Description.json", newDescriptionJson);
+        // // Create new save file
+        // File.WriteAllText(Menus.tempSavePath + "Description.json", newDescriptionJson);
     }
 
     // Method that search for model match in a given array of model files given a name
@@ -2760,6 +2783,18 @@ public class Creator : MonoBehaviour
             // Load the description in the temp save folder
             File.Copy(Path.Combine(Globals.selectedPath, "description.json"), Path.Combine(Globals.tempSavePath, "description.json"));
 
+            string json = File.ReadAllText(Menus.tempSavePath + "Description.json");
+            Log descriptionLog = JsonUtility.FromJson<Log>(json);
+
+            // Fill the unrenamed matches array so that no double model files are created
+            FillUnrenamedMatchesArray();
+
+            // Create and give a correct name to the models
+            int modelNumber = RenameModels(Globals.selectedPath, descriptionLog.numberOfModels);
+
+            // Set the number of models in the description file correctly
+            SetNumberOfModels(Globals.tempSavePath, modelNumber);
+
             // Add all 3D model information to the questions
             AddModelInformation();
 
@@ -2777,6 +2812,13 @@ public class Creator : MonoBehaviour
 
             // Exit the creator
             ExitWithoutSavingYes();
+
+        } else {
+
+            // Case it was deleted, then delete the old file in the back end folder
+            File.Delete(Globals.filePath);
+
+            ReduceNumberOfQuestionsByOne(Globals.selectedPath);
         }
     }
 
@@ -2924,8 +2966,12 @@ public class Creator : MonoBehaviour
                     // Find the modelXYZ file that contains this model
                     string modelFilePath = GetFileFromModelName(Globals.selectedPath, modelName);
 
-                    // Copy the file to the temp save folder
-                    File.Copy(modelFilePath , Menus.tempSavePath + Path.GetFileName(modelFilePath));
+                    // Copy the file in the temp save file directory if no file is being edited (file would already be there if that was the case)
+                    if(File.Exists(Menus.tempSavePath + Path.GetFileName(modelFilePath)) == false)
+                    {
+                        // Copy the file to the temp save folder
+                        File.Copy(modelFilePath , Menus.tempSavePath + Path.GetFileName(modelFilePath));
+                    }
 
                     // Get the json string
                     string jsonModel = File.ReadAllText(Menus.tempSavePath + Path.GetFileName(modelFilePath));
@@ -2953,6 +2999,17 @@ public class Creator : MonoBehaviour
                     modelJson.modelName = modelName;
                     modelJson.modelUrl = url;
                     modelJson.numberOfQuestionsUsedIn = Menus.currentQuestionIndex;
+
+                    if(Globals.currentlyChangingFile == false)
+                    {
+                        // Increase the number of questions used in by the number of questions
+                        modelJson.numberOfQuestionsUsedIn = Menus.currentQuestionIndex;
+
+                    } else {
+
+                        // Set the number of questions used in to 1
+                        modelJson.numberOfQuestionsUsedIn = 1;
+                    }
 
                     // Create the new json string
                     string jsonModelNew = JsonUtility.ToJson(modelJson);
@@ -4429,5 +4486,122 @@ public class Creator : MonoBehaviour
             }
         }
         return number;
+    }
+
+    //----------------------------------------------------------------------------------------------
+    // Method used to change one variable in .json files saved at a given path
+    //----------------------------------------------------------------------------------------------
+
+    // Method used to reduce the number of questions used in that is written in the model file of the given file path by one
+    public void ReduceNumberOfQuestionsUsedInByOne(string filePath)
+    {
+        // Reed the json string
+        string json = File.ReadAllText(filePath);
+
+        // Extract the log object
+        Model model = JsonUtility.FromJson<Model>(json);
+
+        // Reduce the number of questions used in by one
+        model.numberOfQuestionsUsedIn = model.numberOfQuestionsUsedIn - 1;
+
+        // Convert it back to json
+        string jsonNew = JsonUtility.ToJson(model);
+
+        // Delete the old file
+        File.Delete(filePath);
+
+        // Create the new file
+        File.WriteAllText(filePath, jsonNew);
+    }
+
+    // Method used to reduce the number of questions that is written in the description file at path 'path' by one
+    public void ReduceNumberOfQuestionsByOne(string path)
+    {
+        // Reed the json string
+        string json = File.ReadAllText(path + "Description.json");
+
+        // Extract the log object
+        Log logFile = JsonUtility.FromJson<Log>(json);
+
+        // Reduce the number of questions by one
+        logFile.numberOfQuestions = logFile.numberOfQuestions - 1;
+
+        // Convert it back to json
+        string jsonNew = JsonUtility.ToJson(logFile);
+
+        // Delete the old file
+        File.Delete(path + "Description.json");
+
+        // Create the new file
+        File.WriteAllText(path + "Description.json", jsonNew);
+    }
+
+    // Method used to set the number of models that is written in the description file at path 'path'
+    public void SetNumberOfModels(string path, int number)
+    {
+        // Reed the json string
+        string json = File.ReadAllText(path + "Description.json");
+
+        // Extract the log object
+        Log logFile = JsonUtility.FromJson<Log>(json);
+
+        // Set the number of models
+        logFile.numberOfModels = number;
+
+        // Convert it back to json
+        string jsonNew = JsonUtility.ToJson(logFile);
+
+        // Delete the old file
+        File.Delete(path + "Description.json");
+
+        // Create the new file
+        File.WriteAllText(path + "Description.json", jsonNew);
+    }
+
+    // Method used to fill the unrenamed matches array
+    public void FillUnrenamedMatchesArray()
+    {
+        // Reset the array
+        Menus.unrenamedMatchesArray = new string[5];
+
+        // Get the array of names
+        string[] modelNamesArray = ReturnPreviewModelNames();
+
+        string[] oldModelNamesArray = ReturnModelNames(Globals.selectedPath);
+
+        foreach(string modelName in modelNamesArray)
+        {
+            if(isContained(oldModelNamesArray, modelName) == true)
+            {
+                // Get the prieview button from the model name
+                Button previewButton = ReturnPreviewModelButtonFromModelName(modelName);
+
+                // Fill the right place in the array
+                switch(previewButton.gameObject.name)
+                {
+                    case "Add3DModel1":
+                        Menus.unrenamedMatchesArray[0] = modelName;
+                    break;
+
+                    case "Add3DModel2":
+                        Menus.unrenamedMatchesArray[1] = modelName;
+                    break;
+
+                    case "Add3DModel3":
+                        Menus.unrenamedMatchesArray[2] = modelName;
+                    break;
+
+                    case "Add3DModel4":
+                        Menus.unrenamedMatchesArray[3] = modelName;
+                    break;
+
+                    case "Add3DModel5":
+                        Menus.unrenamedMatchesArray[4] = modelName;
+                    break;
+                }
+                
+            }
+        }
+
     }
 }
