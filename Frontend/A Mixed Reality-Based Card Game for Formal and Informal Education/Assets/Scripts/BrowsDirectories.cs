@@ -791,6 +791,89 @@ public class BrowsDirectories : MonoBehaviour
                 // Get the models array
                 string[] modelArray = GetModelsArray(Globals.tempSavePath);
 
+                Debug.Log("Building model array in browse directory!");
+
+                Debug.Log("The array length was: " + modelArray.Length);
+
+                int index = 0;
+
+                // Set the models
+                foreach(string model in modelArray)
+                {
+                    // Get the json string
+                    string jsonModel = File.ReadAllText(model);
+
+                    // Extract the object
+                    Model modelObject = JsonUtility.FromJson<Model>(jsonModel);
+
+                    // Get the right button
+                    Button previewButton = GetRightModelPreviewButton(index);
+
+                    // Set the name of the button correctly
+                    previewButton.GetComponentInChildren<TMP_Text>().text = modelObject.modelName;
+
+                    // Make it interactable
+                    previewButton.interactable  = true;
+
+                    // Increase index by one
+                    index = index + 1;
+                }
+
+                // Set the rest of the buttons correctly
+                for(int rest = index; rest < 5; rest = rest + 1)
+                {
+                    // Get the right button
+                    Button previewButton = GetRightModelPreviewButton(rest);
+                    if(rest == index)
+                    {
+                        // Set the name of the button correctly
+                        previewButton.GetComponentInChildren<TMP_Text>().text = "+";
+                        previewButton.interactable  = true;
+                    } else {
+                        // Set the name of the button correctly
+                        previewButton.GetComponentInChildren<TMP_Text>().text = "";
+                        previewButton.interactable  = false;
+                    }
+                }
+            } else {
+                
+                // Extract the object
+                MultipleChoiceQuestion question = JsonUtility.FromJson<MultipleChoiceQuestion>(json);
+
+                // Load all model files
+                if(question.numberOfModels >= 1)
+                {
+                    // Load the first model file
+                    File.Copy(Path.Combine(Globals.selectedPath, question.model1Name), Path.Combine(Globals.tempSavePath, question.model1Name));
+                }
+                if(question.numberOfModels >= 2)
+                {
+                    // Load the second model file
+                    File.Copy(Path.Combine(Globals.selectedPath, question.model2Name), Path.Combine(Globals.tempSavePath, question.model2Name));
+                }
+                if(question.numberOfModels >= 3)
+                {
+                    // Load the third model file
+                    File.Copy(Path.Combine(Globals.selectedPath, question.model3Name), Path.Combine(Globals.tempSavePath, question.model3Name));
+                }
+                if(question.numberOfModels >= 4)
+                {
+                    // Load the fourth model file
+                    File.Copy(Path.Combine(Globals.selectedPath, question.model4Name), Path.Combine(Globals.tempSavePath, question.model4Name));
+                }
+                if(question.numberOfModels == 5)
+                {
+                    // Load the fifth model file
+                    File.Copy(Path.Combine(Globals.selectedPath, question.model5Name), Path.Combine(Globals.tempSavePath, question.model5Name));
+                }
+
+                // Get the models array
+                string[] modelArray = GetModelsArray(Globals.tempSavePath);
+
+                Debug.Log("Building model array in browse directory!");
+
+                Debug.Log("The array length was: " + modelArray.Length);
+
                 int index = 0;
 
                 // Set the models
