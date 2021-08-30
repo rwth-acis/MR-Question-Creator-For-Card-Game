@@ -775,6 +775,12 @@ public class Creator : MonoBehaviour
             Menus.currentMenu = mainCreator;
             Menus.lastMenu = mainMenu;
         }
+
+        // Lower the currently changing file flag
+        if(Globals.currentlyChangingFile == true)
+        {
+            Globals.currentlyChangingFile = false;
+        }
     }
 
     // Method to exit a exercise creation without saving
@@ -4602,6 +4608,129 @@ public class Creator : MonoBehaviour
                 
             }
         }
+
+    }
+
+    // Method used to clean up the unused models before uploading a model
+    public void CleanUpLevel()
+    {
+        // Get the level path
+        string levelPath = Globals.currentPath;
+
+        // Get the array of ModelXYZ files in the level path
+        string[] endModelArray = GetModelsArray(levelPath);
+
+        // Get the question array in the level path
+        string[] questionArray = GetQuestionsArray(levelPath);
+
+        bool[] usedInAQuestion = new bool[endModelArray.Length];
+
+        int index = 0;
+
+        foreach(string modelPath in endModelArray)
+        {
+            bool used = false;
+
+            foreach(string questionPath in questionArray)
+            {
+                // Extract the json string
+                string json = File.ReadAllText(questionPath);
+
+                // Check what type it is, if input question or multiple choice
+                if(json.Contains("input question") == true)
+                {
+                    // Case input question
+                    InputQuestion question = JsonUtility.FromJson<InputQuestion>(json);
+
+                    if(question.model1Name == Path.GetFileName(modelPath))
+                    {
+                        used = true;
+                    } else if(question.model2Name == Path.GetFileName(modelPath))
+                    {
+                        used = true;
+                    } else if(question.model3Name == Path.GetFileName(modelPath))
+                    {
+                        used = true;
+                    } else if(question.model4Name == Path.GetFileName(modelPath))
+                    {
+                        used = true;
+                    } else if(question.model5Name == Path.GetFileName(modelPath))
+                    {
+                        used = true;
+                    }
+
+                } else {
+
+                    // Case multiple choice question
+                    MultipleChoiceQuestion question = JsonUtility.FromJson<MultipleChoiceQuestion>(json);
+
+                    if(question.model1Name == Path.GetFileName(modelPath))
+                    {
+                        used = true;
+                    } else if(question.model2Name == Path.GetFileName(modelPath))
+                    {
+                        used = true;
+                    } else if(question.model3Name == Path.GetFileName(modelPath))
+                    {
+                        used = true;
+                    } else if(question.model4Name == Path.GetFileName(modelPath))
+                    {
+                        used = true;
+                    } else if(question.model5Name == Path.GetFileName(modelPath))
+                    {
+                        used = true;
+                    }
+                }
+            }
+
+            // Set the flag that the model was used to the truth value of the used variable
+            usedInAQuestion[index] = used;
+
+            // Increase the index by one
+            index = index + 1;
+        }
+
+        // Initialize the actual number of models
+        int actualNumberOfModels = 0;
+
+        for(int loopIndex = 0; loopIndex < endModelArray.Length; loopIndex = loopIndex + 1)
+        {
+            if(usedInAQuestion[loopIndex] == true)
+            {
+                // Increase the actual number of models by one
+                actualNumberOfModels = actualNumberOfModels + 1;
+
+            } else {
+
+                // Delete the model file at that index
+                File.Delete(endModelArray[loopIndex]);
+            }
+        }
+
+        // Access the description file
+
+        // Extract the json string
+        string descriptionJson = File.ReadAllText(levelPath + "Description.json");
+
+        // Case input question
+        Log description = JsonUtility.FromJson<Log>(descriptionJson);
+
+        // Set the number of models correctly
+        description.numberOfModels = actualNumberOfModels;
+
+        // Get the new json string
+        string newDescriptionJson = JsonUtility.ToJson(description);
+
+        Debug.Log("The number of models in the description file after change is: " + description.numberOfModels);
+
+        // Delete the old description file
+        File.Delete(levelPath + "Description.json");
+        
+
+        Debug.Log("The actual number of models was: " + actualNumberOfModels);
+
+        // Create the new description file
+        File.WriteAllText(levelPath + "Description.json", newDescriptionJson);
 
     }
 }
