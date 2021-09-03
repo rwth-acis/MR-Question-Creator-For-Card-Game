@@ -15,7 +15,6 @@ static class Upload
 
     // The flag that states if an upload is a success or not
     public static bool successful;
-
 }
 
 public class UploadLevel : MonoBehaviour
@@ -160,7 +159,6 @@ public class UploadLevel : MonoBehaviour
                     errorUploadFailed.gameObject.SetActive(false);
                 }
             }
-
         }
     }
 
@@ -255,7 +253,7 @@ public class UploadLevel : MonoBehaviour
             Debug.Log("The upload was unsuccessfull!");
         }
 
-        // Return the sucessful flag
+        // Return the successful flag
         return Upload.successful;
     }
 

@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class Manager : MonoBehaviour
 {
-    private static Manager mangerInsance;
+    private static Manager managerInstance;
 
     // Define the base path
     [SerializeField]
@@ -13,7 +13,7 @@ public class Manager : MonoBehaviour
 
     public static string getBasePath
     {
-        get { return mangerInsance.basePath; }
+        get { return managerInstance.basePath; }
     }
 
     // Define the backendAddress
@@ -22,7 +22,7 @@ public class Manager : MonoBehaviour
 
     public static string getBackendAddress
     {
-        get { return mangerInsance.backendAddress; }
+        get { return managerInstance.backendAddress; }
     }
 
     // Define the freed port
@@ -31,13 +31,13 @@ public class Manager : MonoBehaviour
 
     public static int getPort
     {
-        get { return mangerInsance.port; }
+        get { return managerInstance.port; }
     }
 
     // Start is called before the first frame update
     void Start()
     {
-        mangerInsance = this;
+        managerInstance = this;
     }
 
     // Update is called once per frame
