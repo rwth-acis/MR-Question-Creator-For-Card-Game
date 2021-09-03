@@ -3,8 +3,20 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using TMPro;
+using System;
 using UnityEngine.UI;
 using System.Text.RegularExpressions;
+using UnityEngine.Networking;
+
+static class Upload
+{
+    // Save the levels array from the server
+    public static string[] levelArrayFromServer;
+
+    // The flag that states if an upload is a success or not
+    public static bool successful;
+
+}
 
 public class UploadLevel : MonoBehaviour
 {
@@ -34,6 +46,158 @@ public class UploadLevel : MonoBehaviour
         
     }
 
+    //----------------------------------------------------------------------------------------------------
+    // The get and post requests
+    //----------------------------------------------------------------------------------------------------
+
+    // The get request coroutine
+    IEnumerator GetRequest(string path)
+    {
+        Debug.Log("The request was send with the uri: " + Manager.BackendAPIBaseURL + path);
+        UnityWebRequest uwr = UnityWebRequest.Get(Manager.BackendAPIBaseURL + path);
+        yield return uwr.SendWebRequest();
+
+        if (uwr.isNetworkError)
+        {
+            Debug.Log("Error While Sending: " + uwr.error);
+        }
+        else
+        {
+            Debug.Log("Received: " + uwr.downloadHandler.text);
+        }
+    }
+
+    // The post request coroutine
+    IEnumerator PostRequest(string url, string text)
+    {
+        // // Create an empty form
+        // WWWForm form = new WWWForm();
+
+        // // Fill the first field
+        // form.AddField("argument1", "My data");
+
+        // List<IMultipartFormSection> formData = new List<IMultipartFormSection>();
+        // formData.Add(new MultipartFormDataSection("field1=foo"));
+        // formData.Add(new MultipartFormFileSection("my file data", "myfile.txt"));
+
+        // var bytes = System.Text.Encoding.UTF8.GetBytes("My data");
+
+        // UnityWebRequest request = new UnityWebRequest("http://localhost:8080/template/level4/file1");
+        // request.uploadHandler   = new UploadHandlerRaw(bytes);
+        // // request.uploadHandler.contentType = string;
+        // // (myStringToByteArrayConverter(text));
+        // request.downloadHandler = new DownloadHandlerBuffer();
+        // request.method          = UnityWebRequest.kHttpVerbPOST;
+
+        // Create the unity webrequest that has the url
+        UnityWebRequest uwr = UnityWebRequest.Put(Manager.BackendAPIBaseURL + "level1/file1", "This is my text to upload");
+
+        // // Create the unity webrequest that has the url
+        // UnityWebRequest uwr = UnityWebRequest.Post("http://localhost:8080/template/level4/file1", form);
+
+        // Wait for the answer
+        yield return uwr.SendWebRequest();
+
+        // Check if the upload worked
+        if (uwr.isNetworkError)
+        {
+            Debug.Log("Error While Sending: " + uwr.error);
+
+            // Set the successful flag to false
+            Upload.successful = false;
+        }
+        else
+        {
+            Debug.Log("Received: " + uwr.downloadHandler.text);
+        }
+    }
+
+    // The get requestion coroutine to get levels
+    IEnumerator GetLevels(string path)
+    {
+        Debug.Log("The request was send with the uri: " + Manager.BackendAPIBaseURL + path);
+
+        // Send the get request with the base url plus the given path
+        UnityWebRequest uwr = UnityWebRequest.Get(Manager.BackendAPIBaseURL + path);
+
+        // Wait for the answer to come
+        yield return uwr.SendWebRequest();
+
+        // Check if there was a network error
+        if (uwr.isNetworkError)
+        {
+            Debug.Log("Error While Sending: " + uwr.error);
+
+        } else {
+
+            Debug.Log("Received: " + uwr.downloadHandler.text);
+            
+            // Get the level array
+            string[] levelArray = GetTheArray(uwr.downloadHandler.text);
+
+            foreach(string level in levelArray)
+            {
+                Debug.Log("Level found: " + level);
+            }
+
+            // Check if the level name exist there
+            if(isContained(levelArray, levelNameInputField.text) == true)
+            {
+                // Enable the name already exists error message
+                errorAlreadyExists.gameObject.SetActive(true);
+
+                // Make sure the error message is disabled
+                errorUploadFailed.gameObject.SetActive(false);
+
+                Debug.Log("Level with that name was already contained");
+
+            } else {
+
+                // Upload the level and get a truthvalue of if it worked
+                bool uploadWorked = UploadLevelMethod();
+
+                // Check if the upload did not work
+                if(uploadWorked == false)
+                {
+                    // Enable the error message
+                    errorUploadFailed.gameObject.SetActive(true);
+
+                } else {
+
+                    // Make sure the error message is disabled
+                    errorUploadFailed.gameObject.SetActive(false);
+                }
+            }
+
+        }
+    }
+
+    //----------------------------------------------------------------------------------------------------
+    // The methods that interact with the server
+    //----------------------------------------------------------------------------------------------------
+
+    // The method that pings the node and asks a response
+    public void SendPing()
+    {
+        // Make a get request with the right url
+        StartCoroutine(GetRequest("write"));
+    }
+
+    // The method that pings the node and asks a response
+    public void UploadOneFile()
+    {
+        string levelName = "levelName";
+
+        string fileName = "Description";
+        
+        string filePath = @"C:\Users\Anna\Desktop\RWTH Aachen\8. Semester\Bachelorarbeit\MR-Card-Game\Backend\RWTH Aachen University\testWithModels\Description.json";
+
+        string content = "This is my text";
+
+        // Make a get request with the right url
+        StartCoroutine(PostRequest(levelName + "/" + fileName, content));
+    }
+
     // The method started when a user clicks on the upload level button
     public void TryUploadingLevel()
     {
@@ -58,80 +222,97 @@ public class UploadLevel : MonoBehaviour
             errorEmptyName.gameObject.SetActive(false);
             errorSpecialCharacters.gameObject.SetActive(false);
 
-            // // Get the array of all levels
-            // string[] levelArray = BackendConnector.GetLevels();
-
-            // // Check if the level name exist there
-            // if(levelArray.Contains(levelNameInputField.text) == true)
-            // {
-            //     // Enable the name already exists error message
-            //     errorAlreadyExists.gameObject.SetActive(true);
-
-            //     // Make sure the error message is disabled
-            //     errorUploadFailed.gameObject.SetActive(false);
-
-            // } else{
-                // Upload the level and get a truthvalue of if it worked
-                bool uploadWorked = UploadLevelMethod();
-
-                // Check if the upload did not work
-                if(uploadWorked == false)
-                {
-                    // Enable the error message
-                    errorUploadFailed.gameObject.SetActive(true);
-
-                } else {
-                    // Make sure the error message is disabled
-                    errorUploadFailed.gameObject.SetActive(false);
-                }
-            // }
+            // Get the array of all levels
+            StartCoroutine(GetLevels(""));
         }
     }
 
     // The method used to upload a level
     public bool UploadLevelMethod()
     {
+        Debug.Log("Level is being uploaded");
+
         // Read the level name / code in the input field
         string levelName = levelNameInputField.text;
 
-        // Check that no level with that name exist 
-        if(false)
+        // Get the array of files
+        string[] filePaths = Directory.GetFiles(Globals.currentPath);
+
+        // Make sure the upload successful flag is true
+        Upload.successful = true;
+
+        // Upload each file in the level
+        foreach(string file in filePaths)
         {
-            // Return false, which will trigger an error message visible in the application
-            return false;
-        } else {
-            // Get the array of files
-            string[] filePaths = Directory.GetFiles(Globals.currentPath);
+            // Get the name from the path
+            string fileName = Path.GetFileName(file);
 
-            // Initialize the successful flag
-            bool successful = true;
+            // Extract the json string from the file
+            string json = File.ReadAllText(file);
 
-            // Upload each file in the level
-            foreach(string file in filePaths)
-            {
-                // Get the name from the path
-                string fileName = Path.GetFileName(file);
+            Debug.Log("Uploading file: " + levelName + "/" + fileName + " with the text: " + json);
 
-                // Upload that file at the right place
-                // bool success = BackendConnector.Save(levelName, fileName, file);
-                bool success = false;
-
-                // Check if it was a success
-                if(success == false)
-                {
-                    // If it was not a success, set the successful flag to false
-                    successful = false;
-                }
-            }
-
-            // Check if the process was unsuccessful
-            if(successful == false)
-            {
-                // Delete everything TODO
-            }
-
-            // Return the sucessful flag
-            return successful;
+            // Upload that file at the right place
+            StartCoroutine(PostRequest(levelName + "/" + fileName, json));
         }
+
+        // Check if the process was unsuccessful
+        if(Upload.successful == false)
+        {
+            // Delete everything TODO
+            Debug.Log("The upload was unsuccessfull!");
+        }
+
+        // Return the sucessful flag
+        return Upload.successful;
+    }
+
+    // The JSON Serialization for the input questions
+    [Serializable]
+    public class LevelDirectories
+    {
+        public string[] array;
+    }
+
+    // Method used to extract an array out of the string passed by the get request
+    public string[] GetTheArray(string data)
+    {
+        // Extract the LevelDirectories object
+        LevelDirectories levelDirectories = JsonUtility.FromJson<LevelDirectories>(data);
+
+        // Initialize an array of the same length as the array
+        string[] levelNames = new string[levelDirectories.array.Length];
+
+        // Initialize the current index
+        int index = 0;
+
+        // Extract the directory names (currently comple paths)
+        foreach(string level in levelDirectories.array)
+        {
+            // Get the name of the file and save it in the level names array
+            levelNames[index] = Path.GetFileName(levelDirectories.array[index]);
+
+            // Increase the index by one
+            index = index + 1;
+        }
+
+        // Return the level names array
+        return levelNames;
+    }
+
+    // Method that checks if a string is contained in an array of strings
+    public bool isContained(string[] array, string name)
+    {
+        // Go through all strings of the array
+        foreach (string modelName in array)
+        {
+            // Check if the current name and the given name are the same
+            if(modelName == name)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

@@ -7358,6 +7358,7 @@ GameObject:
   - component: {fileID: 343449065}
   - component: {fileID: 343449064}
   - component: {fileID: 343449068}
+  - component: {fileID: 343449069}
   m_Layer: 5
   m_Name: Canvas
   m_TagString: Untagged
@@ -7462,7 +7463,22 @@ MonoBehaviour:
   errorAlreadyExists: {fileID: 14865446}
   errorEmptyName: {fileID: 693468018}
   errorSpecialCharacters: {fileID: 1004855766}
-  errorUploadFailed: {fileID: 0}
+  errorUploadFailed: {fileID: 672850826}
+--- !u!114 &343449069
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 343449063}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5788f3a6657b7e44d843bcce73080cc9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  basePath: template
+  backendAddress: http://127.0.0.1
+  port: 8080
 --- !u!1 &348600584
 GameObject:
   m_ObjectHideFlags: 0
@@ -12252,7 +12268,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 220.59, y: -6.7743}
+  m_AnchoredPosition: {x: 220.59, y: -6.7743073}
   m_SizeDelta: {x: -457.1749, y: -129.7666}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &621812979
@@ -19812,7 +19828,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 343449068}
         m_TargetAssemblyTypeName: UploadLevel, Assembly-CSharp
-        m_MethodName: TryUploadingLevel
+        m_MethodName: UploadOneFile
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -40759,7 +40775,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &2096712593
 RectTransform:
   m_ObjectHideFlags: 0

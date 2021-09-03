@@ -24,7 +24,7 @@ public class BackendConnector : MonoBehaviour
     // parameter "saveName" is the name of the file to save
     // parameter "saveJson" is the data to be saved
 
-    // public static async Task<bool> Save(string levelName, string saveName, string saveJson)
+    // public static async Task<bool> SaveFile(string levelName, string saveName, string saveJson)
     // {
     //     Response resp = await Rest.PostAsync(Manager.Instance.BackendAPIBaseURL + "saves/" + levelName + "/" + saveName, saveJson);
     //     Manager.Instance.CheckStatusCode(resp.ResponseCode);
