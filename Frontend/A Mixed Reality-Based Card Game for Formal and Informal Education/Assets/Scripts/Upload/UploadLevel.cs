@@ -70,45 +70,37 @@ public class UploadLevel : MonoBehaviour
     // The post request coroutine
     IEnumerator PostRequest(string url, string text)
     {
-        // // Create an empty form
-        // WWWForm form = new WWWForm();
+        // Create a custom POST request
+        var request = new UnityWebRequest(Manager.BackendAPIBaseURL + url, "POST");
 
-        // // Fill the first field
-        // form.AddField("argument1", "My data");
+        // Transform the string in a byte array
+        byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(text);
 
-        // List<IMultipartFormSection> formData = new List<IMultipartFormSection>();
-        // formData.Add(new MultipartFormDataSection("field1=foo"));
-        // formData.Add(new MultipartFormFileSection("my file data", "myfile.txt"));
+        // Add an upload handler with the byte array in it
+        request.uploadHandler = (UploadHandler) new UploadHandlerRaw(bodyRaw);
 
-        // var bytes = System.Text.Encoding.UTF8.GetBytes("My data");
+        // Add a download handler
+        request.downloadHandler = (DownloadHandler) new DownloadHandlerBuffer();
 
-        // UnityWebRequest request = new UnityWebRequest("http://localhost:8080/template/level4/file1");
-        // request.uploadHandler   = new UploadHandlerRaw(bytes);
-        // // request.uploadHandler.contentType = string;
-        // // (myStringToByteArrayConverter(text));
-        // request.downloadHandler = new DownloadHandlerBuffer();
-        // request.method          = UnityWebRequest.kHttpVerbPOST;
+        // Set a request header that states the content type
+        request.SetRequestHeader("Content-Type", "application/json");
 
-        // Create the unity webrequest that has the url
-        UnityWebRequest uwr = UnityWebRequest.Put(Manager.BackendAPIBaseURL + "level1/file1", "This is my text to upload");
+        // Send the request and wait for the response
+        yield return request.SendWebRequest();
 
-        // // Create the unity webrequest that has the url
-        // UnityWebRequest uwr = UnityWebRequest.Post("http://localhost:8080/template/level4/file1", form);
-
-        // Wait for the answer
-        yield return uwr.SendWebRequest();
+        Debug.Log("Status Code: " + request.responseCode);
 
         // Check if the upload worked
-        if (uwr.isNetworkError)
+        if (request.isNetworkError)
         {
-            Debug.Log("Error While Sending: " + uwr.error);
+            Debug.Log("Error While Sending: " + request.error);
 
             // Set the successful flag to false
             Upload.successful = false;
         }
         else
         {
-            Debug.Log("Received: " + uwr.downloadHandler.text);
+            Debug.Log("Received: " + request.downloadHandler.text);
         }
     }
 
@@ -266,6 +258,10 @@ public class UploadLevel : MonoBehaviour
         // Return the sucessful flag
         return Upload.successful;
     }
+
+    //---------------------------------------------------------------------------------------------------------------------
+    // Helper Methods
+    //---------------------------------------------------------------------------------------------------------------------
 
     // The JSON Serialization for the input questions
     [Serializable]
