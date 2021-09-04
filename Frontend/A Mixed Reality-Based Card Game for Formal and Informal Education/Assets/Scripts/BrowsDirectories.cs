@@ -53,6 +53,9 @@ static class Globals
     public static string tempSavePath;
     public static string[] fileArray;
     public static bool currentlyChangingFile;
+
+    // The flag used to state if the browse level menu needs to be reset
+    public static bool resetBrowseLevelMenu;
 }
 
 public class BrowsDirectories : MonoBehaviour
@@ -171,6 +174,8 @@ public class BrowsDirectories : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        Globals.resetBrowseLevelMenu = false;
+        
         // First I initialize the Global paths
         string scriptPath = GetCurrentFilePath();
         string rootPath = GetPathToRootDirectory(scriptPath);
@@ -197,6 +202,20 @@ public class BrowsDirectories : MonoBehaviour
 
         // Initialize the flag of changing file
         Globals.currentlyChangingFile = false;
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        // Check if the menu has to be reset
+        if(Globals.resetBrowseLevelMenu == true)
+        {
+            // Reset the flag
+            Globals.resetBrowseLevelMenu = false;
+
+            // Close the menu
+            Back();
+        }
     }
 
     // Helper method to get the path to this script file

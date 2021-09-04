@@ -10,15 +10,19 @@ using UnityEngine.Networking;
 
 static class Upload
 {
-    // Save the levels array from the server
-    public static string[] levelArrayFromServer;
-
     // The flag that states if an upload is a success or not
     public static bool successful;
+
+    // The number of files that are needed to be downloaded in the level
+    public static int numberOfFilesToUpload;
 }
 
 public class UploadLevel : MonoBehaviour
 {
+    // Define the add level window
+    [SerializeField]
+    private GameObject uploadLevelWindow;
+
     // Define the level name input field
     [SerializeField]
     private TMP_InputField levelNameInputField;
@@ -75,7 +79,14 @@ public class UploadLevel : MonoBehaviour
         // Transform the string in a byte array
         byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(text);
 
+        foreach(byte oneByte in bodyRaw)
+        {
+            Debug.Log("One byte: " + oneByte + "of the file " + url);
+        }
+
         // Add an upload handler with the byte array in it
+        // request.uploadHandler = (UploadHandler) new UploadHandlerRaw(bodyRaw);
+
         request.uploadHandler = (UploadHandler) new UploadHandlerRaw(bodyRaw);
 
         // Add a download handler
@@ -101,6 +112,8 @@ public class UploadLevel : MonoBehaviour
         {
             Debug.Log("Received: " + request.downloadHandler.text);
         }
+
+        Upload.numberOfFilesToUpload = Upload.numberOfFilesToUpload - 1;
     }
 
     // The get requestion coroutine to get levels
@@ -145,20 +158,33 @@ public class UploadLevel : MonoBehaviour
             } else {
 
                 // Upload the level and get a truthvalue of if it worked
-                bool uploadWorked = UploadLevelMethod();
-
-                // Check if the upload did not work
-                if(uploadWorked == false)
-                {
-                    // Enable the error message
-                    errorUploadFailed.gameObject.SetActive(true);
-
-                } else {
-
-                    // Make sure the error message is disabled
-                    errorUploadFailed.gameObject.SetActive(false);
-                }
+                UploadLevelMethod();
             }
+        }
+    }
+
+    // The coroutine that waits for the result of the upload
+    IEnumerator WaitForResult()
+    {
+        // Wait for all files to be uploaded
+        while (Upload.numberOfFilesToUpload != 0) 
+        {
+            yield return new WaitForSeconds(0.5f);
+        }
+
+        // Check if the upload did not work
+        if(Upload.successful == false)
+        {
+            // Enable the error message
+            errorUploadFailed.gameObject.SetActive(true);
+
+        } else {
+
+            // Make sure the error message is disabled
+            errorUploadFailed.gameObject.SetActive(false);
+
+            // Close the current window and get back to the main menu
+            CloseWindow();
         }
     }
 
@@ -171,21 +197,6 @@ public class UploadLevel : MonoBehaviour
     {
         // Make a get request with the right url
         StartCoroutine(GetRequest("write"));
-    }
-
-    // The method that pings the node and asks a response
-    public void UploadOneFile()
-    {
-        string levelName = "levelName";
-
-        string fileName = "Description";
-        
-        string filePath = @"C:\Users\Anna\Desktop\RWTH Aachen\8. Semester\Bachelorarbeit\MR-Card-Game\Backend\RWTH Aachen University\testWithModels\Description.json";
-
-        string content = "This is my text";
-
-        // Make a get request with the right url
-        StartCoroutine(PostRequest(levelName + "/" + fileName, content));
     }
 
     // The method started when a user clicks on the upload level button
@@ -218,7 +229,7 @@ public class UploadLevel : MonoBehaviour
     }
 
     // The method used to upload a level
-    public bool UploadLevelMethod()
+    public void UploadLevelMethod()
     {
         Debug.Log("Level is being uploaded");
 
@@ -228,6 +239,9 @@ public class UploadLevel : MonoBehaviour
         // Get the array of files
         string[] filePaths = Directory.GetFiles(Globals.currentPath);
 
+        // Set the number of files that are needed to upload
+        Upload.numberOfFilesToUpload = filePaths.Length;
+
         // Make sure the upload successful flag is true
         Upload.successful = true;
 
@@ -235,7 +249,7 @@ public class UploadLevel : MonoBehaviour
         foreach(string file in filePaths)
         {
             // Get the name from the path
-            string fileName = Path.GetFileName(file);
+            string fileName = Path.GetFileName(file).Substring(0, Path.GetFileName(file).Length - 5);
 
             // Extract the json string from the file
             string json = File.ReadAllText(file);
@@ -246,15 +260,17 @@ public class UploadLevel : MonoBehaviour
             StartCoroutine(PostRequest(levelName + "/" + fileName, json));
         }
 
-        // Check if the process was unsuccessful
-        if(Upload.successful == false)
-        {
-            // Delete everything TODO
-            Debug.Log("The upload was unsuccessfull!");
-        }
+        StartCoroutine(WaitForResult());
+    }
 
-        // Return the successful flag
-        return Upload.successful;
+    // Method used to close the window after the upload was successful
+    public void CloseWindow()
+    {
+        // Close the menu and return to the main menu
+        uploadLevelWindow.gameObject.SetActive(false);
+
+        // Reset the browse level menu by setting the flag to true
+        Globals.resetBrowseLevelMenu = true;
     }
 
     //---------------------------------------------------------------------------------------------------------------------
