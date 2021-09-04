@@ -174,11 +174,61 @@ public class BrowsDirectories : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        StartCoroutine(SetupRootAndInitializeGlobals());
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        // Check if the menu has to be reset
+        if(Globals.resetBrowseLevelMenu == true)
+        {
+            // Reset the flag
+            Globals.resetBrowseLevelMenu = false;
+
+            // Close the menu
+            Back();
+        }
+    }
+
+    // The coroutine used to setup the root directory if it does not already exist, and that initialize the globals upon start
+    IEnumerator SetupRootAndInitializeGlobals()
+    {
+        Debug.Log("Creating the root directory!");
+
+        // Get the path to the folder of the application
+        string directoryPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "MRQuestion Creator");
+
+        // Check if the folder for this application exists in the Documents folder
+        if(!Directory.Exists(directoryPath))
+        {
+            // Create the root directory for the application
+            Directory.CreateDirectory(directoryPath);
+
+            // Create the temp save folder
+            Directory.CreateDirectory(Path.Combine(directoryPath, "tempSave"));
+
+            // Create the level save folder
+            Directory.CreateDirectory(Path.Combine(directoryPath, "levelSave"));
+        }
+
+        if(!Directory.Exists(directoryPath))
+        {
+            Debug.Log("Cannot create a folder in Documents");
+        }
+
+        while(!Directory.Exists(directoryPath))
+        {
+            yield return new WaitForSeconds(0.5f);
+        }
+
+        // Set the reset browse level menu flag to false
         Globals.resetBrowseLevelMenu = false;
-        
-        // First I initialize the Global paths
-        string scriptPath = GetCurrentFilePath();
-        string rootPath = GetPathToRootDirectory(scriptPath);
+
+        // Get the root directory path for the browsing of directories
+        string rootPath = Path.Combine(directoryPath, @"levelSave\");
+
+        // Set the Globals
         Globals.rootDirectoryPath = rootPath;
         Globals.currentPath = Globals.rootDirectoryPath;
         Globals.currentPathShorten = "";
@@ -198,24 +248,11 @@ public class BrowsDirectories : MonoBehaviour
         mainInputField.onEndEdit.AddListener(delegate{AddDirectory(mainInputField);});
 
         // Initialize the temp save path. This will have to be saved later on
-        Globals.tempSavePath = GetPathToTempSave(scriptPath);
+        Globals.tempSavePath = Path.Combine(directoryPath, @"tempSave\");
 
         // Initialize the flag of changing file
         Globals.currentlyChangingFile = false;
-    }
 
-    // Update is called once per frame
-    void Update()
-    {
-        // Check if the menu has to be reset
-        if(Globals.resetBrowseLevelMenu == true)
-        {
-            // Reset the flag
-            Globals.resetBrowseLevelMenu = false;
-
-            // Close the menu
-            Back();
-        }
     }
 
     // Helper method to get the path to this script file

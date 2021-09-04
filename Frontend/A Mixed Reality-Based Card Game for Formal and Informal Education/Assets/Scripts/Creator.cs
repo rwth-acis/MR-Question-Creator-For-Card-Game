@@ -308,9 +308,11 @@ public class Creator : MonoBehaviour
         // Set the current exercise index
         Menus.currentQuestionIndex = 0;
 
+        // Get the path to the folder of the application
+        string directoryPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "MRQuestion Creator");
+
         // Initialize the save path. This will have to be saved later on
-        string scriptPath = GetCurrentFilePath();
-        Menus.tempSavePath = GetPathToTempSave(scriptPath);
+        Menus.tempSavePath = Path.Combine(directoryPath, @"tempSave\");
 
         // Initialize the collection
         // Menus.collection = new ExerciseCollection();
@@ -764,7 +766,9 @@ public class Creator : MonoBehaviour
         {
             // Activate the exit without save window
             ActivateExitWithoutSaveWindow();
+
         } else {
+
             // Everything is empty, so reset the menus
             Menus.lastMenu.SetActive(true);
             Menus.currentMenu.SetActive(false);
