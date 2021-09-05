@@ -548,7 +548,8 @@ public class BrowsDirectories : MonoBehaviour
                     }
                     currentFileNumber = currentFileNumber + 1;
                 }
-                if(currentFileNumber != 5)
+
+                if(currentFileNumber <= 5)
                 {
                     for(int counter = numberOfFiles; counter <= lastEmptyIndex; counter = counter + 1)
                     {
@@ -670,12 +671,18 @@ public class BrowsDirectories : MonoBehaviour
                 }
                 currentDirectoryNumber = currentDirectoryNumber + 1;
             }
-            if(currentDirectoryNumber != 5)
+
+            if(currentDirectoryNumber <= 5)
             {
                 for(int counter = Globals.numberOfDirectories; counter <= lastEmptyIndex; counter = counter + 1)
                 {
                     switch (currentDirectoryNumber)
                     {
+                        case 1:
+                            Button directory1 = GameObject.Find("Directory1").GetComponent<Button>();
+                            directory1.GetComponentInChildren<TMP_Text>().text = "";
+                            directory1.interactable = false;
+                        break;
                         case 2:
                             Button directory2 = GameObject.Find("Directory2").GetComponent<Button>();
                             directory2.GetComponentInChildren<TMP_Text>().text = "";
