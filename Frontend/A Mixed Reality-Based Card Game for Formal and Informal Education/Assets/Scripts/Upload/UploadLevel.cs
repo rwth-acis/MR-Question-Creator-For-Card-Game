@@ -139,9 +139,12 @@ public class UploadLevel : MonoBehaviour
             // Get the level array
             string[] levelArray = GetTheArray(uwr.downloadHandler.text);
 
-            foreach(string level in levelArray)
+            if(levelArray[0] != "")
             {
-                Debug.Log("Level found: " + level);
+                foreach(string level in levelArray)
+                {
+                    Debug.Log("Level found: " + level);
+                }
             }
 
             // Check if the level name exist there
@@ -287,27 +290,43 @@ public class UploadLevel : MonoBehaviour
     // Method used to extract an array out of the string passed by the get request
     public string[] GetTheArray(string data)
     {
-        // Extract the LevelDirectories object
-        LevelDirectories levelDirectories = JsonUtility.FromJson<LevelDirectories>(data);
+        Debug.Log("The data received is: " + data);
 
-        // Initialize an array of the same length as the array
-        string[] levelNames = new string[levelDirectories.array.Length];
-
-        // Initialize the current index
-        int index = 0;
-
-        // Extract the directory names (currently comple paths)
-        foreach(string level in levelDirectories.array)
+        if(data != "null")
         {
-            // Get the name of the file and save it in the level names array
-            levelNames[index] = Path.GetFileName(levelDirectories.array[index]);
+            // Extract the LevelDirectories object
+            LevelDirectories levelDirectories = JsonUtility.FromJson<LevelDirectories>(data);
 
-            // Increase the index by one
-            index = index + 1;
+            // Initialize an array of the same length as the array
+            string[] levelNames = new string[levelDirectories.array.Length];
+
+            // Initialize the current index
+            int index = 0;
+
+            // Extract the directory names (currently comple paths)
+            foreach(string level in levelDirectories.array)
+            {
+                // Get the name of the file and save it in the level names array
+                levelNames[index] = Path.GetFileName(levelDirectories.array[index]);
+
+                // Increase the index by one
+                index = index + 1;
+            }
+
+            // Return the level names array
+            return levelNames;
+
+        } else {
+
+            // Create an empty string array since there are no levels
+            string[] levelNames = new string[1];
+
+            // Set the string in the only slot to empty
+            levelNames[0] = "";
+
+            // Return the empty array
+            return levelNames;
         }
-
-        // Return the level names array
-        return levelNames;
     }
 
     // Method that checks if a string is contained in an array of strings
