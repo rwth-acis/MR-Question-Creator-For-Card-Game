@@ -139,7 +139,7 @@ public class UploadLevel : MonoBehaviour
             // Get the level array
             string[] levelArray = GetTheArray(uwr.downloadHandler.text);
 
-            if(levelArray[0] != "")
+            if(levelArray.Length != 0 && levelArray[0] != "null")
             {
                 foreach(string level in levelArray)
                 {
@@ -303,7 +303,7 @@ public class UploadLevel : MonoBehaviour
             // Initialize the current index
             int index = 0;
 
-            // Extract the directory names (currently comple paths)
+            // Extract the directory names (currently complete paths)
             foreach(string level in levelDirectories.array)
             {
                 // Get the name of the file and save it in the level names array
