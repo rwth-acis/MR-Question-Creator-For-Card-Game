@@ -1592,102 +1592,82 @@ public class Creator : MonoBehaviour
         noPathSelected.gameObject.SetActive(false);
         noQuestionCreated.gameObject.SetActive(false);
 
-        // Check if a path was selected, a question created
-        if(Globals.selectedPath != "" && Globals.selectedPath != null && previewQuestion1.GetComponentInChildren<TMP_Text>().text != "")
+        // First need to check if there are question in the folder. If there is a log file, then there are some.
+        string pathToLogFile = Globals.selectedPath + "Description.json";
+
+        if (!File.Exists(pathToLogFile))
         {
-            // Case at least one question was created, and the path is not null
+            Debug.Log("There was no log file!");
+            // Case there is no log file, no questions in the folder
+            // Create a new log file
+            Log logFile = new Log();
 
-            // First need to check if there are question in the folder. If there is a log file, then there are some.
-            string pathToLogFile = Globals.selectedPath + "Description.json";
+            // Rename all modelXYZ in the temp save folder accordingly TODO later
+            int newModelNumber = RenameModels(Globals.selectedPath, 0);
 
-            if (!File.Exists(pathToLogFile))
-            {
-                Debug.Log("There was no log file!");
-                // Case there is no log file, no questions in the folder
-                // Create a new log file
-                Log logFile = new Log();
+            // Set all information that are already known
+            logFile.numberOfQuestions = Menus.currentQuestionIndex;
 
-                // Rename all modelXYZ in the temp save folder accordingly TODO later
-                int newModelNumber = RenameModels(Globals.selectedPath, 0);
+            // Add the information how many models there are
+            logFile.numberOfModels = newModelNumber;
 
-                // Set all information that are already known
-                logFile.numberOfQuestions = Menus.currentQuestionIndex;
+            // Generate the json string and save it in the temp save directory
+            string json = JsonUtility.ToJson(logFile);
+            File.WriteAllText(Menus.tempSavePath + "Description.json", json);
 
-                // Add the information how many models there are
-                logFile.numberOfModels = newModelNumber;
-
-                // Generate the json string and save it in the temp save directory
-                string json = JsonUtility.ToJson(logFile);
-                File.WriteAllText(Menus.tempSavePath + "Description.json", json);
-
-            } else {
-
-                Debug.Log("There was a log file!");
-
-                // Case there is already a log file, and questions
-                // Load the log game object
-                string json = File.ReadAllText(Globals.selectedPath + "Description.json");
-                Log logFile = JsonUtility.FromJson<Log>(json);
-
-                // Get the number of questions
-                int number = logFile.numberOfQuestions;
-                Debug.Log("The old number of question was: " + number);
-
-                // Rename all questionXYZ files in the temp save folder accordingly
-                int newNumber = renameQuestions(Menus.tempSavePath, number);
-
-                // Rename all modelXYZ in the temp save folder accordingly TODO later
-                int newModelNumber = RenameModels(Globals.selectedPath, logFile.numberOfModels);
-
-                Debug.Log("The new number of question was: " + newNumber);
-
-                // Actualize the number of questions
-                logFile.numberOfQuestions = newNumber;
-
-                // Actualize the number of models
-                logFile.numberOfModels = newModelNumber;
-
-                // Convert it back to json
-                string jsonNew = JsonUtility.ToJson(logFile);
-
-                // Delete the old file
-                File.Delete(Globals.selectedPath + "Description.json");
-
-                // Create the new file
-                File.WriteAllText(Menus.tempSavePath + "Description.json", jsonNew);
-            }
-
-            // Add all 3D model information to the questions
-            AddModelInformation();
-
-            // // Delete models that have no model file in the folder
-            // DeleteDuplicateModels();
-
-            // Delete all old save files that were copied to the temp save directory
-            DeleteAllDuplicateFiles(Menus.tempSavePath, Globals.selectedPath);
-
-            // Copy all files form the temp save directory to the end save directory
-            CopyFromPath1ToPath2(Menus.tempSavePath, Globals.selectedPath);
-
-            // Exit the creator
-            ExitWithoutSavingYes();
-
-            Debug.Log("The models should have been created.");
-            
         } else {
 
-            // If no question was created, display the no question error message
-            if(previewQuestion1.GetComponentInChildren<TMP_Text>().text == "")
-            {
-                noQuestionCreated.gameObject.SetActive(true);
-            }
-            
-            // If no path selected, display the no path error message 
-            if(Globals.selectedPath == "" || Globals.selectedPath == null)
-            {
-                noPathSelected.gameObject.SetActive(true);
-            }
+            Debug.Log("There was a log file!");
+
+            // Case there is already a log file, and questions
+            // Load the log game object
+            string json = File.ReadAllText(Globals.selectedPath + "Description.json");
+            Log logFile = JsonUtility.FromJson<Log>(json);
+
+            // Get the number of questions
+            int number = logFile.numberOfQuestions;
+            Debug.Log("The old number of question was: " + number);
+
+            // Rename all questionXYZ files in the temp save folder accordingly
+            int newNumber = renameQuestions(Menus.tempSavePath, number);
+
+            // Rename all modelXYZ in the temp save folder accordingly TODO later
+            int newModelNumber = RenameModels(Globals.selectedPath, logFile.numberOfModels);
+
+            Debug.Log("The new number of question was: " + newNumber);
+
+            // Actualize the number of questions
+            logFile.numberOfQuestions = newNumber;
+
+            // Actualize the number of models
+            logFile.numberOfModels = newModelNumber;
+
+            // Convert it back to json
+            string jsonNew = JsonUtility.ToJson(logFile);
+
+            // Delete the old file
+            File.Delete(Globals.selectedPath + "Description.json");
+
+            // Create the new file
+            File.WriteAllText(Menus.tempSavePath + "Description.json", jsonNew);
         }
+
+        // Add all 3D model information to the questions
+        AddModelInformation();
+
+        // // Delete models that have no model file in the folder
+        // DeleteDuplicateModels();
+
+        // Delete all old save files that were copied to the temp save directory
+        DeleteAllDuplicateFiles(Menus.tempSavePath, Globals.selectedPath);
+
+        // Copy all files form the temp save directory to the end save directory
+        CopyFromPath1ToPath2(Menus.tempSavePath, Globals.selectedPath);
+
+        // Exit the creator
+        ExitWithoutSavingYes();
+
+        Debug.Log("The models should have been created.");
     }
 
     // // Method that deletes the duplicate models in the temp save folder before all files are transfered
@@ -1743,52 +1723,69 @@ public class Creator : MonoBehaviour
     // Method that checks if there are 3D models with the same name in the end save directory
     public void MergeModels()
     {
-        // Get the models array of the temp save folder
-        string[] modelsTemSave = ReturnPreviewModelNames();
-
-        Debug.Log("When merging models, the path to the selected directory was: " + Globals.selectedPath);
-
-        // Get the models array of the end save folder
-        string[] modelsEndSave = ReturnModelNames(Globals.selectedPath);
-
-        // Initialize a counter variable that counts the number of matches
-        int matches = 0;
-
-        // Initialize an array that contain the name of the files that coincide
-        string[] modelMatches = new string[5];
-
-        string tempModelName = "";
-
-        // Check if no name coincide
-        foreach(string modelTemp in modelsTemSave)
+        // Check if a path was selected, a question created
+        if(Globals.selectedPath == "" || Globals.selectedPath == null || previewQuestion1.GetComponentInChildren<TMP_Text>().text == "")
         {
-            foreach(string modelEnd in modelsEndSave)
+            // If no question was created, display the no question error message
+            if(previewQuestion1.GetComponentInChildren<TMP_Text>().text == "")
             {
-                // string temp;
-                if(modelEnd == modelTemp)
-                {
-                    // Add the name of the file that already exist in the end save directory to the array
-                    modelMatches[matches] = modelTemp;
+                noQuestionCreated.gameObject.SetActive(true);
+            }
+            
+            // If no path selected, display the no path error message 
+            if(Globals.selectedPath == "" || Globals.selectedPath == null)
+            {
+                noPathSelected.gameObject.SetActive(true);
+            }
+            
+        } else{
+            // Get the models array of the temp save folder
+            string[] modelsTemSave = ReturnPreviewModelNames();
 
-                    // Increase the match variable by one
-                    matches = matches + 1;
+            Debug.Log("When merging models, the path to the selected directory was: " + Globals.selectedPath);
+
+            // Get the models array of the end save folder
+            string[] modelsEndSave = ReturnModelNames(Globals.selectedPath);
+
+            // Initialize a counter variable that counts the number of matches
+            int matches = 0;
+
+            // Initialize an array that contain the name of the files that coincide
+            string[] modelMatches = new string[5];
+
+            string tempModelName = "";
+
+            // Check if no name coincide
+            foreach(string modelTemp in modelsTemSave)
+            {
+                foreach(string modelEnd in modelsEndSave)
+                {
+                    // string temp;
+                    if(modelEnd == modelTemp)
+                    {
+                        // Add the name of the file that already exist in the end save directory to the array
+                        modelMatches[matches] = modelTemp;
+
+                        // Increase the match variable by one
+                        matches = matches + 1;
+                    }
                 }
             }
-        }
 
-        // If no match, then can start the next method that will save evertything
-        if(matches == 0)
-        {
-            // Launch the save method
-            SaveQuestionsInEndDirectory();
+            // If no match, then can start the next method that will save evertything
+            if(matches == 0)
+            {
+                // Launch the save method
+                SaveQuestionsInEndDirectory();
 
-        } else {
+            } else {
 
-            // Activate the matches window
-            ActivateMatchesWindow(modelMatches, matches);
+                // Activate the matches window
+                ActivateMatchesWindow(modelMatches, matches);
 
-            // Change the matches heading
-            matchesHeading.text = "There are currently " + matches + " matches. Please rename the models that are not suposed to be the same. Models that are not renamed will be replaced by the already saved one.";
+                // Change the matches heading
+                matchesHeading.text = "There are currently " + matches + " matches. Please rename the models that are not suposed to be the same. Models that are not renamed will be replaced by the already saved one.";
+            }
         }
     }
 
