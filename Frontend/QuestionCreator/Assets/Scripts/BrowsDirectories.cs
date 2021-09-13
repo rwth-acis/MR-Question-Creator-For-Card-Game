@@ -174,7 +174,7 @@ public class BrowsDirectories : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        StartCoroutine(SetupRootAndInitializeGlobals());
+        InitializeGlobals();
     }
 
     // Update is called once per frame
@@ -192,35 +192,10 @@ public class BrowsDirectories : MonoBehaviour
     }
 
     // The coroutine used to setup the root directory if it does not already exist, and that initialize the globals upon start
-    IEnumerator SetupRootAndInitializeGlobals()
+    private void InitializeGlobals()
     {
-        Debug.Log("Creating the root directory!");
-
         // Get the path to the folder of the application
         string directoryPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "MRQuestion Creator");
-
-        // Check if the folder for this application exists in the Documents folder
-        if(!Directory.Exists(directoryPath))
-        {
-            // Create the root directory for the application
-            Directory.CreateDirectory(directoryPath);
-
-            // Create the temp save folder
-            Directory.CreateDirectory(Path.Combine(directoryPath, "tempSave"));
-
-            // Create the level save folder
-            Directory.CreateDirectory(Path.Combine(directoryPath, "levelSave"));
-        }
-
-        if(!Directory.Exists(directoryPath))
-        {
-            Debug.Log("Cannot create a folder in Documents");
-        }
-
-        while(!Directory.Exists(directoryPath))
-        {
-            yield return new WaitForSeconds(0.5f);
-        }
 
         // Set the reset browse level menu flag to false
         Globals.resetBrowseLevelMenu = false;
@@ -252,7 +227,6 @@ public class BrowsDirectories : MonoBehaviour
 
         // Initialize the flag of changing file
         Globals.currentlyChangingFile = false;
-
     }
 
     // Helper method to get the path to this script file
@@ -461,10 +435,17 @@ public class BrowsDirectories : MonoBehaviour
         // Case there are no directories to be displayed
         if(Globals.numberOfDirectories == 0)
         {
+            Debug.Log("Current path is: " + Globals.currentPath);
+            Debug.Log("Root directory path is: " + Globals.rootDirectoryPath);
+
             // If select directory mode is on, then enable the select button
-            if(Menus.directorySelection == true)
+            if(Menus.directorySelection == true && Globals.currentPath != Globals.rootDirectoryPath)
             {
                 selectButton.interactable = true;
+
+            } else {
+
+                selectButton.interactable = false;
             }
 
             // Get the array of all files
