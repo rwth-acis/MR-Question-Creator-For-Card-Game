@@ -518,6 +518,12 @@ public class BrowsDirectories : MonoBehaviour
                     // Get the question name form the file
                     string questionName = ExtractQuestionName(file);
 
+                    // If the question name is empty, show the generated name instead
+                    if(questionName == "")
+                    {
+                        questionName = Path.GetFileName(file).Substring(0, Path.GetFileName(file).Length - 5);
+                    }
+
                     switch (currentFileNumber)
                     {
                         case 1:

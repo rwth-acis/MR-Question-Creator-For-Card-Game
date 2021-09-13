@@ -7302,6 +7302,7 @@ GameObject:
   - component: {fileID: 343449064}
   - component: {fileID: 343449068}
   - component: {fileID: 343449069}
+  - component: {fileID: 343449070}
   m_Layer: 5
   m_Name: Canvas
   m_TagString: Untagged
@@ -7421,8 +7422,56 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   basePath: template
-  backendAddress: http://192.168.1.39
-  port: 8080
+  backendAddress: http://80.201.215.55
+  port: 9090
+--- !u!114 &343449070
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 343449063}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b37a54d1b4a06ee4aa39d5add6880cf4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  mainMenu: {fileID: 734961485}
+  creatorMenu: {fileID: 1437308046}
+  browsDirectoriesMenu: {fileID: 1074223343}
+  selectButton: {fileID: 1031148183}
+  currentPageText: {fileID: 931965921}
+  mainInputField: {fileID: 92448778}
+  errorText: {fileID: 277245810}
+  window: {fileID: 333441506}
+  proceedSelectionWindow: {fileID: 1313958234}
+  AskDescriptionWindow: {fileID: 1818688731}
+  EnterDescriptionWindow: {fileID: 2015063962}
+  veilSmallWindow: {fileID: 1826748014}
+  veilLargeWindow: {fileID: 354674517}
+  noPathSelected: {fileID: 45651714}
+  savePathField: {fileID: 899354302}
+  previewQuestion1: {fileID: 727477785}
+  addButton: {fileID: 1383027640}
+  browsDirectoriesButton: {fileID: 574234273}
+  saveButton: {fileID: 1815480832}
+  changeButton: {fileID: 1537166117}
+  createDirectory: {fileID: 1189479174}
+  previewModel1: {fileID: 223143611}
+  previewModel2: {fileID: 38198518}
+  previewModel3: {fileID: 625803364}
+  previewModel4: {fileID: 1406321925}
+  previewModel5: {fileID: 1679759062}
+  descriptionHeading: {fileID: 2050386658}
+  descriptionText: {fileID: 1881295688}
+  changeDescription: {fileID: 1287729537}
+  okDescription: {fileID: 1813217552}
+  cancelDescription: {fileID: 467222256}
+  backDescription: {fileID: 638286693}
+  switchSprites:
+  - {fileID: 21300000, guid: 11894016c24f80c4b9ca978db02e2f1a, type: 3}
+  - {fileID: 21300000, guid: d83e7bb2af4efee45a338390adb928f5, type: 3}
+  uploadButton: {fileID: 1711869769}
 --- !u!1 &348600584
 GameObject:
   m_ObjectHideFlags: 0
@@ -13744,7 +13793,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &734961486
 RectTransform:
   m_ObjectHideFlags: 0
@@ -25231,7 +25280,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'Brows Directories
+  m_text: 'Browse Directories
 
 '
   m_isRightToLeft: 0
@@ -26644,7 +26693,7 @@ GameObject:
   - component: {fileID: 1409524016}
   - component: {fileID: 1409524015}
   m_Layer: 5
-  m_Name: BrowsDirectoriesButton
+  m_Name: BrowseDirectoriesButton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -27138,7 +27187,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1437308047
 RectTransform:
   m_ObjectHideFlags: 0

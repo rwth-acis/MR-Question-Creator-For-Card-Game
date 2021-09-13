@@ -1174,7 +1174,9 @@ public class Creator : MonoBehaviour
         {
             // Case custom name was entered
             inputQuestion.name = enterName.text;
+
         } else {
+            
             // Case custom name was not entered, create an empty name (will not be displayed in the game)
             inputQuestion.name = "";
         }
