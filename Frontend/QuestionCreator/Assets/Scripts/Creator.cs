@@ -423,7 +423,11 @@ public class Creator : MonoBehaviour
     // Method that activates everything for the multiple choice mode
     public void ActivateMultipleChoiceMode()
     {
-        veilLargeWindow.SetActive(true);
+        // Disable the error messages
+        errorNoQuestionMultipleChoice.gameObject.SetActive(false);
+        errorNotEnoughAnswersMultipleChoice.gameObject.SetActive(false);
+
+        // Actuvate the creator
         multipleChoiceCreator.SetActive(true);
         Menus.currentMenu = multipleChoiceCreator;
         Menus.lastMenu = mainCreator;
@@ -432,7 +436,6 @@ public class Creator : MonoBehaviour
     // Method that deactivates everything for the multiple choice mode
     public void DeactivateMultipleChoiceMode()
     {
-        veilLargeWindow.SetActive(false);
         multipleChoiceCreator.SetActive(false);
         Menus.currentMenu = mainCreator;
         Menus.lastMenu = mainMenu;
@@ -441,7 +444,11 @@ public class Creator : MonoBehaviour
     // Method that activates everything for the input mode
     public void ActivateInputMode()
     {
-        veilLargeWindow.SetActive(true);
+        // Disable the error messages
+        errorNoAnswerInput.gameObject.SetActive(false);
+        errorNoQuestionInput.gameObject.SetActive(false);
+
+        // Activate the creator
         inputModeCreator.SetActive(true);
         Menus.currentMenu = inputModeCreator;
         Menus.lastMenu = mainCreator;
@@ -450,7 +457,6 @@ public class Creator : MonoBehaviour
     // Method that deactivates everything for the input mode
     public void DeactivateInputMode()
     {
-        veilLargeWindow.SetActive(false);
         inputModeCreator.SetActive(false);
         Menus.currentMenu = mainCreator;
         Menus.lastMenu = mainMenu;
@@ -1786,7 +1792,7 @@ public class Creator : MonoBehaviour
                 ActivateMatchesWindow(modelMatches, matches);
 
                 // Change the matches heading
-                matchesHeading.text = "There are currently " + matches + " matches. Please rename the models that are not suposed to be the same. Models that are not renamed will be replaced by the already saved one.";
+                matchesHeading.text = "There are currently " + matches + " matche(s). Please rename the models that are not suposed to be the same. Models that are not renamed will be replaced by the already saved one.";
             }
         }
     }
