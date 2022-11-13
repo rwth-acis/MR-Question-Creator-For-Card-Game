@@ -805,7 +805,7 @@ public class BrowsDirectories : MonoBehaviour
             // Get the json string
             string json = File.ReadAllText(filePath);
 
-            // Find our what kind of question it is
+            /*// Find our what kind of question it is
             if(json.Contains("input question") == true)
             {
                 // Extract the object
@@ -964,7 +964,7 @@ public class BrowsDirectories : MonoBehaviour
                         previewButton.interactable  = false;
                     }
                 }
-            }
+            }*/
 
             // Here change the button from "save" to "change"
             saveButton.gameObject.SetActive(false);

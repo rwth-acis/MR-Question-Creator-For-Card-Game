@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using System;
@@ -7,11 +5,11 @@ using System.IO;
 using TMPro;
 using UnityEngine.EventSystems;
 using System.Net;
-using i5.Toolkit.Core.ModelImporters;
-using i5.Toolkit.Core.ProceduralGeometry;
-using i5.Toolkit.Core.ServiceCore;
-using i5.Toolkit.Core.Utilities;
-using System.Linq;
+using UnityEditor;
+using UnityEngine.Networking;
+using System.Threading.Tasks;
+using i5.Toolkit.Core.Utilities.Async;
+using System.Collections.Generic;
 
 // Last Method: ReturnPreviewModelButtonFromModelName
 
@@ -51,6 +49,7 @@ static class Menus
     // Save the last object url that was entered
     public static string lastUrl;
 
+    public static string imageURL;
     // Save the url of the models
     public static string url1 = "";
     public static string url2 = "";
@@ -118,6 +117,8 @@ public class Creator : MonoBehaviour
     // Defining the button
     // Button to select a directory as end save directory
     public Button selectButton;
+
+    public Image questionImage;
 
     // The five preview model button used to edit created questions
     public Button previewModel1;
@@ -209,6 +210,11 @@ public class Creator : MonoBehaviour
     // Define the model matches window
     public TextMeshProUGUI matchesHeading;
 
+    //A temporal buffer for the image data, need to be added to the questionImageDataList after adding adding an image
+    private byte[] questionImageData;
+    // Save all image data
+    private List<byte[]> questionImageDataList;
+
     // The JSON Serialization for the input questions
     [Serializable]
     public class InputQuestion
@@ -217,12 +223,8 @@ public class Creator : MonoBehaviour
         public string name;
         public string question;
         public string answer;
-        public int numberOfModels;
-        public string model1Name;
-        public string model2Name;
-        public string model3Name;
-        public string model4Name;
-        public string model5Name;
+        public bool withImage;
+        public string imageName;
     }
 
     // The JSON Serialization for the multiple choice questions
@@ -243,12 +245,8 @@ public class Creator : MonoBehaviour
         public bool answer3Correct;
         public bool answer4Correct;
         public bool answer5Correct;
-        public int numberOfModels;
-        public string model1Name;
-        public string model2Name;
-        public string model3Name;
-        public string model4Name;
-        public string model5Name;
+        public bool withImage;
+        public string imageName;
     }
 
     // The JSON Serialization for the Models
@@ -278,17 +276,9 @@ public class Creator : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        questionImageDataList = new List<byte[]>();
         // Initialize the rename matches array
         Menus.unrenamedMatchesArray = new string[5];
-
-        // Disable all buttons that cannot be used at the begining
-        if(Globals.currentlyChangingFile != true)
-        {
-            GameObject.Find("Add3DModel2").GetComponent<Button>().interactable = false;
-            GameObject.Find("Add3DModel3").GetComponent<Button>().interactable = false;
-            GameObject.Find("Add3DModel4").GetComponent<Button>().interactable = false;
-            GameObject.Find("Add3DModel5").GetComponent<Button>().interactable = false;
-        }
 
         // Disable the delete button and interactability of the preview question one only if the user is not changing a file currently
         if(Globals.currentlyChangingFile != true)
@@ -346,22 +336,6 @@ public class Creator : MonoBehaviour
     string GetCurrentFileName([System.Runtime.CompilerServices.CallerFilePath] string fileName = null)
     {
         return fileName;
-    }
-
-    // Method that returns you the path to this script
-    private string GetCurrentFilePath()
-    {
-        string scriptPath = GetCurrentFileName();
-        return scriptPath;
-        
-    }
-
-    // Method that returns you the path to the save directory in the back end
-    private string GetPathToTempSave(string scriptPath)
-    {
-        string rootPath = Path.GetFullPath(Path.Combine(scriptPath, @"..\..\..\..\..\"));
-        string rootDirectoryPath = Path.GetFullPath(Path.Combine(rootPath, @"Backend\TempSave\"));
-        return rootDirectoryPath;
     }
 
     // -------------------------------------------------------------------------------------------------------------------
@@ -808,7 +782,7 @@ public class Creator : MonoBehaviour
             Debug.Log("the current menu is the main creator");
 
             // Reset the buttons that preview names of 3D models and currently created questions
-            ResetPreviewModelButtons();
+            //ResetPreviewModelButtons();
             previewQuestion1.GetComponentInChildren<TMP_Text>().text = "";
             previewQuestion2.GetComponentInChildren<TMP_Text>().text = "";
             previewQuestion3.GetComponentInChildren<TMP_Text>().text = "";
@@ -1661,7 +1635,7 @@ public class Creator : MonoBehaviour
         }
 
         // Add all 3D model information to the questions
-        AddModelInformation();
+        // AddModelInformation();
 
         // // Delete models that have no model file in the folder
         // DeleteDuplicateModels();
@@ -1962,8 +1936,9 @@ public class Creator : MonoBehaviour
         }
     }
 
+    // Uncomment if we want add models later
     // Method that adds the 3D model information to all questions that will get saved in the end save directory
-    public void AddModelInformation()
+/*    public void AddModelInformation()
     {
         // Get the questions array
         string[] questions = GetQuestionsArray(Menus.tempSavePath);
@@ -2384,7 +2359,7 @@ public class Creator : MonoBehaviour
 
         // // Create new save file
         // File.WriteAllText(Menus.tempSavePath + "Description.json", newDescriptionJson);
-    }
+    }*/
 
     // Method that search for model match in a given array of model files given a name
     public string FindMatchingFile(string[] array, string name)
@@ -2707,16 +2682,16 @@ public class Creator : MonoBehaviour
             Log descriptionLog = JsonUtility.FromJson<Log>(json);
 
             // Fill the unrenamed matches array so that no double model files are created
-            FillUnrenamedMatchesArray();
+            // FillUnrenamedMatchesArray();
 
             // Create and give a correct name to the models
-            int modelNumber = RenameModels(Globals.selectedPath, descriptionLog.numberOfModels);
+            // int modelNumber = RenameModels(Globals.selectedPath, descriptionLog.numberOfModels);
 
             // Set the number of models in the description file correctly
-            SetNumberOfModels(Globals.tempSavePath, modelNumber);
+            // SetNumberOfModels(Globals.tempSavePath, modelNumber);
 
             // Add all 3D model information to the questions
-            AddModelInformation();
+            // AddModelInformation();
 
             // // Delete models that have no model file in the folder
             // DeleteDuplicateModels();
@@ -3021,141 +2996,6 @@ public class Creator : MonoBehaviour
             // Extract the json string of the question
             string jsonQuestion = File.ReadAllText(Menus.tempSavePath + Menus.editedFileName);
 
-            // Check what type of question it is
-            if(jsonQuestion.Contains("input question") == true)
-            {
-                // Case input question
-                // Extract the input question object
-                InputQuestion question = JsonUtility.FromJson<InputQuestion>(jsonQuestion);
-
-                // Get the number of models that are used for the question
-                int number = question.numberOfModels;
-                
-                // Go over all models
-                for(int counter = 0; counter < number; counter = counter + 1)
-                {
-                    // Initialize the model file name
-                    string modelFileName = "";
-
-                    // Find the current model file name
-                    switch(counter)
-                    {
-                        case 0:
-                            modelFileName = question.model1Name;
-                        break;
-                        case 1:
-                            modelFileName = question.model2Name;
-                        break;
-                        case 2:
-                            modelFileName = question.model3Name;
-                        break;
-                        case 3:
-                            modelFileName = question.model4Name;
-                        break;
-                        case 4:
-                            modelFileName = question.model5Name;
-                        break;
-                    }
-
-                    Debug.Log("The model file name that was found is: " + modelFileName);
-
-                    // Reducte the number of questions that use it by one
-                    string jsonModel = File.ReadAllText(Menus.tempSavePath + modelFileName);
-                    Model model = JsonUtility.FromJson<Model>(jsonModel);
-                    model.numberOfQuestionsUsedIn = model.numberOfQuestionsUsedIn - 1;
-
-                    // If the number is 0, delete the model file, and the .obj model in the selected path file, else actualize the file
-                    if(model.numberOfQuestionsUsedIn <= 0)
-                    {
-                        // Delete the .obj model in the end save folder
-                        File.Delete(Globals.selectedPath + model.modelName);
-
-                        // Delete the .json file in the end save folder
-                        File.Delete(Globals.selectedPath + modelFileName);
-
-                        // Reduce the number of models of the description file
-                        descriptionLog.numberOfModels = descriptionLog.numberOfModels - 1;
-
-                    } else {
-
-                        // Delete the .json file in the end save folder
-                        File.Delete(Globals.selectedPath + modelFileName);
-
-                        // Create the new json string
-                        string jsonModelNew = JsonUtility.ToJson(model);
-
-                        // Save the new model file in the end save folder
-                        File.WriteAllText(Globals.selectedPath + modelFileName, jsonModelNew);
-                    }
-                }
-
-            } else {
-                // Case multiple choice question
-                // Extract the multiple choice question object
-                MultipleChoiceQuestion question = JsonUtility.FromJson<MultipleChoiceQuestion>(jsonQuestion);
-
-                // Get the number of models that are used for the question
-                int number = question.numberOfModels;
-                
-                // Go over all models
-                for(int counter = 0; counter < number; counter = counter + 1)
-                {
-                    // Initialize the model file name
-                    string modelFileName = "";
-
-                    // Find the current model file name
-                    switch(counter)
-                    {
-                        case 0:
-                            modelFileName = question.model1Name;
-                        break;
-                        case 1:
-                            modelFileName = question.model2Name;
-                        break;
-                        case 2:
-                            modelFileName = question.model3Name;
-                        break;
-                        case 3:
-                            modelFileName = question.model4Name;
-                        break;
-                        case 4:
-                            modelFileName = question.model5Name;
-                        break;
-                    }
-
-                    Debug.Log("The model file name that was found is: " + modelFileName);
-
-                    // Reducte the number of questions that use it by one
-                    string jsonModel = File.ReadAllText(Menus.tempSavePath + modelFileName);
-                    Model model = JsonUtility.FromJson<Model>(jsonModel);
-                    model.numberOfQuestionsUsedIn = model.numberOfQuestionsUsedIn - 1;
-
-                    // If the number is 0, delete the model file, and the .obj model in the selected path file, else actualize the file
-                    if(model.numberOfQuestionsUsedIn <= 0)
-                    {
-                        // Delete the .obj model in the end save folder
-                        File.Delete(Globals.selectedPath + model.modelName);
-
-                        // Delete the .json file in the end save folder
-                        File.Delete(Globals.selectedPath + modelFileName);
-
-                        // Reduce the number of models of the description file
-                        descriptionLog.numberOfModels = descriptionLog.numberOfModels - 1;
-
-                    } else {
-
-                        // Delete the .json file in the end save folder
-                        File.Delete(Globals.selectedPath + modelFileName);
-
-                        // Create the new json string
-                        string jsonModelNew = JsonUtility.ToJson(model);
-
-                        // Save the new model file in the end save folder
-                        File.WriteAllText(Globals.selectedPath + modelFileName, jsonModelNew);
-                    }
-                }
-            }
-
             // Rename all questions correctly
             RenameFilesPostDeletion(Globals.selectedPath, descriptionLog.numberOfQuestions);
 
@@ -3287,8 +3127,8 @@ public class Creator : MonoBehaviour
         Menus.editedModelIndex = GetButtonIndexFromButtonName(buttonName);
     }
 
-    // Method that is triggered when clicking on the import button of the import 3D model window
-    public void ImportModel()
+    // Method that is triggered when clicking on the import image of the import 3D model window
+    public async void ImportImage()
     {
         // Disable the error messages
         noUrlTypedInErrorMessage.gameObject.SetActive(false);
@@ -3301,10 +3141,11 @@ public class Creator : MonoBehaviour
 
         // Get the string that is displayed in the input field and deffine the .obj ending as a string
         // string url = enterUrl.text;
-        string ending = ".obj";
+        string endingPNG = ".png";
+        string endingJPG = ".jpg";
 
         // Check if the impult field is non empty
-        if(url == "")
+        if(string.IsNullOrEmpty(url))
         {
             Debug.Log("Url is empty");
             // If it is empty, then display the "no url typed in" error message
@@ -3313,9 +3154,9 @@ public class Creator : MonoBehaviour
         } else {
 
             //If it is non empty, check if the url goes to a .obj object
-            if(url.EndsWith(ending) != true)
+            if(!url.EndsWith(endingPNG) && !url.EndsWith(endingJPG))
             {
-                Debug.Log("Url is not ending on .obj");
+                Debug.Log("Url is not ending on .png or .jpg, assuming incorrect file type.");
                 // Case the ending is not .obj, display the url does not point on .obj model error message
                 urlObjectOfWrongTypeErrorMessage.gameObject.SetActive(true);
 
@@ -3330,11 +3171,11 @@ public class Creator : MonoBehaviour
                 Debug.Log("File name: " + fileName);
 
                 // Initialize the obj name array
-                string[] array = ReturnPreviewModelNames();
+                // string[] array = ReturnPreviewModelNames();
 
-                if(isContained(array, fileName) == true)
+                //if(isContained(array, fileName) == true)
                 // Check if a file with that name already exist in the temp save folder
-                // if(File.Exists(Menus.tempSavePath + fileName))
+                if(File.Exists(Menus.tempSavePath + fileName))
                 {
                     Debug.Log("Went in the open window loop");
                     // Open a window that tells you that a file with that name already was imported. Ask if the user wants to replace it or to cancel.
@@ -3348,83 +3189,71 @@ public class Creator : MonoBehaviour
                     Menus.currentUri = url;
                     
                 } else {
-
-                    Debug.Log("The current model index is: " + Menus.currentModelIndex);
-
-                    // Save the url in the right variable
-                    switch(Menus.currentModelIndex)
-                    {
-                        case 0:
-                            Menus.url1 = url;
-                        break;
-
-                        case 1:
-                            Menus.url2 = url;
-                        break;
-
-                        case 2:
-                            Menus.url3 = url;
-                        break;
-
-                        case 3:
-                            Menus.url4 = url;
-                        break;
-
-                        case 4:
-                            Menus.url5 = url;
-                        break;
-                    }
-
-                    // // Create the model json 
-                    // Model modelJson = new Model();
-
-                    // // Fill the model name and the url
-                    // modelJson.modelName = fileName;
-                    // modelJson.modelUrl = url;
-
-                    // // Create the new json string
-                    // string jsonModelNew = JsonUtility.ToJson(modelJson);
-
-                    // // Get the model file name
-                    // string modelFileName = "Model" + GetModelFileNameEnding(fileName) + ".json";
-
-                    // // Save the new model file in the end save folder
-                    // File.WriteAllText(Menus.tempSavePath + modelFileName, jsonModelNew);
-
-                    // Debug.Log("The model file with name: " + modelFileName + " should have been saved in: " + Menus.tempSavePath);
-
-                    // Save it in the temps save folder
-
-                    if(Globals.currentlyChangingFile == false)
-                    {
-                        // Increase the current model index by one
-                        Menus.currentModelIndex = Menus.currentModelIndex  + 1;
-                    }
-
-                    // Preview the name of the 3D model on the right button
-                    PreviewModelName(fileName, Menus.editedModelIndex);
-
-                    // Find out how many models have to be previewed
-                    int numberOfModels = numberOfModelsInPreview();
-
-                    // Activate the right button next
-                    ActivateNextPreviewModelButton(numberOfModels);
-
-                    // Reset edited variables
-                    Menus.editedModelIndex = 5;
-                    Menus.editedModelName = "";
-
-                    // Close the window
+                    Menus.imageURL = url;
+                    await DownloadAndShowImageAsync(url);
                     DeactivateImportModelWindow();
 
-                    Debug.Log("The save url 1 is: " + Menus.url1);
-                    Debug.Log("The save url 2 is: " + Menus.url2);
-                    Debug.Log("The save url 3 is: " + Menus.url3);
-                    Debug.Log("The save url 4 is: " + Menus.url4);
-                    Debug.Log("The save url 5 is: " + Menus.url5);
+                    /*                    // Save the url in the right variable
+                                        switch(Menus.currentModelIndex)
+                                        {
+                                            case 0:
+                                                Menus.url1 = url;
+                                            break;
+
+                                            case 1:
+                                                Menus.url2 = url;
+                                            break;
+
+                                            case 2:
+                                                Menus.url3 = url;
+                                            break;
+
+                                            case 3:
+                                                Menus.url4 = url;
+                                            break;
+
+                                            case 4:
+                                                Menus.url5 = url;
+                                            break;
+                                        }
+                                        // Save it in the temps save folder
+
+                                         if(Globals.currentlyChangingFile == false)
+                                        {
+                                            // Increase the current model index by one
+                                            Menus.currentModelIndex = Menus.currentModelIndex  + 1;
+                                        }
+
+                                        // Preview the name of the 3D model on the right button
+                                        // PreviewModelName(fileName, Menus.editedModelIndex);
+
+                                        // Find out how many models have to be previewed
+                                        // int numberOfModels = numberOfModelsInPreview();
+
+                                        // Activate the right button next
+                                        // ActivateNextPreviewModelButton(numberOfModels);
+
+                                        // Reset edited variables
+                                        // Menus.editedModelIndex = 5;
+                                        // Menus.editedModelName = "";
+
+                                        // Close the window
+                                        */
                 }
             }
         }
+    }
+
+    // Download the resources from url to path.
+    private async Task DownloadAndShowImageAsync(string url)
+    {
+        UnityWebRequest downloadRequest = UnityWebRequest.Get(url);
+        downloadRequest.downloadHandler = new DownloadHandlerTexture();
+        await downloadRequest.SendWebRequest();
+        questionImageData = downloadRequest.downloadHandler.data;
+        Texture2D t2d = (downloadRequest.downloadHandler as DownloadHandlerTexture).texture;
+        questionImage.sprite = Sprite.Create(t2d, new Rect(0, 0, t2d.width, t2d.height), Vector2.zero);
+        downloadRequest.Dispose();
     }
 
     // Method that replace a model with the new given through an uri
@@ -4525,8 +4354,9 @@ public class Creator : MonoBehaviour
 
     }
 
+    // Uncomment if we want models later
     // Method used to clean up the unused models before uploading a model
-    public void CleanUpLevel()
+/*    public void CleanUpLevel()
     {
         // Get the level path
         string levelPath = Globals.currentPath;
@@ -4646,5 +4476,5 @@ public class Creator : MonoBehaviour
         // Create the new description file
         File.WriteAllText(levelPath + "Description.json", newDescriptionJson);
 
-    }
+    }*/
 }
