@@ -40,6 +40,10 @@ public class MainMenu : MonoBehaviour
             Directory.CreateDirectory(Path.Combine(directoryPath, "levelSave"));
         }
 
+        if(!Directory.Exists(Path.Combine(directoryPath, "tempSave"))){
+            Directory.CreateDirectory(Path.Combine(directoryPath, "tempSave"));
+        }
+
         if(!Directory.Exists(directoryPath))
         {
             Debug.Log("Cannot create a folder in Documents");
