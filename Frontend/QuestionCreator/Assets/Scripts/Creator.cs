@@ -3369,6 +3369,7 @@ public class Creator : MonoBehaviour
         await downloadRequest.SendWebRequest();
         questionImageData = downloadRequest.downloadHandler.data;
         Texture2D t2d = (downloadRequest.downloadHandler as DownloadHandlerTexture).texture;
+        Debug.Log(t2d);
         questionImage.sprite = Sprite.Create(t2d, new Rect(0, 0, t2d.width, t2d.height), Vector2.zero);
         downloadRequest.Dispose();
     }

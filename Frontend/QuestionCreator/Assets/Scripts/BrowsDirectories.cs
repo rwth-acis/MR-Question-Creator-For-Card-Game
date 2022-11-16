@@ -267,7 +267,7 @@ public class BrowsDirectories : MonoBehaviour
     }
 
     // Method that returns the array of files in the given path to a directory
-    static string[] GetQuestionFilesArray()
+    static string[] GetQuestionFilesArrayCurrentPath()
     {
         string[] files = Directory.GetFiles(Globals.currentPath, "Question*.json");
 
@@ -449,7 +449,7 @@ public class BrowsDirectories : MonoBehaviour
             }
 
             // Get the array of all files
-            Globals.fileArray = GetQuestionFilesArray();
+            Globals.fileArray = GetQuestionFilesArrayCurrentPath();
             int numberOfFiles = GetNumberOfFiles(Globals.fileArray);
 
             // Case there are files in the folder
@@ -756,7 +756,8 @@ public class BrowsDirectories : MonoBehaviour
             // Actualize the path
             Globals.currentPath = Globals.currentPath + directory + @"\";
             Globals.currentPathShorten = Globals.currentPathShorten + directory + @"\";
-
+            //Minus the Description File
+            Menus.currentQuestionIndex = GetQuestionFilesArrayCurrentPath().Length - 1;
             // Actualize the other globals (directories array, number, page number, etc)
             ActualizeGlobals();
             DisableOrEnableButtons();
@@ -1143,7 +1144,7 @@ public class BrowsDirectories : MonoBehaviour
         // Case there are no directories
         if(Globals.numberOfDirectories == 0)
         {
-            Globals.filesArray = GetQuestionFilesArray();
+            Globals.filesArray = GetQuestionFilesArrayCurrentPath();
             Globals.numberOfFiles = GetNumberOfFiles(Globals.filesArray);
             if(Globals.numberOfFiles != 0)
             {
