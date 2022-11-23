@@ -211,6 +211,8 @@ public class Creator : MonoBehaviour
     // Define the model matches window
     public TextMeshProUGUI matchesHeading;
 
+    public TextMeshProUGUI downloadError;
+
     //A temporal buffer for the image data, need to be added to the questionImageDataList after adding adding an image
     private byte[] questionImageData;
     // Save all image data
@@ -3365,12 +3367,24 @@ public class Creator : MonoBehaviour
     private async Task DownloadAndShowImageAsync(string url)
     {
         UnityWebRequest downloadRequest = UnityWebRequest.Get(url);
-        downloadRequest.downloadHandler = new DownloadHandlerTexture();
+        downloadRequest.downloadHandler = new DownloadHandlerBuffer();
         await downloadRequest.SendWebRequest();
-        questionImageData = downloadRequest.downloadHandler.data;
-        Texture2D t2d = (downloadRequest.downloadHandler as DownloadHandlerTexture).texture;
-        Debug.Log(t2d);
-        questionImage.sprite = Sprite.Create(t2d, new Rect(0, 0, t2d.width, t2d.height), Vector2.zero);
+        if (string.IsNullOrEmpty(downloadRequest.error))
+        {
+            questionImageData = downloadRequest.downloadHandler.data;
+            Texture2D t2d = new Texture2D(4096, 4096);
+            t2d.LoadImage(questionImageData);
+            //Texture2D t2d = (downloadRequest.downloadHandler as DownloadHandlerTexture).texture;
+            Debug.Log(t2d);
+            questionImage.sprite = Sprite.Create(t2d, new Rect(0, 0, t2d.width, t2d.height), Vector2.zero);
+            downloadError.gameObject.SetActive(false);
+        }
+        else
+        {
+            Debug.LogError(downloadRequest.error);
+            downloadError.gameObject.SetActive(true);
+            downloadError.text = downloadRequest.error;
+        }
         downloadRequest.Dispose();
     }
 
