@@ -267,9 +267,9 @@ public class BrowsDirectories : MonoBehaviour
     }
 
     // Method that returns the array of files in the given path to a directory
-    static string[] GetFilesArray()
+    static string[] GetQuestionFilesArrayCurrentPath()
     {
-        string[] files = Directory.GetFiles(Globals.currentPath, "Question*");
+        string[] files = Directory.GetFiles(Globals.currentPath, "Question*.json");
 
         // Check if the description file exists
         if (File.Exists(Globals.currentPath + "Description.json")) 
@@ -449,7 +449,7 @@ public class BrowsDirectories : MonoBehaviour
             }
 
             // Get the array of all files
-            Globals.fileArray = GetFilesArray();
+            Globals.fileArray = GetQuestionFilesArrayCurrentPath();
             int numberOfFiles = GetNumberOfFiles(Globals.fileArray);
 
             // Case there are files in the folder
@@ -745,7 +745,6 @@ public class BrowsDirectories : MonoBehaviour
         string name = EventSystem.current.currentSelectedGameObject.name;
         Button button = GameObject.Find(name).GetComponent<Button>();
         string fileName = button.GetComponentInChildren<TMP_Text>().text;
-
         if(Globals.flagVariable == true && Globals.theseAreFiles == false)
         {
             // Increase the browsing depth
@@ -757,7 +756,8 @@ public class BrowsDirectories : MonoBehaviour
             // Actualize the path
             Globals.currentPath = Globals.currentPath + directory + @"\";
             Globals.currentPathShorten = Globals.currentPathShorten + directory + @"\";
-
+            //Minus the Description File
+            Menus.currentQuestionIndex = GetQuestionFilesArrayCurrentPath().Length - 1;
             // Actualize the other globals (directories array, number, page number, etc)
             ActualizeGlobals();
             DisableOrEnableButtons();
@@ -768,7 +768,6 @@ public class BrowsDirectories : MonoBehaviour
         // Case theses are files, and it was not the description that was clicked
         if(Globals.flagVariable == true && Globals.theseAreFiles == true && fileName != "Description")
         {
-
             // Activate the creator menu
             creatorMenu.SetActive(true);
 
@@ -787,6 +786,7 @@ public class BrowsDirectories : MonoBehaviour
 
             // Get the right path to the file
             string filePath = Globals.fileArray[fileIndex];
+            Menus.currentQuestionIndex = int.Parse(filePath.Substring(filePath.Length - 8, 3));
             Debug.Log("path to file: " + filePath);
             Debug.Log("name of the file: " + questionName);
 
@@ -795,7 +795,7 @@ public class BrowsDirectories : MonoBehaviour
             Globals.fileName = Path.GetFileName(filePath);
 
             // Load the selected question in the temp save file
-            File.Copy(filePath, Path.Combine(Globals.tempSavePath, Path.GetFileName(filePath)));
+            File.Copy(filePath, Path.Combine(Globals.tempSavePath, Path.GetFileName(filePath)), true);
 
             // Add the name of the exercise to the preview and enable it
             previewQuestion1.GetComponentInChildren<TMP_Text>().text = questionName;
@@ -805,7 +805,7 @@ public class BrowsDirectories : MonoBehaviour
             // Get the json string
             string json = File.ReadAllText(filePath);
 
-            // Find our what kind of question it is
+            /*// Find our what kind of question it is
             if(json.Contains("input question") == true)
             {
                 // Extract the object
@@ -964,7 +964,7 @@ public class BrowsDirectories : MonoBehaviour
                         previewButton.interactable  = false;
                     }
                 }
-            }
+            }*/
 
             // Here change the button from "save" to "change"
             saveButton.gameObject.SetActive(false);
@@ -1144,7 +1144,7 @@ public class BrowsDirectories : MonoBehaviour
         // Case there are no directories
         if(Globals.numberOfDirectories == 0)
         {
-            Globals.filesArray = GetFilesArray();
+            Globals.filesArray = GetQuestionFilesArrayCurrentPath();
             Globals.numberOfFiles = GetNumberOfFiles(Globals.filesArray);
             if(Globals.numberOfFiles != 0)
             {
